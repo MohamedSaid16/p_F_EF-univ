@@ -184,7 +184,7 @@ export default function RegisterPage() {
 
       {/* ── Right: form ───────────────────────────────────────── */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6">
-        <div className="w-full max-w-3xl bg-surface border border-edge shadow-card rounded-xl p-8">
+        <div className="w-full max-w-3xl bg-surface border border-edge shadow-card rounded-lg p-8">
           {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-brand rounded-lg text-white mb-4 shadow-soft">

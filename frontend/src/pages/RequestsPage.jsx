@@ -620,9 +620,9 @@ export default function RequestsPage({ role = 'student' }) {
   }
 
   /* ═════════════════════════════════════════════════════════════
-     TEACHER VIEW — Tabs: My Reclamations | Student Inbox
+     TEACHER/ADMIN VIEW — Tabs: My Reclamations | Student Inbox
      ═════════════════════════════════════════════════════════════ */
-  if (role === 'teacher') {
+  if (role === 'teacher' || role === 'admin') {
     /* Teacher: detail view */
     if (view === 'detail' && selectedRequest) {
       return (

@@ -77,92 +77,97 @@ export default function AdminUsersListPage() {
   };
 
   const exportCreatedCredentials = async (createdRows) => {
-    const logoDataUrl = await getLogoBase64();
-    const today = new Date();
-    const dateLabel = today.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
+    try {
+      const logoDataUrl = await getLogoBase64();
+      const today = new Date();
+      const dateLabel = today.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
 
-    const renderedRows = createdRows
-      .map((row, index) => {
-        const fullName = `${row.prenom || ''} ${row.nom || ''}`.trim();
-        const roleText = (row.roleNames || []).map(roleLabel).join(', ');
-        return `
-          <tr>
-            <td>${index + 1}</td>
-            <td>${escapeHtml(fullName)}</td>
-            <td>${escapeHtml(row.email)}</td>
-            <td>${escapeHtml(row.telephone || '-')}</td>
-            <td>${escapeHtml(roleText || '-')}</td>
-            <td>${escapeHtml(row.tempPassword)}</td>
-            <td>${escapeHtml(formatFrDate(row.generatedAt))}</td>
-          </tr>
-        `;
-      })
-      .join('');
+      const renderedRows = createdRows
+        .map((row, index) => {
+          const fullName = `${row.prenom || ''} ${row.nom || ''}`.trim();
+          const roleText = (row.roleNames || []).map(roleLabel).join(', ');
+          return `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${escapeHtml(fullName)}</td>
+              <td>${escapeHtml(row.email)}</td>
+              <td>${escapeHtml(row.telephone || '-')}</td>
+              <td>${escapeHtml(roleText || '-')}</td>
+              <td>${escapeHtml(row.tempPassword)}</td>
+              <td>${escapeHtml(formatFrDate(row.generatedAt))}</td>
+            </tr>
+          `;
+        })
+        .join('');
 
-    const html = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-          <meta charset="utf-8" />
-          <style>
-            body { font-family: Calibri, Arial, sans-serif; margin: 20px; color: #000; }
-            .header { text-align: center; }
-            .title { font-size: 20px; font-weight: bold; margin-top: 10px; }
-            .rule { border-top: 2px solid black; margin: 10px 0; }
-            table { border-collapse: collapse; width: 100%; margin-top: 10px; margin-bottom: 20px; }
-            th, td { border: 1px solid black; padding: 6px; font-size: 12px; text-align: center; }
-            th { background-color: #d9d9d9; font-weight: bold; }
-            .logo-container { text-align: center; margin-bottom: 20px; }
-            .logo-img { max-width: 100px; max-height: 100px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>الجمهورية الجزائرية الديمقراطية الشعبية</h2>
-            <h3>وزارة التعليم العالي و البحث العلمي</h3>
-            ${logoDataUrl ? `<div class="logo-container"><img src="${logoDataUrl}" class="logo-img" /></div>` : ''}
-            <h2>Université Ibn Khaldoun - Tiaret</h2>
-            <p>Faculté : Faculté des Sciences et Technologies</p>
-            <p>Département : Département Informatique</p>
-            <div class="rule"></div>
-            <div class="title">FICHE OFFICIELLE DE CRÉATION DES UTILISATEURS</div>
-            <div class="rule"></div>
-            <p>Date : ${escapeHtml(dateLabel)}</p>
-          </div>
+      const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta charset="utf-8" />
+            <style>
+              body { font-family: Calibri, Arial, sans-serif; margin: 20px; color: #000; }
+              .header { text-align: center; }
+              .title { font-size: 20px; font-weight: bold; margin-top: 10px; }
+              .rule { border-top: 2px solid black; margin: 10px 0; }
+              table { border-collapse: collapse; width: 100%; margin-top: 10px; margin-bottom: 20px; }
+              th, td { border: 1px solid black; padding: 6px; font-size: 12px; text-align: center; }
+              th { background-color: #d9d9d9; font-weight: bold; }
+              .logo-container { text-align: center; margin-bottom: 20px; }
+              .logo-img { max-width: 100px; max-height: 100px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>الجمهورية الجزائرية الديمقراطية الشعبية</h2>
+              <h3>وزارة التعليم العالي و البحث العلمي</h3>
+              ${logoDataUrl ? `<div class="logo-container"><img src="${logoDataUrl}" class="logo-img" /></div>` : ''}
+              <h2>Université Ibn Khaldoun - Tiaret</h2>
+              <p>Faculté : Faculté des Sciences et Technologies</p>
+              <p>Département : Département Informatique</p>
+              <div class="rule"></div>
+              <div class="title">FICHE OFFICIELLE DE CRÉATION DES UTILISATEURS</div>
+              <div class="rule"></div>
+              <p>Date : ${escapeHtml(dateLabel)}</p>
+            </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>N°</th>
-                <th>Nom et Prénom</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Rôle</th>
-                <th>Mot de passe</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${renderedRows || '<tr><td colspan="7">Aucune donnée</td></tr>'}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
+            <table>
+              <thead>
+                <tr>
+                  <th>N°</th>
+                  <th>Nom et Prénom</th>
+                  <th>Email</th>
+                  <th>Téléphone</th>
+                  <th>Rôle</th>
+                  <th>Mot de passe</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${renderedRows || '<tr><td colspan="7">Aucune donnée</td></tr>'}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
 
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const fileName = `fiche_utilisateurs_liste_${today.toISOString().slice(0, 10)}.xls`;
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const fileName = `fiche_utilisateurs_liste_${today.toISOString().slice(0, 10)}.xls`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      throw err;
+    }
   };
 
   const updateRow = (index, key, value) => {
@@ -263,12 +268,17 @@ export default function AdminUsersListPage() {
       }
 
       if (createdRows.length > 0) {
-        await exportCreatedCredentials(createdRows);
+        try {
+          await exportCreatedCredentials(createdRows);
+        } catch (exportErr) {
+          console.error('Failed to export:', exportErr);
+          setError((prev) => `${prev} Warning: Excel export failed, but ${created} user(s) were created successfully.`);
+        }
       }
 
       if (failures.length) {
         setError(`Created ${created}. Excel downloaded for successful rows. Failed ${failures.length}: ${failures.slice(0, 3).join(' | ')}`);
-      } else {
+      } else if (createdRows.length > 0) {
         setMessage(`List created successfully. ${created} user(s) created and Excel downloaded automatically.`);
         setRows([emptyRow()]);
       }

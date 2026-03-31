@@ -208,10 +208,10 @@ export default function MessagesPage() {
         <p className="mt-1 text-sm text-ink-secondary">Send based on your role permissions.</p>
 
         {error ? (
-          <div className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
+          <div className="mt-4 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
         ) : null}
         {success ? (
-          <div className="mt-4 rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{success}</div>
+          <div className="mt-4 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{success}</div>
         ) : null}
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -221,8 +221,8 @@ export default function MessagesPage() {
               <button
                 type="button"
                 onClick={() => setMode('unicast')}
-                className={`rounded-xl border px-4 py-2 text-sm font-medium ${
-                  mode === 'unicast' ? 'border-brand bg-brand-light text-brand' : 'border-edge bg-canvas text-ink'
+                className={`rounded-md border px-4 py-2 text-sm font-medium ${
+                  mode === 'unicast' ? 'border-brand bg-brand-light text-brand' : 'border-edge bg-surface text-ink'
                 }`}
               >
                 Unicast
@@ -231,8 +231,8 @@ export default function MessagesPage() {
                 <button
                   type="button"
                   onClick={() => setMode('broadcast')}
-                  className={`rounded-xl border px-4 py-2 text-sm font-medium ${
-                    mode === 'broadcast' ? 'border-brand bg-brand-light text-brand' : 'border-edge bg-canvas text-ink'
+                  className={`rounded-md border px-4 py-2 text-sm font-medium ${
+                    mode === 'broadcast' ? 'border-brand bg-brand-light text-brand' : 'border-edge bg-surface text-ink'
                   }`}
                 >
                   Broadcast
@@ -244,14 +244,14 @@ export default function MessagesPage() {
           <div>
             <label className="mb-2 block text-sm font-medium text-ink">Recipient</label>
             {mode === 'broadcast' ? (
-              <div className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm text-ink-secondary">
+              <div className="rounded-md border border-edge bg-surface px-4 py-2 text-sm text-ink-secondary">
                 {capabilities.broadcastLabel || 'Broadcast audience'}
               </div>
             ) : (
               <select
                 value={recipientUserId}
                 onChange={(event) => setRecipientUserId(event.target.value)}
-                className="w-full rounded-xl border border-edge bg-canvas px-3 py-2 text-sm text-ink outline-none"
+                className="w-full rounded-md border border-control-border bg-control-bg px-3 py-2 text-sm text-ink outline-none"
               >
                 {!capabilities.recipients.length ? <option value="">No recipients available</option> : null}
                 {capabilities.recipients.map((target) => (
@@ -271,7 +271,7 @@ export default function MessagesPage() {
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              className="w-full rounded-xl border border-edge bg-canvas px-3 py-2 text-sm text-ink outline-none"
+              className="w-full rounded-md border border-control-border bg-control-bg px-3 py-2 text-sm text-ink outline-none"
               placeholder="Subject"
             />
           </div>
@@ -281,7 +281,7 @@ export default function MessagesPage() {
               rows={4}
               value={content}
               onChange={(event) => setContent(event.target.value)}
-              className="w-full resize-none rounded-xl border border-edge bg-canvas px-3 py-2 text-sm text-ink outline-none"
+              className="w-full resize-none rounded-md border border-control-border bg-control-bg px-3 py-2 text-sm text-ink outline-none"
               placeholder="Write your message..."
             />
           </div>
@@ -290,7 +290,7 @@ export default function MessagesPage() {
               type="button"
               onClick={handleSend}
               disabled={sending || loading}
-              className="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {sending ? 'Sending...' : 'Send'}
             </button>
@@ -321,10 +321,10 @@ export default function MessagesPage() {
                   key={thread.id}
                   type="button"
                   onClick={() => setSelectedThreadId(thread.id)}
-                  className={`w-full rounded-2xl border px-4 py-4 text-left transition ${
+                  className={`w-full rounded-lg border px-4 py-4 text-left transition ${
                     selected
                       ? 'border-brand bg-brand-light/70 shadow-sm'
-                      : 'border-edge bg-canvas hover:border-brand/25 hover:bg-surface'
+                      : 'border-edge bg-surface hover:border-brand/25 hover:bg-surface-200'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -341,7 +341,7 @@ export default function MessagesPage() {
           </div>
         </aside>
 
-        <div className="rounded-3xl border border-edge bg-surface shadow-card">
+        <div className="rounded-lg border border-edge bg-surface shadow-card">
           <div className="flex items-center justify-between gap-4 border-b border-edge-subtle px-6 py-5">
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-ink">{activeThread?.name || 'Conversation'}</h2>
@@ -356,7 +356,7 @@ export default function MessagesPage() {
 
             {activeThread?.messages.map((message) => (
               <div key={message.id} className={`flex ${message.mine ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xl rounded-2xl px-4 py-3 ${message.mine ? 'bg-brand text-white' : 'border border-edge bg-canvas text-ink'}`}>
+                <div className={`max-w-xl rounded-lg px-4 py-3 ${message.mine ? 'bg-brand text-white' : 'border border-edge bg-surface text-ink'}`}>
                   <p className={`text-xs font-semibold ${message.mine ? 'text-white/80' : 'text-ink-tertiary'}`}>{message.senderLabel}</p>
                   <p className="mt-1 text-sm leading-6">{message.text}</p>
                   <p className={`mt-2 text-xs ${message.mine ? 'text-white/75' : 'text-ink-muted'}`}>{message.time}</p>

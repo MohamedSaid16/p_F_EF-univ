@@ -96,7 +96,7 @@ export default function DocumentsPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search documents..."
-              className="w-full rounded-xl border border-edge bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="w-full rounded-md border border-control-border bg-control-bg px-3.5 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/30"
             />
           </div>
         </div>
@@ -109,10 +109,10 @@ export default function DocumentsPage() {
         ) : filtered.length ? (
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map((doc) => (
-              <article key={doc.id} className="rounded-2xl border border-edge bg-canvas p-4 shadow-sm transition hover:border-brand/25">
+              <article key={doc.id} className="rounded-lg border border-edge bg-surface p-4 shadow-card transition hover:border-brand/25">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-sm font-semibold text-ink leading-6">{doc.name}</h3>
-                  <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-semibold ${CATEGORY_STYLES[doc.category] || 'border-edge bg-surface text-ink-secondary'}`}>
+                  <span className={`shrink-0 rounded-full border px-2 py-0.5 text-xs font-semibold ${CATEGORY_STYLES[doc.category] || 'border-edge bg-surface-200 text-ink-secondary'}`}>
                     {doc.category}
                   </span>
                 </div>
@@ -128,7 +128,7 @@ export default function DocumentsPage() {
                     window.open(doc.downloadUrl, '_blank', 'noopener,noreferrer');
                   }}
                   disabled={!doc.downloadUrl}
-                  className="mt-4 w-full rounded-xl bg-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="mt-4 w-full rounded-md bg-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {doc.downloadUrl ? 'Download' : 'Unavailable'}
                 </button>
@@ -136,7 +136,7 @@ export default function DocumentsPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-6 rounded-2xl border border-dashed border-edge bg-canvas px-6 py-10 text-center">
+          <div className="mt-6 rounded-lg border border-dashed border-edge bg-canvas px-6 py-10 text-center">
             <p className="text-base font-medium text-ink">No documents found.</p>
             <p className="mt-2 text-sm text-ink-secondary">Try another keyword or check back after new uploads.</p>
           </div>

@@ -103,7 +103,7 @@ export default function NotificationsPage() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-secondary md:text-base">
             Stay on top of academic deadlines, requests, hearings, and generated documents without switching between modules.
           </p>
-          <div className="mt-6 inline-flex rounded-2xl border border-edge bg-canvas px-4 py-3 shadow-sm">
+          <div className="mt-6 inline-flex rounded-lg border border-edge bg-surface px-4 py-3 shadow-soft">
             <div>
               <p className="text-xs uppercase tracking-wide text-ink-tertiary">Unread</p>
               <p className="mt-1 text-2xl font-bold tracking-tight text-ink">{unreadCount}</p>
@@ -112,7 +112,7 @@ export default function NotificationsPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-edge bg-surface shadow-card">
+      <section className="rounded-lg border border-edge bg-surface shadow-card">
         <div className="flex flex-col gap-3 border-b border-edge-subtle px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-ink">Activity Stream</h2>
@@ -122,10 +122,10 @@ export default function NotificationsPage() {
             <button
               type="button"
               onClick={() => setShowUnreadOnly((value) => !value)}
-              className={`rounded-xl border px-4 py-2 text-sm font-medium transition ${
+              className={`rounded-md border px-4 py-2 text-sm font-medium transition ${
                 showUnreadOnly
                   ? 'border-brand bg-brand-light text-brand'
-                  : 'border-edge bg-canvas text-ink-secondary hover:text-ink'
+                  : 'border-edge bg-surface text-ink-secondary hover:text-ink'
               }`}
             >
               {showUnreadOnly ? 'Showing unread only' : 'Show unread only'}
@@ -134,7 +134,7 @@ export default function NotificationsPage() {
               type="button"
               onClick={markAllAsRead}
               disabled={busy || !unreadCount}
-              className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink-secondary transition hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-edge bg-surface px-4 py-2 text-sm font-medium text-ink-secondary transition hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               Mark all read
             </button>

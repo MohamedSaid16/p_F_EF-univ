@@ -63,7 +63,7 @@ export default function AIAssistantPage() {
                 key={starter}
                 type="button"
                 onClick={() => sendPrompt(starter)}
-                className="w-full rounded-2xl border border-edge bg-canvas px-3.5 py-3 text-left text-sm text-ink-secondary transition hover:border-brand/35 hover:text-ink"
+                className="w-full rounded-lg border border-edge bg-surface px-3.5 py-3 text-left text-sm text-ink-secondary transition hover:border-brand/35 hover:text-ink hover:bg-surface-200"
               >
                 {starter}
               </button>
@@ -71,21 +71,21 @@ export default function AIAssistantPage() {
           </div>
         </aside>
 
-        <div className="rounded-3xl border border-edge bg-surface shadow-card">
+        <div className="rounded-lg border border-edge bg-surface shadow-card">
           <div className="border-b border-edge-subtle px-6 py-4">
             <h2 className="text-lg font-semibold text-ink">Conversation</h2>
           </div>
 
           <div className="min-h-[420px] space-y-4 px-6 py-5">
             {emptyState ? (
-              <div className="rounded-2xl border border-dashed border-edge bg-canvas px-6 py-12 text-center">
+              <div className="rounded-lg border border-dashed border-edge bg-canvas px-6 py-12 text-center">
                 <p className="text-base font-medium text-ink">No conversation yet.</p>
                 <p className="mt-2 text-sm text-ink-secondary">Ask your first question about studies, documents, or deadlines.</p>
               </div>
             ) : (
               history.map((item, index) => (
                 <div key={`${item.role}-${index}`} className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-2xl rounded-2xl px-4 py-3 ${item.role === 'user' ? 'bg-brand text-white' : 'border border-edge bg-canvas text-ink'}`}>
+                  <div className={`max-w-2xl rounded-lg px-4 py-3 ${item.role === 'user' ? 'bg-brand text-white' : 'border border-edge bg-surface text-ink'}`}>
                     <p className={`text-xs font-semibold ${item.role === 'user' ? 'text-white/80' : 'text-ink-tertiary'}`}>
                       {item.role === 'user' ? 'You' : 'Assistant'}
                     </p>
@@ -97,13 +97,13 @@ export default function AIAssistantPage() {
 
             {isTyping ? (
               <div className="flex justify-start">
-                <div className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm text-ink-secondary">Assistant is typing...</div>
+                <div className="rounded-lg border border-edge bg-surface px-4 py-3 text-sm text-ink-secondary">Assistant is typing...</div>
               </div>
             ) : null}
           </div>
 
           <form onSubmit={handleSubmit} className="border-t border-edge-subtle px-6 py-4">
-            <div className="rounded-2xl border border-edge bg-canvas p-3">
+            <div className="rounded-lg border border-edge bg-surface p-3">
               <textarea
                 rows={4}
                 value={prompt}
