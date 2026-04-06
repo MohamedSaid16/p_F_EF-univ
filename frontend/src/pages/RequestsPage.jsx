@@ -30,6 +30,48 @@ function daysUntil(dateStr) {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
+function formatFileSize(bytes) {
+  const value = Number(bytes || 0);
+  if (!Number.isFinite(value) || value <= 0) return 'N/A';
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function inferFileCategory(file) {
+  const mime = String(file?.type || '').toLowerCase();
+  const extension = String(file?.name || '').split('.').pop()?.toLowerCase() || '';
+
+  if (mime.startsWith('image/') || ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'].includes(extension)) {
+    return 'Image';
+  }
+
+  if (mime === 'application/pdf' || extension === 'pdf') {
+    return 'PDF';
+  }
+
+  if (mime.startsWith('text/') || extension === 'txt') {
+    return 'Text';
+  }
+
+  return 'Document';
+}
+
+function mergeFiles(currentFiles, incomingFiles) {
+  const map = new Map();
+
+  [...(Array.isArray(currentFiles) ? currentFiles : []), ...(Array.isArray(incomingFiles) ? incomingFiles : [])]
+    .forEach((file) => {
+      if (!file) return;
+      const key = `${file.name || 'file'}-${file.size || 0}-${file.lastModified || 0}`;
+      if (!map.has(key)) {
+        map.set(key, file);
+      }
+    });
+
+  return Array.from(map.values());
+}
+
 function normalizeStatus(rawStatus) {
   const s = String(rawStatus || '').toLowerCase();
   if (['soumise', 'soumis', 'submitted'].includes(s)) return 'submitted';
@@ -214,23 +256,16 @@ function FileUploadZone({ files, setFiles, dragActive, setDragActive, fileInputR
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files?.[0]) {
-      const newFiles = Array.from(e.dataTransfer.files).map((f) => ({
-        name: f.name,
-        size: `${(f.size / 1024).toFixed(0)} KB`,
-        type: f.type.startsWith('image/') ? 'Image' : 'PDF',
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
+      const droppedFiles = Array.from(e.dataTransfer.files || []);
+      setFiles((prev) => mergeFiles(prev, droppedFiles));
     }
   };
 
   const handleFileSelect = (e) => {
     if (e.target.files?.[0]) {
-      const newFiles = Array.from(e.target.files).map((f) => ({
-        name: f.name,
-        size: `${(f.size / 1024).toFixed(0)} KB`,
-        type: f.type.startsWith('image/') ? 'Image' : 'PDF',
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
+      const selectedFiles = Array.from(e.target.files || []);
+      setFiles((prev) => mergeFiles(prev, selectedFiles));
+      e.target.value = '';
     }
   };
 
@@ -278,7 +313,7 @@ function FileUploadZone({ files, setFiles, dragActive, setDragActive, fileInputR
           ref={fileInputRef}
           type="file"
           multiple
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.doc,.docx,.txt,.zip"
           onChange={handleFileSelect}
           className="hidden"
         />
@@ -287,13 +322,13 @@ function FileUploadZone({ files, setFiles, dragActive, setDragActive, fileInputR
       {files.length > 0 && (
         <ul className="mt-3 space-y-2">
           {files.map((file, idx) => (
-            <li key={idx} className="flex items-center gap-3 px-3 py-2 bg-surface-200 rounded-md">
+            <li key={`${file.name || 'file'}-${file.size || 0}-${file.lastModified || idx}`} className="flex items-center gap-3 px-3 py-2 bg-surface-200 rounded-md">
               <div className="w-7 h-7 rounded bg-surface flex items-center justify-center text-ink-tertiary shrink-0">
-                <FileIcon type={file.type} />
+                <FileIcon type={inferFileCategory(file)} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-ink truncate">{file.name}</p>
-                <p className="text-xs text-ink-muted">{file.type} · {file.size}</p>
+                <p className="text-xs text-ink-muted">{inferFileCategory(file)} · {formatFileSize(file.size)}</p>
               </div>
               <button
                 onClick={() => removeFile(idx)}
@@ -480,21 +515,28 @@ export default function RequestsPage({ role = 'student' }) {
 
       const useCatalogType = reclamationTypes.length > 0;
       const selectedTypeId = Number(recType);
-      if (useCatalogType && !Number.isFinite(selectedTypeId)) {
+      if (useCatalogType && (!Number.isInteger(selectedTypeId) || selectedTypeId <= 0)) {
         alert('Please select a valid reclamation type.');
         return;
       }
 
       setSubmitLoading(true);
+      const payload = new FormData();
+      if (useCatalogType) {
+        payload.append('typeId', String(selectedTypeId));
+      } else if (recType?.trim()) {
+        payload.append('typeName', recType.trim());
+      }
+      payload.append('objet', recTitle.trim());
+      payload.append('description', recDescription.trim());
+      payload.append('priorite', 'normale');
+      recFiles.forEach((file) => {
+        payload.append('files', file);
+      });
+
       const created = await request('/api/v1/requests/reclamations', {
         method: 'POST',
-        body: JSON.stringify({
-          typeId: useCatalogType ? selectedTypeId : undefined,
-          typeName: useCatalogType ? undefined : recType,
-          objet: recTitle.trim(),
-          description: recDescription.trim(),
-          priorite: 'normale',
-        }),
+        body: payload,
       });
 
       if (created?.data) {
@@ -531,20 +573,30 @@ export default function RequestsPage({ role = 'student' }) {
 
       const useCatalogType = justificationTypes.length > 0;
       const selectedTypeId = Number(jusType);
-      if (useCatalogType && !Number.isFinite(selectedTypeId)) {
+      if (useCatalogType && (!Number.isInteger(selectedTypeId) || selectedTypeId <= 0)) {
         alert('Please select a valid justification type.');
         return;
       }
 
       setSubmitLoading(true);
+      const payload = new FormData();
+      if (useCatalogType) {
+        payload.append('typeId', String(selectedTypeId));
+      } else if (jusType?.trim()) {
+        payload.append('typeName', jusType.trim());
+      }
+      payload.append('dateAbsence', jusDateAbsence);
+      const motif = jusDescription.trim() || jusTitle.trim();
+      if (motif) {
+        payload.append('motif', motif);
+      }
+      jusFiles.forEach((file) => {
+        payload.append('files', file);
+      });
+
       const created = await request('/api/v1/requests/justifications', {
         method: 'POST',
-        body: JSON.stringify({
-          typeId: useCatalogType ? selectedTypeId : undefined,
-          typeName: useCatalogType ? undefined : jusType,
-          dateAbsence: jusDateAbsence,
-          motif: jusDescription.trim() || jusTitle.trim(),
-        }),
+        body: payload,
       });
 
       if (created?.data) {

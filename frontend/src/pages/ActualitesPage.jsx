@@ -101,13 +101,13 @@ export default function ActualitesPage({ role }) {
     (async () => {
       try {
         const [pRes, nRes, eRes] = await Promise.allSettled([
-          request.get('/api/v1/actualites/pinned'),
-          request.get('/api/v1/actualites/news'),
-          request.get('/api/v1/actualites/events'),
+          request('/api/v1/actualites/pinned'),
+          request('/api/v1/actualites/news'),
+          request('/api/v1/actualites/events'),
         ]);
-        if (pRes.status === 'fulfilled') setPinnedAnnouncements(pRes.value.data ?? []);
-        if (nRes.status === 'fulfilled') setNewsFeed(nRes.value.data ?? []);
-        if (eRes.status === 'fulfilled') setUpcomingEvents(eRes.value.data ?? []);
+        if (pRes.status === 'fulfilled') setPinnedAnnouncements(Array.isArray(pRes.value?.data) ? pRes.value.data : []);
+        if (nRes.status === 'fulfilled') setNewsFeed(Array.isArray(nRes.value?.data) ? nRes.value.data : []);
+        if (eRes.status === 'fulfilled') setUpcomingEvents(Array.isArray(eRes.value?.data) ? eRes.value.data : []);
       } catch {
         /* endpoints may not exist yet */
       } finally {

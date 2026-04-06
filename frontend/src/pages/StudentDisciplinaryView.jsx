@@ -71,8 +71,8 @@ export default function StudentDisciplinaryView() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await request.get('/api/v1/disciplinary/notifications');
-        setNotifications(res.data ?? []);
+        const res = await request('/api/v1/disciplinary/notifications');
+        setNotifications(Array.isArray(res?.data) ? res.data : []);
       } catch {
         /* endpoint may not exist yet */
       } finally {

@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import request from '../services/api';
+import request, { resolveMediaUrl } from '../services/api';
 
 /* ── Status Config ──────────────────────────────────────────── */
 
@@ -88,6 +88,19 @@ function FileIcon({ type }) {
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
     </svg>
   );
+}
+
+function isImageAttachment(file) {
+  if (file?.isImage) return true;
+  const type = String(file?.type || '').toLowerCase();
+  const mime = String(file?.mimeType || '').toLowerCase();
+  return type === 'image' || mime.startsWith('image/');
+}
+
+function resolveAttachmentUrl(file) {
+  const raw = file?.url || file?.downloadUrl || file?.publicUrl || '';
+  if (!raw) return '';
+  return resolveMediaUrl(raw);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -299,6 +312,7 @@ export default function AdminRequestsPage() {
   if (selectedRequest) {
     const req = selectedRequest;
     const aging = daysSince(req.dateSubmitted);
+    const attachments = Array.isArray(req.attachments) ? req.attachments : [];
 
     return (
     <>
@@ -402,26 +416,65 @@ export default function AdminRequestsPage() {
                 <p className="text-sm text-ink-secondary leading-relaxed whitespace-pre-line">{req.description}</p>
 
                 {/* Attachments inline */}
-                {req.attachments.length > 0 && (
+                {attachments.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-edge-subtle">
                     <p className="text-xs font-medium text-ink-muted uppercase tracking-wider mb-2">
-                      Attached Documents ({req.attachments.length})
+                      Attached Documents ({attachments.length})
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      {req.attachments.map((file) => (
-                        <div key={file.name} className="flex items-center gap-2 px-3 py-2 bg-surface-200 rounded-md">
-                          <div className="text-ink-tertiary"><FileIcon type={file.type} /></div>
-                          <div>
-                            <p className="text-sm font-medium text-ink">{file.name}</p>
-                            <p className="text-[10px] text-ink-muted">{file.type} · {file.size}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {attachments.map((file, index) => {
+                        const fileUrl = resolveAttachmentUrl(file);
+                        const canOpen = Boolean(fileUrl);
+                        const isImage = isImageAttachment(file);
+
+                        return (
+                          <div key={`${file.id || file.name || 'file'}-${index}`} className="rounded-lg border border-edge-subtle bg-surface-200 p-3">
+                            {isImage && canOpen ? (
+                              <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="block mb-2 overflow-hidden rounded-md border border-edge-subtle bg-surface">
+                                <img
+                                  src={fileUrl}
+                                  alt={file.name || 'Attachment preview'}
+                                  className="h-28 w-full object-cover"
+                                />
+                              </a>
+                            ) : null}
+
+                            <div className="flex items-start gap-2">
+                              <div className="mt-0.5 text-ink-tertiary"><FileIcon type={file.type} /></div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-ink truncate">{file.name || 'Attachment'}</p>
+                                <p className="text-[11px] text-ink-muted">
+                                  {file.type || 'Document'}{file.size ? ` · ${file.size}` : ''}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="mt-2 flex items-center gap-2">
+                              {canOpen ? (
+                                <a
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2.5 py-1 text-[11px] font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                >
+                                  Preview
+                                </a>
+                              ) : null}
+                              {canOpen ? (
+                                <a
+                                  href={fileUrl}
+                                  download={file.name || undefined}
+                                  className="px-2.5 py-1 text-[11px] font-medium text-ink-secondary bg-surface border border-edge rounded-md hover:bg-surface-200 transition-colors"
+                                >
+                                  Download
+                                </a>
+                              ) : (
+                                <span className="text-[11px] text-ink-muted">File link unavailable</span>
+                              )}
+                            </div>
                           </div>
-                          <button className="p-1 rounded text-ink-tertiary hover:text-brand hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors ml-1" title="Download">
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -481,6 +534,8 @@ export default function AdminRequestsPage() {
                       name: req.studentName,
                       studentId: req.studentId,
                       department: req.department,
+                      studentEtudiantId: req.studentEtudiantId,
+                      studentUserId: req.studentUserId,
                       source: 'requests-admin',
                     },
                   },

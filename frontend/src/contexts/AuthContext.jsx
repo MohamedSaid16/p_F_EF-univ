@@ -6,6 +6,14 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI } from '../services/api';
+import {
+  getExtensionRoles,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasAnyRole,
+  hasPermission,
+  resolveCoreRole,
+} from '../utils/rbac';
 
 const AuthContext = createContext(null);
 
@@ -87,8 +95,17 @@ export function AuthProvider({ children }) {
 
   const clearError = () => setError(null);
 
+  const hasRole = useCallback((roles = []) => hasAnyRole(user, roles), [user]);
+  const can = useCallback((permissionCode) => hasPermission(user, permissionCode), [user]);
+  const canAny = useCallback((permissionCodes = []) => hasAnyPermission(user, permissionCodes), [user]);
+  const canAll = useCallback((permissionCodes = []) => hasAllPermissions(user, permissionCodes), [user]);
+  const coreRole = resolveCoreRole(user);
+  const extensions = getExtensionRoles(user);
+
   const value = {
     user,
+    coreRole,
+    extensions,
     loading,
     error,
     isAuthenticated,
@@ -99,6 +116,10 @@ export function AuthProvider({ children }) {
     logout,
     fetchUser,
     clearError,
+    hasRole,
+    can,
+    canAny,
+    canAll,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -12,6 +12,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import ThemeSwitcher from '../../../theme/ThemeSwitcher';
+import { resolveMediaUrl } from '../../../services/api';
 
 /* ── Page titles mapped to routes (i18n keys) ─────────────────── */
 const PAGE_TITLE_KEYS = {
@@ -48,6 +49,7 @@ export default function Topbar({ role = 'student', user, onLogout, onHamburger, 
     : role === 'student' ? 'Student' : 'Teacher';
   const displayEmail = user?.email || `${role}@univ-ibn-khaldoun.dz`;
   const roleBadge = (user?.roles?.[0] || role)?.replace(/_/g, ' ');
+  const photoUrl = resolveMediaUrl(user?.photo);
 
   /* Close on outside click */
   useEffect(() => {
@@ -126,9 +128,17 @@ export default function Topbar({ role = 'student', user, onLogout, onHamburger, 
             onClick={() => setProfileOpen((v) => !v)}
             className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-200 transition-colors duration-150"
           >
-            <div className="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center text-xs font-semibold">
-              {initials}
-            </div>
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={displayName}
+                className="w-8 h-8 rounded-full object-cover border border-edge"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-brand-light text-brand flex items-center justify-center text-xs font-semibold">
+                {initials}
+              </div>
+            )}
             <span className="hidden md:block text-sm font-medium text-ink-secondary max-w-[120px] truncate">
               {displayName}
             </span>

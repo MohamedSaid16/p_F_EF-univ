@@ -7,6 +7,14 @@
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+export function resolveMediaUrl(value) {
+  if (!value) return '';
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const normalized = value.startsWith('/') ? value : `/${value}`;
+  return `${API_BASE}${normalized}`;
+}
+
 let isRefreshing = false;
 let refreshQueue = [];
 
@@ -85,6 +93,47 @@ async function request(endpoint, options = {}, _isRetry = false) {
   return data;
 }
 
+function buildQueryString(params = {}) {
+  const entries = Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '');
+  if (!entries.length) {
+    return '';
+  }
+
+  const query = new URLSearchParams();
+  entries.forEach(([key, value]) => query.set(key, String(value)));
+  return `?${query.toString()}`;
+}
+
+async function downloadFile(endpoint) {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    let message = 'Failed to download file';
+    try {
+      const payload = await res.json();
+      message = payload?.error?.message || payload?.message || message;
+    } catch {
+      // ignore JSON parse errors for binary responses
+    }
+
+    const error = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+
+  const disposition = res.headers.get('content-disposition') || '';
+  const utf8NameMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+  const simpleNameMatch = disposition.match(/filename="?([^";]+)"?/i);
+
+  const rawFileName = utf8NameMatch?.[1] || simpleNameMatch?.[1] || 'download';
+  const fileName = decodeURIComponent(rawFileName);
+  const blob = await res.blob();
+
+  return { blob, fileName };
+}
+
 /* ── Auth API ───────────────────────────────────────────────── */
 
 export const authAPI = {
@@ -109,6 +158,9 @@ export const authAPI = {
   getMe: () =>
     request('/api/v1/auth/me'),
 
+  getRbacCatalog: () =>
+    request('/api/v1/auth/rbac/catalog'),
+
   verifyEmail: (token) =>
     request(`/api/v1/auth/verify-email/${token}`),
 
@@ -122,6 +174,21 @@ export const authAPI = {
     request('/api/v1/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+
+  uploadProfilePhoto: (file) => {
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    return request('/api/v1/auth/profile/photo', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  removeProfilePhoto: () =>
+    request('/api/v1/auth/profile/photo', {
+      method: 'DELETE',
     }),
 
 
@@ -211,6 +278,230 @@ export const authAPI = {
     request(`/api/v1/auth/admin/users/${userId}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
+    }),
+};
+
+export const adminPanelAPI = {
+  getOverview: () =>
+    request('/api/v1/admin/dashboard/overview'),
+
+  getAuditLogs: (params = {}) =>
+    request(`/api/v1/admin/audit-logs${buildQueryString(params)}`),
+
+  getUsers: (params = {}) =>
+    request(`/api/v1/admin/users${buildQueryString(params)}`),
+
+  updateUserRole: (userId, role) =>
+    request(`/api/v1/admin/users/${userId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    }),
+
+  deleteUser: (userId) =>
+    request(`/api/v1/admin/users/${userId}`, {
+      method: 'DELETE',
+    }),
+
+  getAnnouncements: (params = {}) =>
+    request(`/api/v1/admin/announcements${buildQueryString(params)}`),
+
+  createAnnouncement: (formData) =>
+    request('/api/v1/admin/announcements', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  updateAnnouncement: (announcementId, formData) =>
+    request(`/api/v1/admin/announcements/${announcementId}`, {
+      method: 'PATCH',
+      body: formData,
+    }),
+
+  deleteAnnouncement: (announcementId) =>
+    request(`/api/v1/admin/announcements/${announcementId}`, {
+      method: 'DELETE',
+    }),
+
+  getReclamations: (params = {}) =>
+    request(`/api/v1/admin/reclamations${buildQueryString(params)}`),
+
+  updateReclamationStatus: (reclamationId, payload) =>
+    request(`/api/v1/admin/reclamations/${reclamationId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  getDocuments: (params = {}) =>
+    request(`/api/v1/admin/documents${buildQueryString(params)}`),
+
+  deleteDocument: (kind, documentId) =>
+    request(`/api/v1/admin/documents/${kind}/${documentId}`, {
+      method: 'DELETE',
+    }),
+
+  getRequestWorkflowHistory: (category, requestId) =>
+    request(`/api/v1/requests/admin/${category}/${requestId}/workflow`),
+
+  downloadDocument: (kind, documentId) =>
+    downloadFile(`/api/v1/admin/documents/${kind}/${documentId}/download`),
+};
+
+export const notificationsAPI = {
+  getList: (params = {}) =>
+    request(`/api/v1/notifications${buildQueryString(params)}`),
+
+  getUnreadCount: () =>
+    request('/api/v1/notifications/unread-count'),
+
+  markAsRead: (notificationId) =>
+    request(`/api/v1/notifications/${notificationId}/read`, {
+      method: 'PUT',
+    }),
+
+  markAllAsRead: () =>
+    request('/api/v1/notifications/read-all', {
+      method: 'PUT',
+    }),
+
+  deleteOne: (notificationId) =>
+    request(`/api/v1/notifications/${notificationId}`, {
+      method: 'DELETE',
+    }),
+
+  clearAll: () =>
+    request('/api/v1/notifications', {
+      method: 'DELETE',
+    }),
+};
+
+export const teacherPanelAPI = {
+  getDashboard: () =>
+    request('/api/v1/teacher/dashboard'),
+
+  getAnnouncements: (params = {}) =>
+    request(`/api/v1/teacher/announcements${buildQueryString(params)}`),
+
+  createAnnouncement: (formData) =>
+    request('/api/v1/teacher/announcements', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  updateAnnouncement: (announcementId, formData) =>
+    request(`/api/v1/teacher/announcements/${announcementId}`, {
+      method: 'PATCH',
+      body: formData,
+    }),
+
+  deleteAnnouncement: (announcementId) =>
+    request(`/api/v1/teacher/announcements/${announcementId}`, {
+      method: 'DELETE',
+    }),
+
+  getReclamations: (params = {}) =>
+    request(`/api/v1/teacher/reclamations${buildQueryString(params)}`),
+
+  updateReclamationStatus: (reclamationId, payload) =>
+    request(`/api/v1/teacher/reclamations/${reclamationId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  getStudents: (params = {}) =>
+    request(`/api/v1/teacher/students${buildQueryString(params)}`),
+
+  getStudentReclamationHistory: (studentId) =>
+    request(`/api/v1/teacher/students/${studentId}/reclamations`),
+
+  getDocuments: (params = {}) =>
+    request(`/api/v1/teacher/documents${buildQueryString(params)}`),
+
+  createDocument: (formData) =>
+    request('/api/v1/teacher/documents', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  updateDocument: (documentId, formData) =>
+    request(`/api/v1/teacher/documents/${documentId}`, {
+      method: 'PATCH',
+      body: formData,
+    }),
+
+  deleteDocument: (documentId) =>
+    request(`/api/v1/teacher/documents/${documentId}`, {
+      method: 'DELETE',
+    }),
+
+  downloadDocument: (documentId) =>
+    downloadFile(`/api/v1/teacher/documents/${documentId}/download`),
+
+  getProfile: () =>
+    request('/api/v1/teacher/profile'),
+
+  updateProfile: (payload) =>
+    request('/api/v1/teacher/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  changePassword: (currentPassword, newPassword) =>
+    request('/api/v1/teacher/profile/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
+};
+
+export const studentPanelAPI = {
+  getDashboard: () =>
+    request('/api/v1/student/panel/dashboard'),
+
+  getAnnouncements: (params = {}) =>
+    request(`/api/v1/student/panel/announcements${buildQueryString(params)}`),
+
+  getAnnouncementDetails: (announcementId) =>
+    request(`/api/v1/student/panel/announcements/${announcementId}`),
+
+  downloadAnnouncementDocument: (announcementId, documentId) =>
+    downloadFile(`/api/v1/student/panel/announcements/${announcementId}/documents/${documentId}/download`),
+
+  getReclamationTypes: () =>
+    request('/api/v1/student/panel/reclamation-types'),
+
+  createReclamation: (formData) =>
+    request('/api/v1/student/panel/reclamations', {
+      method: 'POST',
+      body: formData,
+    }),
+
+  getReclamations: (params = {}) =>
+    request(`/api/v1/student/panel/reclamations${buildQueryString(params)}`),
+
+  getReclamationDetails: (reclamationId) =>
+    request(`/api/v1/student/panel/reclamations/${reclamationId}`),
+
+  downloadReclamationDocument: (reclamationId, documentId) =>
+    downloadFile(`/api/v1/student/panel/reclamations/${reclamationId}/documents/${documentId}/download`),
+
+  getDocuments: (params = {}) =>
+    request(`/api/v1/student/panel/documents${buildQueryString(params)}`),
+
+  downloadDocument: (kind, documentId) =>
+    downloadFile(`/api/v1/student/panel/documents/${kind}/${documentId}/download`),
+
+  getProfile: () =>
+    request('/api/v1/student/panel/profile'),
+
+  updateProfile: (payload) =>
+    request('/api/v1/student/panel/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  changePassword: (currentPassword, newPassword) =>
+    request('/api/v1/student/panel/profile/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
     }),
 };
 

@@ -290,6 +290,41 @@ html, body, #root {
   to   { transform: rotate(360deg); }
 }
 
+/* Accessibility preference classes toggled from Settings */
+html.reduced-motion *,
+html.reduced-motion *::before,
+html.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.large-text {
+  font-size: 112.5%;
+}
+
+html.high-contrast {
+  --color-edge: rgba(0, 0, 0, 0.22);
+  --color-edge-subtle: rgba(0, 0, 0, 0.18);
+  --color-edge-strong: rgba(0, 0, 0, 0.3);
+  --color-ink-secondary: #2f3440;
+  --color-ink-tertiary: #4a5263;
+}
+
+html.dark.high-contrast {
+  --color-edge: rgba(255, 255, 255, 0.2);
+  --color-edge-subtle: rgba(255, 255, 255, 0.16);
+  --color-edge-strong: rgba(255, 255, 255, 0.3);
+  --color-ink-secondary: #d4d9e5;
+  --color-ink-tertiary: #e2e6f0;
+}
+
+html.high-contrast *:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
 /* ── Custom scrollbar (uses tokens) ──────────────────────────── */
 
 ::-webkit-scrollbar {

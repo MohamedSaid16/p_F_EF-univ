@@ -13,6 +13,9 @@ import disciplineRoutes from "./modules/discipline/routes/discipline.routes";
 import affectationRoutes from "./modules/affectation/routes/affectation.routes";
 import notificationRoutes from "./modules/notifications/routes/notification.routes";
 import messageRoutes from "./modules/messages/routes/message.routes";
+import adminRoutes from "./modules/admin/routes/admin.routes";
+import teacherRoutes from "./modules/teacher/routes/teacher.routes";
+import actualitesRoutes from "./modules/actualites/routes/actualites.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
 const app = express();
@@ -74,6 +77,9 @@ app.use("/api/v1/disciplinary", disciplineRoutes);
 app.use("/api/v1/affectation", affectationRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/teacher", teacherRoutes);
+app.use("/api/v1/actualites", actualitesRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

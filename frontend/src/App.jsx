@@ -29,6 +29,7 @@ import DisciplinaryCasesPage from './pages/DisciplinaryCasesPage';
 import CalendarPage from './pages/CalendarPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminUsersListPage from './pages/AdminUsersListPage';
+import AdminPanelPage from './pages/AdminPanelPage';
 import AdminAcademicManagementPage from './pages/AdminAcademicManagementPage';
 import AdminAcademicAssignmentsPage from './pages/AdminAcademicAssignmentsPage';
 import MessagesPage from './pages/MessagesPage';
@@ -85,7 +86,24 @@ function App() {
               <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardLayout><SettingsPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/support" element={<ProtectedRoute><DashboardLayout><SupportPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/profile" element={<ProtectedRoute><DashboardLayout><ProfilePage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/disciplinary" element={<ProtectedRoute><DashboardLayout><DisciplinaryCasesPage /></DashboardLayout></ProtectedRoute>} />
+              <Route
+                path="/dashboard/disciplinary"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['enseignant', 'membre_conseil', 'president_conseil', 'chef_specialite', 'chef_departement', 'vice_doyen', 'admin', 'admin_faculte']}
+                    requiredPermissions={[
+                      'reclamations:review:sensitive',
+                      'reclamations:finalize:council',
+                      'reclamations:override:department',
+                      'decisions:validate:specialite',
+                      'reclamations:manage:global',
+                    ]}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><DisciplinaryCasesPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/dashboard/actualites" element={<ProtectedRoute><DashboardLayout><ActualitesPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/ai" element={<ProtectedRoute><DashboardLayout><AIAssistantPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/documents" element={<ProtectedRoute><DashboardLayout><DocumentsPage /></DashboardLayout></ProtectedRoute>} />
@@ -96,10 +114,66 @@ function App() {
               <Route path="/dashboard/requests" element={<ProtectedRoute><DashboardLayout><RequestsPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/messages" element={<ProtectedRoute><DashboardLayout><MessagesPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/notifications" element={<ProtectedRoute><DashboardLayout><NotificationsPage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/users" element={<ProtectedRoute allowedRoles={['admin', 'vice_doyen']}><DashboardLayout><AdminUsersPage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/users/list-create" element={<ProtectedRoute allowedRoles={['admin', 'vice_doyen']}><DashboardLayout><AdminUsersListPage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/academic/management" element={<ProtectedRoute allowedRoles={['admin', 'vice_doyen']}><DashboardLayout><AdminAcademicManagementPage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/admin/academic/assignments" element={<ProtectedRoute allowedRoles={['admin', 'vice_doyen']}><DashboardLayout><AdminAcademicAssignmentsPage /></DashboardLayout></ProtectedRoute>} />
+              <Route
+                path="/dashboard/admin"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'vice_doyen', 'admin_faculte']}
+                    requiredPermissions={['users:manage']}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><AdminPanelPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/admin/users"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'vice_doyen', 'admin_faculte']}
+                    requiredPermissions={['users:manage']}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><AdminUsersPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/admin/users/list-create"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'vice_doyen']}
+                    requiredPermissions={['roles:assign']}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><AdminUsersListPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/admin/academic/management"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'vice_doyen']}
+                    requiredPermissions={['departments:manage', 'specialites:manage']}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><AdminAcademicManagementPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard/admin/academic/assignments"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'vice_doyen']}
+                    requiredPermissions={['users:manage', 'roles:assign']}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><AdminAcademicAssignmentsPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/dashboard/admin/groups" element={<ProtectedRoute><DashboardLayout><SuperAdminGroupsPage /></DashboardLayout></ProtectedRoute>} />
 
               {/* ── Error pages ── */}

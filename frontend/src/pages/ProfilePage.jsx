@@ -16,7 +16,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import request from '../services/api';
+import request, { resolveMediaUrl } from '../services/api';
 
 /* ── Helpers ────────────────────────────────────────────────── */
 
@@ -51,11 +51,14 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const location = useLocation();
   const selectedStudentProfile = location.state?.selectedStudentProfile;
+  const selectedStudentEtudiantId = Number(
+    selectedStudentProfile?.studentEtudiantId || selectedStudentProfile?.etudiantId || 0
+  );
   const [selectedStudentData, setSelectedStudentData] = useState(null);
   const [selectedStudentLoading, setSelectedStudentLoading] = useState(false);
 
   useEffect(() => {
-    const etudiantId = Number(selectedStudentProfile?.studentEtudiantId);
+    const etudiantId = selectedStudentEtudiantId;
     if (!etudiantId || !Number.isInteger(etudiantId) || etudiantId <= 0) {
       setSelectedStudentData(null);
       return;
@@ -84,12 +87,11 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedStudentProfile?.studentEtudiantId]);
+  }, [selectedStudentEtudiantId]);
 
   if (!user) return null;
 
   const student = isStudentRole(user.roles);
-  const initials = `${(user.prenom || '?')[0]}${(user.nom || '?')[0]}`.toUpperCase();
   const rolePretty = (user.roles?.[0] || 'etudiant').replace(/_/g, ' ');
 
   /* Student sub-record (populated by /auth/me → getUserById) */
@@ -102,6 +104,7 @@ export default function ProfilePage() {
 
   const pageUser = isViewingSelectedStudent && selectedUser ? selectedUser : user;
   const pageInitials = `${(pageUser?.prenom || '?')[0]}${(pageUser?.nom || '?')[0]}`.toUpperCase();
+  const pagePhotoUrl = resolveMediaUrl(pageUser?.photo);
   const pageRolePretty = isViewingSelectedStudent ? 'etudiant' : rolePretty;
   const pageDepartment = isViewingSelectedStudent ? selectedDepartment : dept;
   const pageSpeciality = isViewingSelectedStudent ? selectedSpeciality : spec;
@@ -152,9 +155,17 @@ export default function ProfilePage() {
         <div className="px-6 pb-6">
           {/* Avatar — overlaps the banner */}
           <div className="-mt-10 relative z-10">
-            <div className="shrink-0 w-20 h-20 rounded-full bg-brand-light border-4 border-surface flex items-center justify-center shadow-card">
-              <span className="text-2xl font-bold text-brand">{pageInitials}</span>
-            </div>
+            {pagePhotoUrl ? (
+              <img
+                src={pagePhotoUrl}
+                alt={`${pageUser?.prenom || ''} ${pageUser?.nom || ''}`.trim() || 'Profile'}
+                className="shrink-0 w-20 h-20 rounded-full object-cover border-4 border-surface shadow-card"
+              />
+            ) : (
+              <div className="shrink-0 w-20 h-20 rounded-full bg-brand-light border-4 border-surface flex items-center justify-center shadow-card">
+                <span className="text-2xl font-bold text-brand">{pageInitials}</span>
+              </div>
+            )}
           </div>
           {/* Name & role — below the avatar, clear of the banner */}
           <div className="mt-3 min-w-0">

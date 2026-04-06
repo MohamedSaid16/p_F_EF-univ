@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { authAPI, resolveMediaUrl } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 function isAdminRole(roles) {
@@ -1157,13 +1157,24 @@ export default function AdminUsersPage() {
 
         {users.length ? (
           <div className="mt-6 grid gap-4 xl:grid-cols-2">
-            {users.map((u) => (
-              <div key={u.id} className="rounded-2xl border border-edge bg-canvas p-5 shadow-sm transition hover:border-brand/25">
+            {users.map((u) => {
+              const avatarUrl = resolveMediaUrl(u.photo);
+
+              return (
+                <div key={u.id} className="rounded-2xl border border-edge bg-canvas p-5 shadow-sm transition hover:border-brand/25">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-sm font-bold text-brand">
-                      {getInitials(u.prenom, u.nom)}
-                    </div>
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={`${u.prenom || ''} ${u.nom || ''}`.trim() || 'User'}
+                        className="h-12 w-12 shrink-0 rounded-2xl object-cover border border-edge"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-light text-sm font-bold text-brand">
+                        {getInitials(u.prenom, u.nom)}
+                      </div>
+                    )}
                     <div className="min-w-0">
                       <p className="truncate text-base font-semibold text-ink">{u.prenom} {u.nom}</p>
                       <p className="truncate text-sm text-ink-secondary">{u.email}</p>
@@ -1287,8 +1298,9 @@ export default function AdminUsersPage() {
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-edge bg-canvas px-6 py-10 text-center">

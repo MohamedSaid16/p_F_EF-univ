@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middlewares/auth.middleware";
 import {
   deleteAllNotifications,
   deleteNotification,
+  getNotificationByIdForUser,
   getUnreadCount,
   getUserNotifications,
   markAllAsRead,
@@ -22,8 +23,8 @@ const getUserId = (req: AuthRequest, res: Response): number | null => {
 };
 
 const userOwnsNotification = async (userId: number, notificationId: number): Promise<boolean> => {
-  const all = await getUserNotifications(userId, 0, 1000);
-  return all.notifications.some((item) => item.id === notificationId);
+  const notification = await getNotificationByIdForUser(userId, notificationId);
+  return Boolean(notification);
 };
 
 export const getMyNotifications = async (req: AuthRequest, res: Response): Promise<void> => {

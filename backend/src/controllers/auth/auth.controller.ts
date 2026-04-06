@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
 import XLSX from "xlsx";
 import {
   registerUser,
@@ -22,8 +24,10 @@ import {
   getAcademicAssignmentsData,
   assignStudentPromoByAdmin,
   assignTeacherModulesByAdmin,
+  getRbacCatalogForClient,
   requestPasswordReset,
   resetPasswordWithToken,
+  updateCurrentUserPhoto,
 } from "../../modules/auth/auth.service";
 import {
   ACCESS_TOKEN_COOKIE_NAME,
@@ -113,6 +117,38 @@ const parseExcelUserRow = (row: Record<string, unknown>): ParsedExcelImportRow =
     moduleIds: moduleIds.length > 0 ? moduleIds : undefined,
     anneeUniversitaire: anneeUniversitaire || undefined,
   };
+};
+
+const UPLOADS_DIRECTORY = path.join(process.cwd(), "uploads");
+const IMAGE_MIME_TYPE_REGEX = /^image\/(jpeg|png|gif|webp|bmp|svg\+xml)$/i;
+const PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+
+const resolveUploadAbsolutePath = (publicPath: string): string | null => {
+  const normalizedPath = String(publicPath || "").replace(/\\/g, "/");
+
+  if (!normalizedPath.startsWith("/uploads/")) {
+    return null;
+  }
+
+  const relativePath = normalizedPath.slice("/uploads/".length);
+  if (!relativePath || relativePath.includes("..")) {
+    return null;
+  }
+
+  return path.join(UPLOADS_DIRECTORY, relativePath);
+};
+
+const removeStoredPhotoFile = (publicPath: string | null | undefined): void => {
+  if (!publicPath) {
+    return;
+  }
+
+  const absolutePath = resolveUploadAbsolutePath(publicPath);
+  if (!absolutePath || !fs.existsSync(absolutePath)) {
+    return;
+  }
+
+  fs.unlinkSync(absolutePath);
 };
 
 export const register = async (req: Request, res: Response) => {
@@ -345,6 +381,120 @@ export const changePasswordHandler = async (req: AuthRequest, res: Response) => 
       success: false,
       error: {
         code: "PASSWORD_CHANGE_FAILED",
+        message: error.message,
+      },
+    });
+  }
+};
+
+export const uploadProfilePhotoHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Not authenticated",
+        },
+      });
+    }
+
+    const uploadedFile = req.file;
+    if (!uploadedFile) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "MISSING_FILE",
+          message: "Profile photo is required",
+        },
+      });
+    }
+
+    if (!IMAGE_MIME_TYPE_REGEX.test(uploadedFile.mimetype || "")) {
+      removeStoredPhotoFile(`/uploads/${uploadedFile.filename}`);
+
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_FILE_TYPE",
+          message: "Only image files are allowed",
+        },
+      });
+    }
+
+    if ((uploadedFile.size || 0) > PROFILE_PHOTO_MAX_BYTES) {
+      removeStoredPhotoFile(`/uploads/${uploadedFile.filename}`);
+
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "FILE_TOO_LARGE",
+          message: "Profile photo cannot exceed 5 MB",
+        },
+      });
+    }
+
+    const nextPhotoPath = `/uploads/${uploadedFile.filename}`;
+
+    try {
+      const result = await updateCurrentUserPhoto(req.user.id, nextPhotoPath);
+
+      if (result.previousPhoto && result.previousPhoto !== nextPhotoPath) {
+        removeStoredPhotoFile(result.previousPhoto);
+      }
+
+      return res.json({
+        success: true,
+        data: {
+          user: result.user,
+        },
+        message: "Profile photo updated successfully",
+      });
+    } catch (error: any) {
+      removeStoredPhotoFile(nextPhotoPath);
+      throw error;
+    }
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: "PROFILE_PHOTO_UPDATE_FAILED",
+        message: error.message,
+      },
+    });
+  }
+};
+
+export const removeProfilePhotoHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Not authenticated",
+        },
+      });
+    }
+
+    const result = await updateCurrentUserPhoto(req.user.id, null);
+
+    if (result.previousPhoto) {
+      removeStoredPhotoFile(result.previousPhoto);
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        user: result.user,
+      },
+      message: "Profile photo removed successfully",
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: "PROFILE_PHOTO_REMOVE_FAILED",
         message: error.message,
       },
     });
@@ -651,6 +801,35 @@ export const listRolesHandler = async (req: AuthRequest, res: Response) => {
       success: false,
       error: {
         code: "LIST_ROLES_FAILED",
+        message: error.message,
+      },
+    });
+  }
+};
+
+export const getRbacCatalogHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Not authenticated",
+        },
+      });
+    }
+
+    const catalog = await getRbacCatalogForClient();
+
+    return res.json({
+      success: true,
+      data: catalog,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: {
+        code: "RBAC_CATALOG_FAILED",
         message: error.message,
       },
     });

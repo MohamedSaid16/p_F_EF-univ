@@ -26,13 +26,17 @@ import {
   updateUserStatusByAdminHandler,
   forgotPasswordHandler,
   resetPasswordHandler,
+  getRbacCatalogHandler,
+  uploadProfilePhotoHandler,
+  removeProfilePhotoHandler,
 } from "../../../controllers/auth/auth.controller";
 import {
   loginLimiter,
   registerLimiter,
   refreshLimiter,
 } from "../../../middlewares/rate-limit.middleware";
-import { requireAuth, requireRole } from "../../../middlewares/auth.middleware";
+import { requireAnyPermission, requireAuth, requireRole } from "../../../middlewares/auth.middleware";
+import upload from "../../../middlewares/upload.middleware";
 
 const router = Router();
 
@@ -69,7 +73,10 @@ router.post("/resend-verification", resendVerificationHandler);
 
 // ==================== PROTECTED ROUTES (All authenticated users) ====================
 router.get("/me", requireAuth, getMeHandler);
+router.get("/rbac/catalog", requireAuth, getRbacCatalogHandler);
 router.post("/change-password", requireAuth, changePasswordHandler);
+router.post("/profile/photo", requireAuth, upload.single("photo"), uploadProfilePhotoHandler);
+router.delete("/profile/photo", requireAuth, removeProfilePhotoHandler);
 
 // ==================== ADMIN ROUTES (Using permissions) ====================
 
@@ -78,6 +85,7 @@ router.post(
   "/admin/create-user",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   createUserByAdminHandler
 );
 
@@ -85,6 +93,7 @@ router.post(
   "/admin/import-users-excel",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   excelUpload.single("file"),
   importUsersByAdminExcelHandler
 );
@@ -94,6 +103,7 @@ router.post(
   "/admin/reset-password/:userId",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   adminResetPasswordHandler
 );
 
@@ -101,6 +111,7 @@ router.get(
   "/admin/users",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   listAdminUsersHandler
 );
 
@@ -108,6 +119,7 @@ router.get(
   "/admin/roles",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["roles:view", "roles:assign"]),
   listRolesHandler
 );
 
@@ -115,6 +127,7 @@ router.put(
   "/admin/users/:userId/roles",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["roles:assign"]),
   updateUserRolesByAdminHandler
 );
 
@@ -122,6 +135,7 @@ router.put(
   "/admin/users/:userId/status",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   updateUserStatusByAdminHandler
 );
 
@@ -129,6 +143,7 @@ router.get(
   "/admin/academic/options",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   getAcademicManagementOptionsHandler
 );
 
@@ -136,6 +151,7 @@ router.post(
   "/admin/academic/specialites",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   createSpecialiteManagementHandler
 );
 
@@ -143,6 +159,7 @@ router.post(
   "/admin/academic/promos",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   createPromoManagementHandler
 );
 
@@ -150,6 +167,7 @@ router.post(
   "/admin/academic/modules",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   createModuleManagementHandler
 );
 
@@ -157,6 +175,7 @@ router.get(
   "/admin/academic/assignments",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   getAcademicAssignmentsHandler
 );
 
@@ -164,6 +183,7 @@ router.put(
   "/admin/academic/assignments/students/:userId",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   assignStudentPromoHandler
 );
 
@@ -171,6 +191,7 @@ router.put(
   "/admin/academic/assignments/teachers/:userId",
   requireAuth,
   requireRole(["admin", "vice_doyen"]),
+  requireAnyPermission(["users:manage"]),
   assignTeacherModulesHandler
 );
 

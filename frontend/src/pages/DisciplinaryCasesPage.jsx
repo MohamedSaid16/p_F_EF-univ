@@ -106,6 +106,77 @@ const STAFF_MEMBERS = [
   'Dr. Merniz', 'Prof. Saadi', 'Dr. Amrani',
 ];
 
+let html2pdfLoader = null;
+let exportLogoBase64Loader = null;
+
+const EXPORT_LOGO_PATHS = [
+  '/Logo.png',
+  '/logo512.png',
+  '/logo192.png',
+  '/favicon.svg',
+  '/favicon.ico',
+];
+
+const getHtml2Pdf = async () => {
+  if (!html2pdfLoader) {
+    html2pdfLoader = import('html2pdf.js/dist/html2pdf.bundle.min.js').then((module) => module.default || module);
+  }
+
+  return html2pdfLoader;
+};
+
+const blobToDataUrl = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+  reader.onerror = () => reject(new Error('Failed to read logo file.'));
+  reader.readAsDataURL(blob);
+});
+
+const getExportLogoBase64 = async () => {
+  if (!exportLogoBase64Loader) {
+    exportLogoBase64Loader = (async () => {
+      for (const path of EXPORT_LOGO_PATHS) {
+        try {
+          const response = await fetch(path);
+          if (!response.ok) continue;
+          const blob = await response.blob();
+          const base64 = await blobToDataUrl(blob);
+          if (base64) return base64;
+        } catch (error) {
+          // Try next fallback logo path.
+        }
+      }
+
+      return '';
+    })();
+  }
+
+  return exportLogoBase64Loader;
+};
+
+const waitForNodeImages = async (container) => {
+  const images = Array.from(container.querySelectorAll('img'));
+  if (images.length === 0) return;
+
+  await Promise.all(images.map((img) => {
+    if (img.complete && img.naturalWidth > 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const finalize = () => {
+        img.removeEventListener('load', finalize);
+        img.removeEventListener('error', finalize);
+        resolve();
+      };
+
+      img.addEventListener('load', finalize, { once: true });
+      img.addEventListener('error', finalize, { once: true });
+      setTimeout(finalize, 4000);
+    });
+  }));
+};
+
 /* ── Status Configs ─────────────────────────────────────────── */
 
 const CASE_STATUS_CONFIG = {
@@ -134,6 +205,443 @@ function formatDateLong(dateStr) {
 
 function daysSince(dateStr) {
   return Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function toValidDate(value) {
+  if (!value) return null;
+  const parsed = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatFrDate(value) {
+  const date = toValidDate(value);
+  if (!date) return '--';
+
+  return date.toLocaleDateString('fr-FR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+}
+
+function buildMeetingFormHtml({
+  title,
+  meetingDate,
+  meetingTime,
+  meetingLocation,
+  agenda,
+  studentRows,
+  memberRows,
+  logoBase64,
+}) {
+  const dateLabel = (toValidDate(meetingDate) || new Date()).toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const renderedStudents = studentRows
+    .map((row, index) => {
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${escapeHtml(row.caseId)}</td>
+          <td>${escapeHtml(row.studentName)}</td>
+          <td>${escapeHtml(row.studentId)}</td>
+          <td>${escapeHtml(row.violationType)}</td>
+          <td>${escapeHtml(formatFrDate(row.caseDate))}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  const renderedMembers = memberRows
+    .map((row, index) => {
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${escapeHtml(row.name)}</td>
+          <td>${escapeHtml(row.role)}</td>
+        </tr>
+      `;
+    })
+    .join('');
+
+  const logoHtml = logoBase64
+    ? `<div style="text-align: center; margin: 20px 0;">
+        <img src="${logoBase64}" style="max-width: 120px; max-height: 120px; width: auto; height: auto;" />
+       </div>`
+    : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Fiche Conseil Disciplinaire</title>
+        <style>
+          @media print {
+            body {
+              margin: 0;
+              padding: 20px;
+            }
+            .page-break {
+              page-break-before: always;
+            }
+            table {
+              page-break-inside: avoid;
+            }
+            tr {
+              page-break-inside: avoid;
+              page-break-after: auto;
+            }
+          }
+
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family: 'Arial', 'Calibri', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #000000;
+            background: white;
+          }
+
+          .document-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+          }
+
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+          }
+
+          .arabic-text {
+            font-family: 'Traditional Arabic', 'Arial', sans-serif;
+            font-size: 16px;
+            margin: 10px 0;
+          }
+
+          .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            text-align: center;
+          }
+
+          .rule {
+            border-top: 2px solid #000000;
+            margin: 15px 0;
+          }
+
+          .subtitle {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+          }
+
+          .date-info {
+            text-align: right;
+            margin: 20px 0;
+            font-size: 12px;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 11px;
+          }
+
+          th {
+            border: 1px solid #000000;
+            padding: 10px 8px;
+            background-color: #e8e8e8;
+            font-weight: bold;
+            text-align: center;
+            font-size: 12px;
+          }
+
+          td {
+            border: 1px solid #000000;
+            padding: 8px;
+            vertical-align: middle;
+          }
+
+          .agenda-box {
+            border: 1px solid #000000;
+            min-height: 80px;
+            padding: 10px;
+            line-height: 1.5;
+            margin-top: 10px;
+          }
+
+          .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+          }
+
+          .signatures-table {
+            width: 100%;
+            margin-top: 30px;
+            border: none;
+          }
+
+          .signatures-table td {
+            border: none;
+            padding-top: 40px;
+            text-align: center;
+            vertical-align: bottom;
+          }
+
+          .signature-line {
+            border-top: 1px solid #000000;
+            width: 200px;
+            margin-top: 10px;
+            padding-top: 5px;
+          }
+
+          .stamp {
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+          }
+
+          @media print {
+            body {
+              margin: 0;
+              padding: 0.5cm;
+            }
+            .no-print {
+              display: none;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="document-container">
+          <div class="header">
+            <div class="arabic-text">
+              <strong>الجمهورية الجزائرية الديمقراطية الشعبية</strong><br/>
+              <strong>وزارة التعليم العالي و البحث العلمي</strong>
+            </div>
+
+            ${logoHtml}
+
+            <div style="margin: 20px 0;">
+              <strong>Université Ibn Khaldoun - Tiaret</strong><br/>
+              Faculté des Mathématiques et Informatique<br/>
+              Département Informatique
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="title">
+              FICHE DU CONSEIL DISCIPLINAIRE
+            </div>
+
+            <div class="rule"></div>
+
+            <div class="date-info">
+              Date : ${escapeHtml(dateLabel)}
+            </div>
+          </div>
+
+          <div class="subtitle">Informations de la réunion</div>
+          <table cellspacing="0" cellpadding="0">
+            <thead>
+              <tr>
+                <th style="width: 5%;">N°</th>
+                <th style="width: 22%;">Réunion</th>
+                <th style="width: 18%;">Date</th>
+                <th style="width: 14%;">Heure</th>
+                <th style="width: 21%;">Lieu</th>
+                <th style="width: 20%;">Président</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align: center;">1</td>
+                <td>${escapeHtml(title || 'Conseil disciplinaire')}</td>
+                <td style="text-align: center;">${escapeHtml(formatFrDate(meetingDate))}</td>
+                <td style="text-align: center;">${escapeHtml(meetingTime || '--:--')}</td>
+                <td>${escapeHtml(meetingLocation || '-')}</td>
+                <td>${escapeHtml(memberRows[0]?.name || '-')}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="subtitle">Étudiants concernés</div>
+          <table cellspacing="0" cellpadding="0">
+            <thead>
+              <tr>
+                <th style="width:5%;">N°</th>
+                <th style="width:13%;">Case ID</th>
+                <th style="width:24%;">Nom et Prénom</th>
+                <th style="width:16%;">Matricule</th>
+                <th style="width:24%;">Infraction</th>
+                <th style="width:18%;">Date du dossier</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderedStudents || '<tr><td colspan="6" style="text-align: center;">Aucun dossier</td></tr>'}
+            </tbody>
+          </table>
+
+          <div class="subtitle">Membres du conseil</div>
+          <table cellspacing="0" cellpadding="0">
+            <thead>
+              <tr>
+                <th style="width:8%;">N°</th>
+                <th style="width:62%;">Nom et Prénom</th>
+                <th style="width:30%;">Rôle</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderedMembers || '<tr><td colspan="3" style="text-align: center;">Aucun membre</td></tr>'}
+            </tbody>
+          </table>
+
+          <div class="subtitle">Objet / Motif</div>
+          <div class="agenda-box">${escapeHtml(agenda || 'Réunion disciplinaire pour étude des dossiers signalés.')}</div>
+
+          <div class="footer">
+            <table class="signatures-table">
+              <tr>
+                <td style="width: 50%; text-align: center;">
+                  Signature du Président<br/>
+                  <div class="signature-line"></div>
+                </td>
+                <td style="width: 50%; text-align: center;">
+                  Signature de l'Administration<br/>
+                  <div class="signature-line"></div>
+                </td>
+              </tr>
+            </table>
+
+            <div class="stamp">
+              Cachet officiel de l'établissement
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+async function downloadMeetingFormPdf({
+  title,
+  meetingDate,
+  meetingTime,
+  meetingLocation,
+  agenda,
+  studentRows,
+  memberRows,
+}) {
+  const [html2pdf, logoBase64] = await Promise.all([
+    getHtml2Pdf(),
+    getExportLogoBase64(),
+  ]);
+
+  const html = buildMeetingFormHtml({
+    title,
+    meetingDate,
+    meetingTime,
+    meetingLocation,
+    agenda,
+    studentRows,
+    memberRows,
+    logoBase64,
+  });
+
+  const parsedHtml = new DOMParser().parseFromString(html, 'text/html');
+  const mountNode = document.createElement('div');
+  mountNode.style.position = 'fixed';
+  mountNode.style.left = '0';
+  mountNode.style.top = '0';
+  mountNode.style.width = '210mm';
+  mountNode.style.opacity = '0';
+  mountNode.style.pointerEvents = 'none';
+  mountNode.style.zIndex = '-1';
+  mountNode.innerHTML = `${parsedHtml.head.innerHTML}${parsedHtml.body.innerHTML}`;
+
+  document.body.appendChild(mountNode);
+
+  try {
+    await waitForNodeImages(mountNode);
+
+    const usableDate = toValidDate(meetingDate) || new Date();
+    const fileDate = usableDate.toISOString().slice(0, 10);
+
+    await html2pdf()
+      .set({
+        margin: [8, 8, 8, 8],
+        filename: `fiche_conseil_disciplinaire_${fileDate}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          letterRendering: true,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] },
+      })
+      .from(mountNode)
+      .save();
+  } catch (error) {
+    // Fallback: keep an official printable document when canvas export fails.
+    const usableDate = toValidDate(meetingDate) || new Date();
+    const fileDate = usableDate.toISOString().slice(0, 10);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '_blank');
+
+    if (printWindow) {
+      let printed = false;
+      const triggerPrint = () => {
+        if (printed) return;
+        printed = true;
+        printWindow.focus();
+        printWindow.print();
+      };
+
+      printWindow.addEventListener('load', triggerPrint, { once: true });
+      setTimeout(triggerPrint, 800);
+      setTimeout(() => URL.revokeObjectURL(url), 15000);
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fiche_conseil_disciplinaire_${fileDate}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    throw new Error('PDF generation failed in this browser session. An HTML file was downloaded: open it and print to PDF.');
+  } finally {
+    document.body.removeChild(mountNode);
+  }
 }
 
 function normalizeCase(rawCase) {
@@ -930,6 +1438,8 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
     president: 'Prof. Hamidi', members: [],
   });
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const selectedCases = selectedCaseIds.map(id => cases.find(c => c.id === id)).filter(Boolean);
 
@@ -940,7 +1450,40 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
     ...f, members: f.members.includes(name) ? f.members.filter(x => x !== name) : [...f.members, name],
   }));
 
-  const handleSave = () => { setSaved(true); setTimeout(() => onSave(), 1500); };
+  const handleSave = async () => {
+    if (!form.date || !form.time || selectedCases.length === 0 || saving) return;
+
+    setSaveError('');
+    setSaving(true);
+
+    try {
+      await downloadMeetingFormPdf({
+        title: form.title,
+        meetingDate: form.date,
+        meetingTime: form.time,
+        meetingLocation: form.location,
+        agenda: form.agenda,
+        studentRows: selectedCases.map((item) => ({
+          caseId: item.id,
+          studentName: item.studentName,
+          studentId: item.studentId,
+          violationType: item.violationType,
+          caseDate: item.dateReported || item.dateOfIncident,
+        })),
+        memberRows: [
+          { name: form.president, role: 'Président' },
+          ...form.members.map((name) => ({ name, role: 'Membre' })),
+        ],
+      });
+
+      setSaved(true);
+      setTimeout(() => onSave(), 1500);
+    } catch (error) {
+      setSaveError(error?.message || 'Failed to generate PDF form.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   /* Success state */
   if (saved) {
@@ -1097,13 +1640,18 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
 
         {/* Action buttons */}
         <div className="flex flex-col gap-2">
+          {saveError && (
+            <p className="text-xs text-danger bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded-md px-3 py-2">
+              {saveError}
+            </p>
+          )}
           <button
             onClick={handleSave}
-            disabled={!form.date || !form.time || selectedCases.length === 0}
+            disabled={!form.date || !form.time || selectedCases.length === 0 || saving}
             className="w-full px-4 py-2.5 text-sm font-medium text-white bg-brand rounded-md hover:bg-brand-hover active:bg-brand-dark transition-all duration-150 flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-brand/30 focus:ring-offset-2"
           >
             {icons.save({ className: 'w-4 h-4' })}
-            Save &amp; Send Invitations
+            {saving ? 'Generating PDF Form...' : 'Save &amp; Download PDF Form'}
           </button>
           <button
             onClick={onCancel}
@@ -1129,6 +1677,8 @@ function MeetingDetailView({ meeting, cases, onBack }) {
   );
   const [globalNotes, setGlobalNotes] = useState('');
   const [finalized, setFinalized] = useState(meeting.status === 'finalized');
+  const [finalizing, setFinalizing] = useState(false);
+  const [finalizeError, setFinalizeError] = useState('');
 
   const DECISION_OPTIONS = [
     { value: '', label: 'Choose a decision...' },
@@ -1140,7 +1690,39 @@ function MeetingDetailView({ meeting, cases, onBack }) {
     { value: 'Dismissed', label: 'Dismissed (No Action)' },
   ];
 
-  const handleFinalize = () => setFinalized(true);
+  const handleFinalize = async () => {
+    if (finalized || finalizing) return;
+
+    setFinalizeError('');
+    setFinalizing(true);
+
+    try {
+      await downloadMeetingFormPdf({
+        title: meeting.title || 'Conseil disciplinaire',
+        meetingDate: meeting.date,
+        meetingTime: meeting.time,
+        meetingLocation: meeting.location,
+        agenda: globalNotes,
+        studentRows: relatedCases.map((item) => ({
+          caseId: item.id,
+          studentName: item.studentName,
+          studentId: item.studentId,
+          violationType: item.violationType,
+          caseDate: item.dateReported || item.dateOfIncident,
+        })),
+        memberRows: (meeting.participants || []).map((name, index) => ({
+          name,
+          role: index === 0 ? 'Président' : 'Membre',
+        })),
+      });
+
+      setFinalized(true);
+    } catch (error) {
+      setFinalizeError(error?.message || 'Failed to generate PDF form.');
+    } finally {
+      setFinalizing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -1276,11 +1858,18 @@ function MeetingDetailView({ meeting, cases, onBack }) {
         <div className="flex justify-end">
           <button
             onClick={handleFinalize}
+            disabled={finalizing}
             className="px-6 py-2.5 text-sm font-medium text-white bg-brand rounded-md hover:bg-brand-hover active:bg-brand-dark transition-all duration-150 flex items-center gap-2 shadow-sm focus:ring-2 focus:ring-brand/30 focus:ring-offset-2"
           >
             {icons.check({ className: 'w-4 h-4' })}
-            Finalize &amp; Update Statuses
+            {finalizing ? 'Generating PDF Form...' : 'Finalize &amp; Download PDF Form'}
           </button>
+        </div>
+      )}
+
+      {finalizeError && (
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded-lg px-5 py-4">
+          <span className="text-sm font-medium text-danger">{finalizeError}</span>
         </div>
       )}
 

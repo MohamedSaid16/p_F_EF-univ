@@ -17,8 +17,9 @@ datasource db {
 // ═══════════════════════════════════════════════════════════════
 
 model Faculte {
-  id  Int    @id @default(autoincrement())
-  nom String @db.VarChar(200)
+  id     Int     @id @default(autoincrement())
+  nom_ar String  @db.VarChar(200)
+  nom_en String? @db.VarChar(200)
 
   departements Departement[]
 
@@ -26,9 +27,10 @@ model Faculte {
 }
 
 model Departement {
-  id        Int    @id @default(autoincrement())
-  nom       String @db.VarChar(200)
-  faculteId Int?   @map("faculte_id")
+  id        Int     @id @default(autoincrement())
+  nom_ar    String  @db.VarChar(200)
+  nom_en    String? @db.VarChar(200)
+  faculteId Int?    @map("faculte_id")
 
   faculte  Faculte?  @relation(fields: [faculteId], references: [id])
   filieres Filiere[]
@@ -37,10 +39,12 @@ model Departement {
 }
 
 model Filiere {
-  id            Int     @id @default(autoincrement())
-  nom           String  @db.VarChar(100)
-  departementId Int?    @map("departement_id")
-  description   String? @db.Text
+  id             Int     @id @default(autoincrement())
+  nom_ar         String  @db.VarChar(100)
+  nom_en         String? @db.VarChar(100)
+  departementId  Int?    @map("departement_id")
+  description_ar String? @db.Text
+  description_en String? @db.Text
 
   departement Departement? @relation(fields: [departementId], references: [id])
   specialites Specialite[]
@@ -58,11 +62,12 @@ enum Niveau {
 
 model Specialite {
   id        Int     @id @default(autoincrement())
-  nom       String  @db.VarChar(100)
+  nom_ar    String  @db.VarChar(100)
+  nom_en    String? @db.VarChar(100)
   filiereId Int?    @map("filiere_id")
   niveau    Niveau?
 
-  filiere             Filiere?              @relation(fields: [filiereId], references: [id])
+  filiere             Filiere?             @relation(fields: [filiereId], references: [id])
   promos              Promo[]
   modules             Module[]
   campagneSpecialites CampagneSpecialite[]
@@ -73,7 +78,8 @@ model Specialite {
 
 model Promo {
   id                 Int     @id @default(autoincrement())
-  nom                String? @db.VarChar(100)
+  nom_ar             String? @db.VarChar(100)
+  nom_en             String? @db.VarChar(100)
   specialiteId       Int?    @map("specialite_id")
   anneeUniversitaire String? @map("annee_universitaire") @db.VarChar(20)
   section            String? @db.VarChar(50)
@@ -111,8 +117,8 @@ model User {
   photo         String?   @db.VarChar(255)
 
   // Authentification
-  email    String @unique @db.VarChar(150)
-  password String @db.VarChar(255)
+  email    String  @unique @db.VarChar(150)
+  password String  @db.VarChar(255)
   firstUse Boolean @default(true) @map("first_use")
 
   // Sécurité
@@ -188,9 +194,11 @@ model UserRole {
 }
 
 model Grade {
-  id          Int     @id @default(autoincrement())
-  nom         String? @db.VarChar(100)
-  description String? @db.Text
+  id             Int     @id @default(autoincrement())
+  nom_ar         String? @db.VarChar(100)
+  nom_en         String? @db.VarChar(100)
+  description_ar String? @db.Text
+  description_en String? @db.Text
 
   enseignants Enseignant[]
 
@@ -245,17 +253,19 @@ model Etudiant {
 // ═══════════════════════════════════════════════════════════════
 
 model Module {
-  id           Int     @id @default(autoincrement())
-  nom          String  @db.VarChar(150)
-  code         String  @unique @db.VarChar(50)
-  semestre     Int?    @db.SmallInt
-  specialiteId Int     @map("specialite_id")
-  volumeCours  Int     @default(0) @map("volume_cours")
-  volumeTd     Int     @default(0) @map("volume_td")
-  volumeTp     Int     @default(0) @map("volume_tp")
-  credit       Int     @default(0)
-  coef         Decimal @default(1) @db.Decimal(4, 2)
-  description  String? @db.Text
+  id             Int     @id @default(autoincrement())
+  nom_ar         String  @db.VarChar(150)
+  nom_en         String? @db.VarChar(150)
+  code           String  @unique @db.VarChar(50)
+  semestre       Int?    @db.SmallInt
+  specialiteId   Int     @map("specialite_id")
+  volumeCours    Int     @default(0) @map("volume_cours")
+  volumeTd       Int     @default(0) @map("volume_td")
+  volumeTp       Int     @default(0) @map("volume_tp")
+  credit         Int     @default(0)
+  coef           Decimal @default(1) @db.Decimal(4, 2)
+  description_ar String? @db.Text
+  description_en String? @db.Text
 
   specialite    Specialite     @relation(fields: [specialiteId], references: [id])
   enseignements Enseignement[]
@@ -294,10 +304,12 @@ enum CategorieDocument {
 }
 
 model DocumentType {
-  id          Int               @id @default(autoincrement())
-  nom         String?           @db.VarChar(150)
-  description String?           @db.Text
-  categorie   CategorieDocument
+  id             Int               @id @default(autoincrement())
+  nom_ar         String?           @db.VarChar(150)
+  nom_en         String?           @db.VarChar(150)
+  description_ar String?           @db.Text
+  description_en String?           @db.Text
+  categorie      CategorieDocument
 
   documentRequests DocumentRequest[]
 
@@ -315,7 +327,8 @@ model DocumentRequest {
   id             Int                   @id @default(autoincrement())
   enseignantId   Int?                  @map("enseignant_id")
   typeDocId      Int?                  @map("type_doc_id")
-  description    String?               @db.Text
+  description_ar String?               @db.Text
+  description_en String?               @db.Text
   dateDemande    DateTime?             @map("date_demande") @db.Date
   status         StatusDocumentRequest @default(en_attente)
   traitePar      Int?                  @map("traite_par")
@@ -348,7 +361,8 @@ model CopieRemise {
   dateRemise     DateTime?   @map("date_remise") @db.Date
   nbCopies       Int         @default(0) @map("nb_copies")
   status         StatusCopie @default(non_remis)
-  commentaire    String?     @db.Text
+  commentaire_ar String?     @db.Text
+  commentaire_en String?     @db.Text
 
   enseignement Enseignement? @relation(fields: [enseignementId], references: [id])
 
@@ -384,7 +398,8 @@ enum StatusCampagne {
 
 model CampagneAffectation {
   id                 Int            @id @default(autoincrement())
-  nom                String         @db.VarChar(150)
+  nom_ar             String         @db.VarChar(150)
+  nom_en             String?        @db.VarChar(150)
   niveauSource       NiveauSource   @map("niveau_source")
   niveauCible        NiveauCible    @map("niveau_cible")
   anneeUniversitaire String         @map("annee_universitaire") @db.VarChar(20)
@@ -401,11 +416,11 @@ model CampagneAffectation {
 }
 
 model CampagneSpecialite {
-  id             Int @id @default(autoincrement())
-  campagneId     Int @map("campagne_id")
-  specialiteId   Int @map("specialite_id")
+  id             Int  @id @default(autoincrement())
+  campagneId     Int  @map("campagne_id")
+  specialiteId   Int  @map("specialite_id")
   quota          Int?
-  placesOccupees Int @default(0) @map("places_occupees")
+  placesOccupees Int  @default(0) @map("places_occupees")
 
   campagne   CampagneAffectation @relation(fields: [campagneId], references: [id])
   specialite Specialite          @relation(fields: [specialiteId], references: [id])
@@ -456,13 +471,18 @@ enum StatusSujet {
 
 model PfeSujet {
   id                 Int         @id @default(autoincrement())
-  titre              String      @db.VarChar(255)
-  description        String      @db.Text
-  keywords           String?     @db.Text
+  titre_ar           String      @db.VarChar(255)
+  titre_en           String?     @db.VarChar(255)
+  description_ar     String      @db.Text
+  description_en     String?     @db.Text
+  keywords_ar        String?     @db.Text
+  keywords_en        String?     @db.Text
   enseignantId       Int         @map("enseignant_id")
   promoId            Int         @map("promo_id")
-  workplan           String?     @db.Text
-  bibliographie      String?     @db.Text
+  workplan_ar        String?     @db.Text
+  workplan_en        String?     @db.Text
+  bibliographie_ar   String?     @db.Text
+  bibliographie_en   String?     @db.Text
   typeProjet         TypeProjet  @default(application) @map("type_projet")
   status             StatusSujet @default(propose)
   anneeUniversitaire String      @map("annee_universitaire") @db.VarChar(20)
@@ -487,21 +507,22 @@ enum MentionPfe {
 }
 
 model GroupPfe {
-  id              Int        @id @default(autoincrement())
-  nom             String     @db.VarChar(100)
-  sujetFinalId    Int        @map("sujet_final_id")
-  coEncadrantId   Int        @map("co_encadrant_id")
-  dateCreation    DateTime?  @map("date_creation") @db.Date
-  dateAffectation DateTime?  @map("date_affectation") @db.Date
-  dateSoutenance  DateTime?  @map("date_soutenance") @db.Date
-  salleSoutenance String?    @map("salle_soutenance") @db.VarChar(50)
-  note            Decimal?   @db.Decimal(4, 2)
+  id              Int         @id @default(autoincrement())
+  nom_ar          String      @db.VarChar(100)
+  nom_en          String?     @db.VarChar(100)
+  sujetFinalId    Int         @map("sujet_final_id")
+  coEncadrantId   Int         @map("co_encadrant_id")
+  dateCreation    DateTime?   @map("date_creation") @db.Date
+  dateAffectation DateTime?   @map("date_affectation") @db.Date
+  dateSoutenance  DateTime?   @map("date_soutenance") @db.Date
+  salleSoutenance String?     @map("salle_soutenance") @db.VarChar(50)
+  note            Decimal?    @db.Decimal(4, 2)
   mention         MentionPfe?
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
 
-  sujetFinal   PfeSujet     @relation(fields: [sujetFinalId], references: [id])
-  coEncadrant  Enseignant   @relation("CoEncadrant", fields: [coEncadrantId], references: [id])
+  sujetFinal   PfeSujet      @relation(fields: [sujetFinalId], references: [id])
+  coEncadrant  Enseignant    @relation("CoEncadrant", fields: [coEncadrantId], references: [id])
   groupSujets  GroupSujet[]
   groupMembers GroupMember[]
   pfeJury      PfeJury[]
@@ -522,7 +543,7 @@ model GroupSujet {
   ordre   Int
   status  StatusGroupSujet @default(en_attente)
 
-  group GroupPfe  @relation(fields: [groupId], references: [id])
+  group GroupPfe @relation(fields: [groupId], references: [id])
   sujet PfeSujet @relation(fields: [sujetId], references: [id])
 
   @@unique([groupId, sujetId])
@@ -540,7 +561,7 @@ model GroupMember {
   etudiantId Int        @map("etudiant_id")
   role       RoleMembre @default(membre)
 
-  group    GroupPfe  @relation(fields: [groupId], references: [id])
+  group    GroupPfe @relation(fields: [groupId], references: [id])
   etudiant Etudiant @relation(fields: [etudiantId], references: [id])
 
   @@unique([groupId, etudiantId])
@@ -577,10 +598,12 @@ enum GraviteInfraction {
 }
 
 model Infraction {
-  id          Int               @id @default(autoincrement())
-  nom         String            @db.VarChar(150)
-  description String?           @db.Text
-  gravite     GraviteInfraction
+  id             Int               @id @default(autoincrement())
+  nom_ar         String            @db.VarChar(150)
+  nom_en         String?           @db.VarChar(150)
+  description_ar String?           @db.Text
+  description_en String?           @db.Text
+  gravite        GraviteInfraction
 
   dossiers DossierDisciplinaire[]
 
@@ -596,8 +619,10 @@ enum NiveauSanction {
 
 model Decision {
   id             Int             @id @default(autoincrement())
-  nom            String          @db.VarChar(150)
-  description    String?         @db.Text
+  nom_ar         String          @db.VarChar(150)
+  nom_en         String?         @db.VarChar(150)
+  description_ar String?         @db.Text
+  description_en String?         @db.Text
   niveauSanction NiveauSanction? @map("niveau_sanction")
 
   dossiers DossierDisciplinaire[]
@@ -617,7 +642,8 @@ model ConseilDisciplinaire {
   heure              DateTime?     @db.Time()
   lieu               String?       @db.VarChar(150)
   anneeUniversitaire String        @map("annee_universitaire") @db.VarChar(20)
-  description        String?       @db.Text
+  description_ar     String?       @db.Text
+  description_en     String?       @db.Text
   status             StatusConseil @default(planifie)
   createdAt          DateTime      @default(now()) @map("created_at")
 
@@ -653,19 +679,21 @@ enum StatusDossier {
 }
 
 model DossierDisciplinaire {
-  id                  Int           @id @default(autoincrement())
-  conseilId           Int?          @map("conseil_id")
-  etudiantId          Int           @map("etudiant_id")
-  enseignantSignalant Int?          @map("enseignant_signalant")
-  infractionId        Int           @map("infraction_id")
-  dateSignal          DateTime      @map("date_signal") @db.Date
-  descriptionSignal   String?       @map("description_signal") @db.Text
-  decisionId          Int?          @map("decision_id")
-  remarqueDecision    String?       @map("remarque_decision") @db.Text
-  dateDecision        DateTime?     @map("date_decision") @db.Date
-  status              StatusDossier @default(signale)
-  createdAt           DateTime      @default(now()) @map("created_at")
-  updatedAt           DateTime      @updatedAt @map("updated_at")
+  id                   Int           @id @default(autoincrement())
+  conseilId            Int?          @map("conseil_id")
+  etudiantId           Int           @map("etudiant_id")
+  enseignantSignalant  Int?          @map("enseignant_signalant")
+  infractionId         Int           @map("infraction_id")
+  dateSignal           DateTime      @map("date_signal") @db.Date
+  descriptionSignal_ar String?       @map("description_signal_ar") @db.Text
+  descriptionSignal_en String?       @map("description_signal_en") @db.Text
+  decisionId           Int?          @map("decision_id")
+  remarqueDecision_ar  String?       @map("remarque_decision_ar") @db.Text
+  remarqueDecision_en  String?       @map("remarque_decision_en") @db.Text
+  dateDecision         DateTime?     @map("date_decision") @db.Date
+  status               StatusDossier @default(signale)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
 
   conseil              ConseilDisciplinaire? @relation(fields: [conseilId], references: [id])
   etudiant             Etudiant              @relation(fields: [etudiantId], references: [id])
@@ -681,9 +709,11 @@ model DossierDisciplinaire {
 // ═══════════════════════════════════════════════════════════════
 
 model ReclamationType {
-  id          Int     @id @default(autoincrement())
-  nom         String? @db.VarChar(150)
-  description String? @db.Text
+  id             Int     @id @default(autoincrement())
+  nom_ar         String? @db.VarChar(150)
+  nom_en         String? @db.VarChar(150)
+  description_ar String? @db.Text
+  description_en String? @db.Text
 
   reclamations Reclamation[]
 
@@ -709,14 +739,17 @@ model Reclamation {
   id              Int                 @id @default(autoincrement())
   etudiantId      Int                 @map("etudiant_id")
   typeId          Int                 @map("type_id")
-  objet           String              @db.VarChar(255)
-  description     String              @db.Text
+  objet_ar        String              @db.VarChar(255)
+  objet_en        String?             @db.VarChar(255)
+  description_ar  String              @db.Text
+  description_en  String?             @db.Text
   priorite        PrioriteReclamation @default(normale)
   dateReclamation DateTime?           @default(now()) @map("date_reclamation") @db.Date
   status          StatusReclamation   @default(soumise)
   traitePar       Int?                @map("traite_par")
   dateTraitement  DateTime?           @map("date_traitement")
-  reponse         String?             @db.Text
+  reponse_ar      String?             @db.Text
+  reponse_en      String?             @db.Text
   createdAt       DateTime            @default(now()) @map("created_at")
   updatedAt       DateTime            @updatedAt @map("updated_at")
 
@@ -728,9 +761,11 @@ model Reclamation {
 }
 
 model TypeAbsence {
-  id          Int     @id @default(autoincrement())
-  nom         String? @db.VarChar(100)
-  description String? @db.Text
+  id             Int     @id @default(autoincrement())
+  nom_ar         String? @db.VarChar(100)
+  nom_en         String? @db.VarChar(100)
+  description_ar String? @db.Text
+  description_en String? @db.Text
 
   justifications Justification[]
 
@@ -745,19 +780,21 @@ enum StatusJustification {
 }
 
 model Justification {
-  id               Int                 @id @default(autoincrement())
-  etudiantId       Int                 @map("etudiant_id")
-  typeId           Int                 @map("type_id")
-  dateAbsence      DateTime            @map("date_absence") @db.Date
-  motif            String?             @db.Text
-  document         String?             @db.Text
-  dateDepot        DateTime?           @default(now()) @map("date_depot") @db.Date
-  status           StatusJustification @default(soumis)
-  traitePar        Int?                @map("traite_par")
-  dateTraitement   DateTime?           @map("date_traitement")
-  commentaireAdmin String?             @map("commentaire_admin") @db.Text
-  createdAt        DateTime            @default(now()) @map("created_at")
-  updatedAt        DateTime            @updatedAt @map("updated_at")
+  id                  Int                 @id @default(autoincrement())
+  etudiantId          Int                 @map("etudiant_id")
+  typeId              Int                 @map("type_id")
+  dateAbsence         DateTime            @map("date_absence") @db.Date
+  motif_ar            String?             @db.Text
+  motif_en            String?             @db.Text
+  document            String?             @db.Text
+  dateDepot           DateTime?           @default(now()) @map("date_depot") @db.Date
+  status              StatusJustification @default(soumis)
+  traitePar           Int?                @map("traite_par")
+  dateTraitement      DateTime?           @map("date_traitement")
+  commentaireAdmin_ar String?             @map("commentaire_admin_ar") @db.Text
+  commentaireAdmin_en String?             @map("commentaire_admin_en") @db.Text
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
 
   etudiant      Etudiant    @relation(fields: [etudiantId], references: [id])
   type          TypeAbsence @relation(fields: [typeId], references: [id])
@@ -771,9 +808,11 @@ model Justification {
 // ═══════════════════════════════════════════════════════════════
 
 model AnnonceType {
-  id          Int     @id @default(autoincrement())
-  nom         String? @db.VarChar(100)
-  description String? @db.Text
+  id             Int     @id @default(autoincrement())
+  nom_ar         String? @db.VarChar(100)
+  nom_en         String? @db.VarChar(100)
+  description_ar String? @db.Text
+  description_en String? @db.Text
 
   annonces Annonce[]
 
@@ -802,11 +841,13 @@ enum StatusAnnonce {
 
 model Annonce {
   id              Int             @id @default(autoincrement())
-  titre           String          @db.VarChar(255)
-  contenu         String          @db.Text
+  titre_ar        String          @db.VarChar(255)
+  titre_en        String?         @db.VarChar(255)
+  contenu_ar      String          @db.Text
+  contenu_en      String?         @db.Text
   auteurId        Int             @map("auteur_id")
   typeId          Int?            @map("type_id")
-  cible           CibleAnnonce   @default(tous)
+  cible           CibleAnnonce    @default(tous)
   datePublication DateTime?       @default(now()) @map("date_publication") @db.Date
   dateExpiration  DateTime?       @map("date_expiration") @db.Date
   priorite        PrioriteAnnonce @default(normale)
@@ -829,12 +870,13 @@ enum TypeFichierAnnonce {
 }
 
 model AnnonceDocument {
-  id          Int                @id @default(autoincrement())
-  annonceId   Int                @map("annonce_id")
-  fichier     String             @db.Text
-  type        TypeFichierAnnonce @default(autre)
-  description String?            @db.Text
-  createdAt   DateTime           @default(now()) @map("created_at")
+  id             Int                @id @default(autoincrement())
+  annonceId      Int                @map("annonce_id")
+  fichier        String             @db.Text
+  type           TypeFichierAnnonce @default(autre)
+  description_ar String?            @db.Text
+  description_en String?            @db.Text
+  createdAt      DateTime           @default(now()) @map("created_at")
 
   annonce Annonce @relation(fields: [annonceId], references: [id])
 

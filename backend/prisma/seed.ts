@@ -55,43 +55,103 @@ async function main() {
 
   // ── University structure ─────────────────────────────────
   const faculte = await prisma.faculte.create({
-    data: { nom: "Faculté des Sciences et Technologies" },
+    data: {
+      nom_ar: "كلية العلوم والتكنولوجيا",
+      nom_en: "Faculty of Science and Technology",
+    },
   });
 
   const deptInfo = await prisma.departement.create({
-    data: { nom: "Informatique", faculteId: faculte.id },
+    data: {
+      nom_ar: "الإعلام الآلي",
+      nom_en: "Computer Science",
+      faculteId: faculte.id,
+    },
   });
 
   await prisma.departement.create({
-    data: { nom: "Physique", faculteId: faculte.id },
+    data: {
+      nom_ar: "الفيزياء",
+      nom_en: "Physics",
+      faculteId: faculte.id,
+    },
   });
 
   const filiereInfo = await prisma.filiere.create({
-    data: { nom: "Informatique", departementId: deptInfo.id, description: "Filière informatique" },
+    data: {
+      nom_ar: "شعبة الإعلام الآلي",
+      nom_en: "Computer Science Track",
+      departementId: deptInfo.id,
+      description_ar: "شعبة الإعلام الآلي",
+      description_en: "Computer science stream",
+    },
   });
 
   const specISI = await prisma.specialite.create({
-    data: { nom: "ISI", filiereId: filiereInfo.id, niveau: "M2" },
+    data: {
+      nom_ar: "ISI",
+      nom_en: "ISI",
+      filiereId: filiereInfo.id,
+      niveau: "M2",
+    },
   });
 
   await prisma.specialite.create({
-    data: { nom: "SIC", filiereId: filiereInfo.id, niveau: "M2" },
+    data: {
+      nom_ar: "SIC",
+      nom_en: "SIC",
+      filiereId: filiereInfo.id,
+      niveau: "M2",
+    },
   });
 
   const promo2025 = await prisma.promo.create({
-    data: { nom: "M2 ISI 2024-2025", specialiteId: specISI.id, anneeUniversitaire: "2024-2025", section: "A" },
+    data: {
+      nom_ar: "M2 ISI 2024-2025",
+      nom_en: "M2 ISI 2024-2025",
+      specialiteId: specISI.id,
+      anneeUniversitaire: "2024-2025",
+      section: "A",
+    },
   });
 
   const promo2025B = await prisma.promo.create({
-    data: { nom: "M2 ISI 2024-2025", specialiteId: specISI.id, anneeUniversitaire: "2024-2025", section: "B" },
+    data: {
+      nom_ar: "M2 ISI 2024-2025",
+      nom_en: "M2 ISI 2024-2025",
+      specialiteId: specISI.id,
+      anneeUniversitaire: "2024-2025",
+      section: "B",
+    },
   });
 
   console.log("✅ University structure created (Faculté → Département → Filière → Spécialité → Promo)");
 
   // ── Grades ───────────────────────────────────────────────
-  const gradeMAA = await prisma.grade.create({ data: { nom: "MAA", description: "Maître assistant A" } });
-  const gradeMCA = await prisma.grade.create({ data: { nom: "MCA", description: "Maître de conférences A" } });
-  await prisma.grade.create({ data: { nom: "Professeur", description: "Professeur" } });
+  const gradeMAA = await prisma.grade.create({
+    data: {
+      nom_ar: "أستاذ مساعد أ",
+      nom_en: "Assistant Professor A",
+      description_ar: "رتبة أستاذ مساعد أ",
+      description_en: "Academic rank: Assistant Professor A",
+    },
+  });
+  const gradeMCA = await prisma.grade.create({
+    data: {
+      nom_ar: "أستاذ محاضر أ",
+      nom_en: "Associate Professor A",
+      description_ar: "رتبة أستاذ محاضر أ",
+      description_en: "Academic rank: Associate Professor A",
+    },
+  });
+  await prisma.grade.create({
+    data: {
+      nom_ar: "أستاذ",
+      nom_en: "Professor",
+      description_ar: "رتبة أستاذ",
+      description_en: "Academic rank: Professor",
+    },
+  });
 
   console.log("✅ Grades created");
 
@@ -262,7 +322,8 @@ async function main() {
     where: { code: "ISI-M2-ALGO-ADV" },
     update: {},
     create: {
-      nom: "Algorithmique Avancée",
+      nom_ar: "الخوارزميات المتقدمة",
+      nom_en: "Advanced Algorithms",
       code: "ISI-M2-ALGO-ADV",
       semestre: 3,
       specialiteId: specISI.id,
@@ -271,7 +332,8 @@ async function main() {
       volumeTp: 0,
       credit: 6,
       coef: 3,
-      description: "UE de tronc commun M2 ISI",
+      description_ar: "وحدة تعليمية أساسية لطلبة ماستر 2 ISI",
+      description_en: "Core unit for M2 ISI students",
     },
   });
 
@@ -279,7 +341,8 @@ async function main() {
     where: { code: "ISI-M2-CLOUD" },
     update: {},
     create: {
-      nom: "Cloud et DevOps",
+      nom_ar: "الحوسبة السحابية وDevOps",
+      nom_en: "Cloud and DevOps",
       code: "ISI-M2-CLOUD",
       semestre: 3,
       specialiteId: specISI.id,
@@ -288,7 +351,8 @@ async function main() {
       volumeTp: 14,
       credit: 5,
       coef: 2,
-      description: "Infrastructure cloud et intégration continue",
+      description_ar: "البنية السحابية والتكامل المستمر",
+      description_en: "Cloud infrastructure and continuous integration",
     },
   });
 
@@ -296,7 +360,8 @@ async function main() {
     where: { code: "ISI-M2-AI" },
     update: {},
     create: {
-      nom: "IA Appliquée",
+      nom_ar: "الذكاء الاصطناعي التطبيقي",
+      nom_en: "Applied AI",
       code: "ISI-M2-AI",
       semestre: 3,
       specialiteId: specISI.id,
@@ -305,7 +370,8 @@ async function main() {
       volumeTp: 12,
       credit: 5,
       coef: 2,
-      description: "Méthodes d'IA pour applications métiers",
+      description_ar: "طرق الذكاء الاصطناعي للتطبيقات المهنية",
+      description_en: "AI methods for business applications",
     },
   });
 
@@ -340,10 +406,18 @@ async function main() {
 
   const sujet1 = await prisma.pfeSujet.create({
     data: {
-      titre: "Plateforme de gestion intelligente des réclamations",
-      description: "Conception d'une plateforme web avec workflows automatisés.",
+      titre_ar: "منصة ذكية لإدارة الشكاوى",
+      titre_en: "Smart Complaint Management Platform",
+      description_ar: "تصميم منصة ويب مع مسارات عمل مؤتمتة.",
+      description_en: "Design of a web platform with automated workflows.",
+      keywords_ar: "شكاوى، منصة، سير عمل",
+      keywords_en: "complaints, platform, workflow",
       enseignantId: teacherUser.enseignant.id,
       promoId: promo2025.id,
+      workplan_ar: "تحليل المتطلبات ثم تطوير الواجهة الخلفية والأمامية",
+      workplan_en: "Requirements analysis followed by backend and frontend implementation",
+      bibliographie_ar: "مراجع في نظم إدارة الشكاوى والمنصات الأكاديمية",
+      bibliographie_en: "References on complaint management systems and academic platforms",
       typeProjet: "application",
       status: "valide",
       anneeUniversitaire: "2024-2025",
@@ -353,10 +427,18 @@ async function main() {
 
   const sujet2 = await prisma.pfeSujet.create({
     data: {
-      titre: "Analyse prédictive des risques disciplinaires",
-      description: "Modèle d'IA pour la détection précoce des risques académiques.",
+      titre_ar: "تحليل تنبؤي للمخاطر التأديبية",
+      titre_en: "Predictive Analysis of Disciplinary Risks",
+      description_ar: "نموذج ذكاء اصطناعي للكشف المبكر عن المخاطر الأكاديمية.",
+      description_en: "AI model for early detection of academic risks.",
+      keywords_ar: "ذكاء اصطناعي، تنبؤ، مخاطر تأديبية",
+      keywords_en: "AI, prediction, disciplinary risks",
       enseignantId: teacher2User.enseignant.id,
       promoId: promo2025B.id,
+      workplan_ar: "جمع البيانات، تدريب النموذج، ثم تقييم النتائج",
+      workplan_en: "Data collection, model training, then evaluation",
+      bibliographie_ar: "مراجع في التحليل التنبؤي والذكاء الاصطناعي التعليمي",
+      bibliographie_en: "References on predictive analytics and educational AI",
       typeProjet: "recherche",
       status: "valide",
       anneeUniversitaire: "2024-2025",
@@ -366,7 +448,8 @@ async function main() {
 
   const groupA = await prisma.groupPfe.create({
     data: {
-      nom: "Groupe ISI-A1",
+      nom_ar: "فريق ISI-A1",
+      nom_en: "Group ISI-A1",
       sujetFinalId: sujet1.id,
       coEncadrantId: teacher2User.enseignant.id,
       dateCreation: new Date("2024-10-01"),
@@ -376,7 +459,8 @@ async function main() {
 
   const groupB = await prisma.groupPfe.create({
     data: {
-      nom: "Groupe ISI-B1",
+      nom_ar: "فريق ISI-B1",
+      nom_en: "Group ISI-B1",
       sujetFinalId: sujet2.id,
       coEncadrantId: teacherUser.enseignant.id,
       dateCreation: new Date("2024-10-01"),

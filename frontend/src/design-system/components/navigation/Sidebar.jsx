@@ -75,6 +75,11 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
     </svg>
   ),
+  '/dashboard/admin': (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 12h9.75m-9.75 6h9.75M3.75 6h.008v.008H3.75V6zm0 6h.008v.008H3.75V12zm0 6h.008v.008H3.75V18z" />
+    </svg>
+  ),
   '/dashboard/admin/academic/management': (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5A2.25 2.25 0 015.25 5.25h13.5A2.25 2.25 0 0121 7.5v9A2.25 2.25 0 0118.75 18.75H5.25A2.25 2.25 0 013 16.5v-9z" />
@@ -103,9 +108,17 @@ const SECTIONS = {
   '/dashboard/notifications':  null,
   '/dashboard/settings':       'sections.system',
   '/dashboard/support':        null,
+  '/dashboard/admin':          'sections.system',
   '/dashboard/admin/academic/management': 'sections.system',
   '/dashboard/admin/academic/assignments': 'sections.system',
 };
+
+function formatBadgeValue(count) {
+  if (count > 99) {
+    return '99+';
+  }
+  return String(count);
+}
 
 export default function Sidebar({ modules = [], open = false, onClose, onNavigate, activeKey, collapsed = false, onToggleCollapse }) {
   const { t } = useTranslation();
@@ -176,6 +189,9 @@ export default function Sidebar({ modules = [], open = false, onClose, onNavigat
               const isActive = item.path === activeKey;
               const section = SECTIONS[item.path];
               const showSection = section && section !== lastSection;
+              const badgeCount = Number(item.badgeCount);
+              const showBadge = Number.isFinite(badgeCount) && badgeCount > 0;
+              const badgeValue = showBadge ? formatBadgeValue(badgeCount) : null;
               if (section) lastSection = section;
 
               return (
@@ -194,18 +210,33 @@ export default function Sidebar({ modules = [], open = false, onClose, onNavigat
                   <button
                     onClick={() => onNavigate?.(item.path)}
                     title={collapsed ? item.name : undefined}
+                    aria-label={showBadge ? `${item.name} (${badgeValue})` : item.name}
                     className={`
                       w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium
                       transition-colors duration-100
-                      ${collapsed ? 'lg:justify-center lg:px-0' : ''}
+                      ${collapsed ? 'lg:justify-center lg:px-0' : 'lg:justify-between'}
                       ${isActive
                         ? 'bg-brand-light text-brand'
                         : 'text-ink-secondary hover:bg-surface-200 hover:text-ink'
                       }
                     `}
                   >
-                    <span className="w-5 h-5 shrink-0">{icons[item.path]}</span>
-                    <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{item.name}</span>
+                    <span className={`flex items-center gap-3 min-w-0 ${collapsed ? 'lg:justify-center lg:w-full' : ''}`}>
+                      <span className="relative w-5 h-5 shrink-0">
+                        {icons[item.path]}
+                        {collapsed && showBadge && (
+                          <span className="hidden lg:inline-flex absolute -top-1.5 -end-2 min-w-[16px] h-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold leading-none text-white">
+                            {badgeValue}
+                          </span>
+                        )}
+                      </span>
+                      <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{item.name}</span>
+                    </span>
+                    {!collapsed && showBadge && (
+                      <span className="inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-semibold leading-none text-white">
+                        {badgeValue}
+                      </span>
+                    )}
                   </button>
                 </li>
               );

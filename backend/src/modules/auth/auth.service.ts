@@ -14,6 +14,13 @@ import {
 } from "../../utils/tokens";
 import jwt from "jsonwebtoken";
 import { JWT_REFRESH_SECRET } from "../../config/auth";
+import {
+  RBAC_ROLE_CATALOG,
+  ensureRbacCatalog,
+  getRbacCatalog,
+  getUserAuthorizations,
+  validateRoleCombination,
+} from "../../services/common/rbac.service";
 
 // ── Interfaces ──────────────────────────────────────────────────
 
@@ -36,7 +43,11 @@ export interface LoginResponse {
     email: string;
     nom: string;
     prenom: string;
+    photo: string | null;
     roles: string[];
+    coreRole: string | null;
+    extensions: string[];
+    permissions: string[];
     firstUse?: boolean;
   };
   accessToken: string;
@@ -60,6 +71,7 @@ type AdminListUserRecord = {
   email: string;
   nom: string;
   prenom: string;
+  photo: string | null;
   sexe: "H" | "F" | null;
   telephone: string | null;
   status: "active" | "inactive" | "suspended";
@@ -86,169 +98,25 @@ const buildPayload = (user: { id: number; email: string }, roles: string[]): Use
   roles,
 });
 
-const ROLE_ALIAS_MAP: Record<string, string> = {
-  admin: "admin",
-  teacher: "enseignant",
-  enseignant: "enseignant",
-  student: "etudiant",
-  etudiant: "etudiant",
-  delegate: "delegue",
-  delegue: "delegue",
-  chefspecialite: "chef_specialite",
-  chef_specialite: "chef_specialite",
-  chefdepartement: "chef_departement",
-  chef_departement: "chef_departement",
-  presidentconseil: "president_conseil",
-  president_conseil: "president_conseil",
-  adminfaculte: "admin_faculte",
-  admin_faculte: "admin_faculte",
-  vicedoyen: "vice_doyen",
-  vice_doyen: "vice_doyen",
-  directeuretude: "directeur_etude",
-  directeur_etude: "directeur_etude",
-  presidentjury: "president_jury",
-  president_jury: "president_jury",
-};
+const ASSIGNABLE_ROLE_NAMES = RBAC_ROLE_CATALOG.map((entry) => entry.name);
 
-const BASE_CREATION_ROLES = new Set(["admin", "enseignant", "etudiant"]);
-const STUDENT_TRACK_ROLES = new Set(["etudiant", "delegue"]);
-const STAFF_TRACK_ROLES = new Set([
-  "admin",
-  "enseignant",
-  "chef_specialite",
-  "chef_departement",
-  "president_conseil",
-  "admin_faculte",
-  "vice_doyen",
-  "directeur_etude",
-  "president_jury",
-]);
-
-const ALL_ASSIGNABLE_ROLES = new Set([
-  ...Array.from(BASE_CREATION_ROLES),
-  ...Array.from(STUDENT_TRACK_ROLES),
-  ...Array.from(STAFF_TRACK_ROLES),
-]);
-
-const normalizeRoleNames = (roleNames: string[]) => {
-  const normalized: string[] = [];
-  const invalid: string[] = [];
-
-  for (const rawRole of roleNames) {
-    const key = rawRole?.trim().toLowerCase();
-    if (!key) continue;
-
-    const mapped = ROLE_ALIAS_MAP[key];
-    if (!mapped) {
-      invalid.push(rawRole);
-      continue;
-    }
-
-    if (!normalized.includes(mapped)) {
-      normalized.push(mapped);
-    }
-  }
-
-  return { normalized, invalid };
-};
-
-const getRoleTrack = (roleName: string): "student" | "staff" | "unknown" => {
-  if (STUDENT_TRACK_ROLES.has(roleName)) return "student";
-  if (STAFF_TRACK_ROLES.has(roleName)) return "staff";
-  return "unknown";
-};
-
-const validateCreateRoles = (roleNames: string[]): { valid: boolean; error?: string; normalized?: string[] } => {
-  const { normalized, invalid } = normalizeRoleNames(roleNames);
-
-  if (invalid.length > 0) {
-    return {
-      valid: false,
-      error: `Invalid role(s): ${invalid.join(", ")}`,
-    };
-  }
-
-  if (normalized.length === 0) {
-    return {
-      valid: false,
-      error: "At least one role must be assigned to the user.",
-    };
-  }
-
-  if (normalized.length !== 1 || !BASE_CREATION_ROLES.has(normalized[0])) {
-    return {
-      valid: false,
-      error: "When creating a user, choose exactly one base role: admin, teacher, or student.",
-    };
-  }
-
-  return { valid: true, normalized };
-};
+const validateCreateRoles = (roleNames: string[]): { valid: boolean; error?: string; normalized?: string[] } =>
+  validateRoleCombination(roleNames, { requireSingleCore: true });
 
 const validateAssignableRoles = (
   roleNames: string[],
   currentRoleNames?: string[]
-): { valid: boolean; error?: string; normalized?: string[] } => {
-  const { normalized, invalid } = normalizeRoleNames(roleNames);
-  if (invalid.length > 0) {
-    return {
-      valid: false,
-      error: `Invalid role(s): ${invalid.join(", ")}`,
-    };
-  }
-
-  if (normalized.length === 0) {
-    return {
-      valid: false,
-      error: "At least one role must be assigned to the user.",
-    };
-  }
-
-  const nonAssignable = normalized.filter((roleName) => !ALL_ASSIGNABLE_ROLES.has(roleName));
-  if (nonAssignable.length > 0) {
-    return {
-      valid: false,
-      error: `These roles are not assignable in this workflow: ${nonAssignable.join(", ")}`,
-    };
-  }
-
-  const targetTracks = new Set(normalized.map(getRoleTrack));
-  if (targetTracks.has("student") && targetTracks.has("staff")) {
-    return {
-      valid: false,
-      error: "Cannot mix student roles with teacher/staff roles.",
-    };
-  }
-
-  if (targetTracks.has("unknown")) {
-    return {
-      valid: false,
-      error: "Unknown role type detected.",
-    };
-  }
-
-  if (currentRoleNames?.length) {
-    const currentNormalized = normalizeRoleNames(currentRoleNames).normalized;
-    const currentTracks = new Set(currentNormalized.map(getRoleTrack));
-    const currentMainTrack = currentTracks.has("student")
-      ? "student"
-      : (currentTracks.has("staff") ? "staff" : null);
-    const targetMainTrack = targetTracks.has("student") ? "student" : "staff";
-
-    if (currentMainTrack && currentMainTrack !== targetMainTrack) {
-      return {
-        valid: false,
-        error: "Role track cannot be changed. A student stays in student track; a teacher/admin stays in staff track.",
-      };
-    }
-  }
-
-  return { valid: true, normalized };
-};
+): { valid: boolean; error?: string; normalized?: string[] } =>
+  validateRoleCombination(roleNames, {
+    requireSingleCore: false,
+    currentRoles: currentRoleNames,
+  });
 
 // ── Register ────────────────────────────────────────────────────
 
 export const registerUser = async (data: RegisterInput): Promise<LoginResponse> => {
+  await ensureRbacCatalog();
+
   if (!isStrongPassword(data.password)) {
     throw new AuthServiceError(
       "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
@@ -277,10 +145,10 @@ export const registerUser = async (data: RegisterInput): Promise<LoginResponse> 
       },
     });
 
-    // Find or create the default "etudiant" role
-    let role = await tx.role.findFirst({ where: { nom: "etudiant" } });
+    // The RBAC catalog bootstrap guarantees the default student role exists.
+    const role = await tx.role.findFirst({ where: { nom: "etudiant" }, select: { id: true } });
     if (!role) {
-      role = await tx.role.create({ data: { nom: "etudiant", description: "Étudiant" } });
+      throw new AuthServiceError("Default role configuration is missing");
     }
 
     await tx.userRole.create({
@@ -290,7 +158,7 @@ export const registerUser = async (data: RegisterInput): Promise<LoginResponse> 
     return newUser;
   });
 
-  const roles = await getUserRoles(user.id);
+  const authorization = await getUserAuthorizations(user.id);
 
   // Email verification token (stored on the user row itself)
   const rawToken = generateRawToken();
@@ -305,7 +173,7 @@ export const registerUser = async (data: RegisterInput): Promise<LoginResponse> 
   console.log(`📧 Verification link: ${process.env.APP_BASE_URL}/api/v1/auth/verify-email/${rawToken}`);
 
   // Generate JWT tokens
-  const payload = buildPayload(user, roles);
+  const payload = buildPayload(user, authorization.roles);
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 
@@ -315,7 +183,11 @@ export const registerUser = async (data: RegisterInput): Promise<LoginResponse> 
       email: user.email,
       nom: user.nom,
       prenom: user.prenom,
-      roles,
+      photo: null,
+      roles: authorization.roles,
+      coreRole: authorization.coreRole,
+      extensions: authorization.extensions,
+      permissions: authorization.permissions,
     },
     accessToken,
     refreshToken,
@@ -363,9 +235,9 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     },
   });
 
-  const roles = await getUserRoles(user.id);
+  const authorization = await getUserAuthorizations(user.id);
 
-  const payload = buildPayload(user, roles);
+  const payload = buildPayload(user, authorization.roles);
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
 
@@ -375,7 +247,11 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
       email: user.email,
       nom: user.nom,
       prenom: user.prenom,
-      roles,
+      photo: user.photo,
+      roles: authorization.roles,
+      coreRole: authorization.coreRole,
+      extensions: authorization.extensions,
+      permissions: authorization.permissions,
       firstUse: user.firstUse,
     },
     accessToken,
@@ -436,6 +312,8 @@ export const createUserByAdmin = async (data: {
   user: { id: number; email: string; nom: string; prenom: string; roles: string[] };
   tempPassword: string;
 }> => {
+  await ensureRbacCatalog();
+
   const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
   if (existingUser) {
     throw new AuthServiceError("User with this email already exists");
@@ -983,10 +861,12 @@ export const assignTeacherModulesByAdmin = async (
 };
 
 export const listRolesForAdmin = async (): Promise<Array<{ id: number; nom: string; description: string | null }>> => {
+  await ensureRbacCatalog();
+
   const roles = await prisma.role.findMany({
     where: {
       nom: {
-        in: Array.from(ALL_ASSIGNABLE_ROLES),
+        in: ASSIGNABLE_ROLE_NAMES,
       },
     },
     select: {
@@ -1004,11 +884,17 @@ export const listRolesForAdmin = async (): Promise<Array<{ id: number; nom: stri
   }));
 };
 
+export const getRbacCatalogForClient = async () => {
+  await ensureRbacCatalog();
+  return getRbacCatalog();
+};
+
 export const listUsersForAdmin = async (): Promise<Array<{
   id: number;
   email: string;
   nom: string;
   prenom: string;
+  photo: string | null;
   sexe: "H" | "F" | null;
   telephone: string | null;
   status: "active" | "inactive" | "suspended";
@@ -1022,6 +908,7 @@ export const listUsersForAdmin = async (): Promise<Array<{
       email: true,
       nom: true,
       prenom: true,
+      photo: true,
       sexe: true,
       telephone: true,
       status: true,
@@ -1062,6 +949,8 @@ export const updateUserRolesByAdmin = async (
   if (!requesterUserId) {
     throw new AuthServiceError("Unauthorized request");
   }
+
+  await ensureRbacCatalog();
 
   const normalizedRoleNames = Array.from(
     new Set(
@@ -1193,12 +1082,12 @@ export const refreshTokens = async (
     const decoded = jwt.verify(oldRefreshToken, JWT_REFRESH_SECRET) as unknown as UserPayload;
 
     // Re-fetch roles in case they changed
-    const roles = await getUserRoles(decoded.sub);
+    const authorization = await getUserAuthorizations(decoded.sub);
 
     const payload: UserPayload = {
       sub: decoded.sub,
       email: decoded.email,
-      roles,
+      roles: authorization.roles,
     };
 
     const accessToken = signAccessToken(payload);
@@ -1348,6 +1237,8 @@ export const resendVerification = async (email: string): Promise<void> => {
 // ── Get user by ID (for /me endpoint) ───────────────────────────
 
 export const getUserById = async (userId: number) => {
+  await ensureRbacCatalog();
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -1387,9 +1278,44 @@ export const getUserById = async (userId: number) => {
     throw new AuthServiceError("User not found");
   }
 
-  // Flatten roles for convenience
+  const authorization = await getUserAuthorizations(user.id);
+
   return {
     ...user,
-    roles: user.userRoles.map((ur: UserRoleWithRoleName) => ur.role.nom ?? "unknown"),
+    roles: authorization.roles,
+    coreRole: authorization.coreRole,
+    extensions: authorization.extensions,
+    permissions: authorization.permissions,
+  };
+};
+
+export const updateCurrentUserPhoto = async (
+  userId: number,
+  photo: string | null
+): Promise<{ user: Awaited<ReturnType<typeof getUserById>>; previousPhoto: string | null }> => {
+  const existingUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      photo: true,
+    },
+  });
+
+  if (!existingUser) {
+    throw new AuthServiceError("User not found");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      photo,
+    },
+  });
+
+  const user = await getUserById(userId);
+
+  return {
+    user,
+    previousPhoto: existingUser.photo,
   };
 };

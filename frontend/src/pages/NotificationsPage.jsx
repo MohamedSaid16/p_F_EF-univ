@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import request from '../services/api';
+import { connectNotificationsSocket } from '../services/realtime';
 
 function priorityClasses(priority) {
   if (priority === 'high') return 'border-danger/25 bg-danger/10 text-danger';
@@ -37,6 +38,16 @@ function inferCategory(type = '') {
   return 'General';
 }
 
+function decorateNotification(item) {
+  return {
+    ...item,
+    category: inferCategory(item?.type),
+    priority: inferPriority(item?.type),
+    time: toRelativeTime(item?.createdAt),
+    description: item?.message,
+  };
+}
+
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,19 +59,41 @@ export default function NotificationsPage() {
       try {
         const res = await request('/api/v1/notifications?limit=100');
         const rows = Array.isArray(res?.data) ? res.data : [];
-        setNotifications(rows.map((item) => ({
-          ...item,
-          category: inferCategory(item.type),
-          priority: inferPriority(item.type),
-          time: toRelativeTime(item.createdAt),
-          description: item.message,
-        })));
+        setNotifications(rows.map((item) => decorateNotification(item)));
       } catch {
         setNotifications([]);
       } finally {
         setLoading(false);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    const socket = connectNotificationsSocket({
+      onNotification: (payload) => {
+        setNotifications((previous) => {
+          if (previous.some((item) => item.id === payload?.id)) {
+            return previous;
+          }
+
+          return [decorateNotification(payload), ...previous];
+        });
+      },
+      onUnreadCount: (payload) => {
+        const unreadCount = Number(payload?.unreadCount);
+        if (!Number.isFinite(unreadCount) || unreadCount < 0) {
+          return;
+        }
+
+        if (unreadCount === 0) {
+          setNotifications((previous) => previous.map((item) => ({ ...item, read: true })));
+        }
+      },
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const filtered = useMemo(

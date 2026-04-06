@@ -1,8 +1,356 @@
 import { Response } from "express";
 import prisma from "../../config/database";
 import { AuthRequest } from "../../middlewares/auth.middleware";
-import { StatusJustification, StatusReclamation } from "@prisma/client";
+import { Prisma, StatusJustification, StatusReclamation } from "@prisma/client";
+import { promises as fs } from "fs";
+import path from "path";
 import { createNotification } from "../../services/common/notification.service";
+import { writeAuditLogSafe } from "../../services/common/audit-log.service";
+import {
+  appendRequestWorkflowEvent,
+  ensureRequestWorkflowHistoryTable,
+  ensureRequestWorkflowSubmitted,
+  listRequestWorkflowHistory,
+  loadLatestWorkflowStageMap,
+  mapJustificationStatusToWorkflowStage,
+  mapReclamationStatusToWorkflowStage,
+  RequestWorkflowAction,
+  RequestWorkflowCategory,
+  RequestWorkflowStage,
+} from "../../services/requests/workflow.service";
+
+type RequestAttachmentPayload = {
+  id: number | string;
+  name: string;
+  type: string;
+  size: string;
+  mimeType: string | null;
+  fileSize: number | null;
+  url: string | null;
+  downloadUrl: string | null;
+  isImage: boolean;
+  createdAt: Date | null;
+};
+
+type ReclamationDocumentRow = {
+  id: number;
+  reclamationId: number;
+  filePath: string;
+  fileName: string;
+  mimeType: string | null;
+  fileSize: bigint | number | null;
+  createdAt: Date;
+};
+
+type JustificationDocumentRow = {
+  id: number;
+  justificationId: number;
+  filePath: string;
+  fileName: string;
+  mimeType: string | null;
+  fileSize: bigint | number | null;
+  createdAt: Date;
+};
+
+let requestSupportTablesInitialized = false;
+
+const normalizeStoredPath = (storedPath: string): string =>
+  storedPath.replace(/\\/g, "/").replace(/^\/+/, "");
+
+const toPublicFileUrl = (storedPath?: string | null): string | null => {
+  if (!storedPath) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(storedPath)) {
+    return storedPath;
+  }
+
+  const normalized = normalizeStoredPath(storedPath);
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.startsWith("uploads/")) {
+    return `/${normalized}`;
+  }
+
+  return `/uploads/${normalized.replace(/^uploads\//, "")}`;
+};
+
+const toNumber = (value: bigint | number | null | undefined): number | null => {
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "number") return value;
+  return null;
+};
+
+const formatAttachmentSize = (value: bigint | number | null | undefined): string => {
+  const size = toNumber(value);
+  if (!size || Number.isNaN(size) || size <= 0) {
+    return "N/A";
+  }
+
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const inferAttachmentKind = (mimeType?: string | null, fileName?: string): string => {
+  const mime = String(mimeType || "").toLowerCase();
+  const extension = path.extname(fileName || "").toLowerCase();
+
+  if (
+    mime.startsWith("image/") ||
+    [".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"].includes(extension)
+  ) {
+    return "Image";
+  }
+
+  if (mime === "application/pdf" || extension === ".pdf") {
+    return "PDF";
+  }
+
+  if (mime.startsWith("text/") || extension === ".txt") {
+    return "Text";
+  }
+
+  return "Document";
+};
+
+const buildAttachmentPayload = (input: {
+  id: number | string;
+  filePath: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  fileSize?: bigint | number | null;
+  createdAt?: Date | null;
+}): RequestAttachmentPayload => {
+  const normalizedFileName =
+    input.fileName?.trim() || path.basename(normalizeStoredPath(input.filePath || "attachment"));
+  const kind = inferAttachmentKind(input.mimeType, normalizedFileName);
+  const publicUrl = toPublicFileUrl(input.filePath);
+
+  return {
+    id: input.id,
+    name: normalizedFileName,
+    type: kind,
+    size: formatAttachmentSize(input.fileSize),
+    mimeType: input.mimeType || null,
+    fileSize: toNumber(input.fileSize),
+    url: publicUrl,
+    downloadUrl: publicUrl,
+    isImage: kind === "Image",
+    createdAt: input.createdAt || null,
+  };
+};
+
+const parseLegacyJustificationAttachments = (rawDocument?: string | null): RequestAttachmentPayload[] => {
+  const rawValue = String(rawDocument || "").trim();
+  if (!rawValue) {
+    return [];
+  }
+
+  const attachments: RequestAttachmentPayload[] = [];
+
+  if (rawValue.startsWith("[") || rawValue.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rawValue);
+      const values = Array.isArray(parsed) ? parsed : [parsed];
+
+      values.forEach((entry, index) => {
+        if (!entry || typeof entry !== "object") {
+          return;
+        }
+
+        const filePath = String(
+          (entry as Record<string, unknown>).filePath ||
+            (entry as Record<string, unknown>).path ||
+            (entry as Record<string, unknown>).url ||
+            ""
+        ).trim();
+
+        if (!filePath) {
+          return;
+        }
+
+        const fileName = String(
+          (entry as Record<string, unknown>).fileName ||
+            (entry as Record<string, unknown>).name ||
+            path.basename(filePath)
+        ).trim();
+
+        const mimeType = String((entry as Record<string, unknown>).mimeType || "").trim() || null;
+        const fileSize = Number((entry as Record<string, unknown>).fileSize || 0);
+        const createdAtRaw = (entry as Record<string, unknown>).createdAt;
+        const createdAt = createdAtRaw ? new Date(String(createdAtRaw)) : null;
+
+        attachments.push(
+          buildAttachmentPayload({
+            id: `legacy-${index}-${fileName}`,
+            filePath,
+            fileName,
+            mimeType,
+            fileSize: Number.isFinite(fileSize) && fileSize > 0 ? fileSize : null,
+            createdAt: createdAt && !Number.isNaN(createdAt.getTime()) ? createdAt : null,
+          })
+        );
+      });
+
+      if (attachments.length) {
+        return attachments;
+      }
+    } catch {
+      // Fallback to legacy plain string path
+    }
+  }
+
+  return [
+    buildAttachmentPayload({
+      id: `legacy-${path.basename(rawValue)}`,
+      filePath: rawValue,
+      fileName: path.basename(rawValue),
+      mimeType: null,
+      fileSize: null,
+      createdAt: null,
+    }),
+  ];
+};
+
+const ensureRequestSupportTables = async () => {
+  if (requestSupportTablesInitialized) {
+    return;
+  }
+
+  await fs.mkdir(path.join(process.cwd(), "uploads", "student-requests"), { recursive: true });
+
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS student_reclamation_documents (
+      id SERIAL PRIMARY KEY,
+      reclamation_id INTEGER NOT NULL REFERENCES reclamations(id) ON DELETE CASCADE,
+      etudiant_id INTEGER NOT NULL REFERENCES etudiants(id) ON DELETE CASCADE,
+      file_path TEXT NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      mime_type VARCHAR(120),
+      file_size BIGINT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_student_reclamation_documents_reclamation_id
+    ON student_reclamation_documents(reclamation_id)
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_student_reclamation_documents_etudiant_id
+    ON student_reclamation_documents(etudiant_id)
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS student_justification_documents (
+      id SERIAL PRIMARY KEY,
+      justification_id INTEGER NOT NULL REFERENCES justifications(id) ON DELETE CASCADE,
+      etudiant_id INTEGER NOT NULL REFERENCES etudiants(id) ON DELETE CASCADE,
+      file_path TEXT NOT NULL,
+      file_name VARCHAR(255) NOT NULL,
+      mime_type VARCHAR(120),
+      file_size BIGINT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_student_justification_documents_justification_id
+    ON student_justification_documents(justification_id)
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_student_justification_documents_etudiant_id
+    ON student_justification_documents(etudiant_id)
+  `);
+
+  await ensureRequestWorkflowHistoryTable();
+
+  requestSupportTablesInitialized = true;
+};
+
+const loadReclamationAttachmentsMap = async (reclamationIds: number[]) => {
+  const map = new Map<number, RequestAttachmentPayload[]>();
+
+  if (!reclamationIds.length) {
+    return map;
+  }
+
+  const rows = await prisma.$queryRaw<ReclamationDocumentRow[]>(Prisma.sql`
+    SELECT
+      id,
+      reclamation_id AS "reclamationId",
+      file_path AS "filePath",
+      file_name AS "fileName",
+      mime_type AS "mimeType",
+      file_size AS "fileSize",
+      created_at AS "createdAt"
+    FROM student_reclamation_documents
+    WHERE reclamation_id IN (${Prisma.join(reclamationIds)})
+    ORDER BY created_at DESC
+  `);
+
+  rows.forEach((row) => {
+    const group = map.get(row.reclamationId) || [];
+    group.push(
+      buildAttachmentPayload({
+        id: row.id,
+        filePath: row.filePath,
+        fileName: row.fileName,
+        mimeType: row.mimeType,
+        fileSize: row.fileSize,
+        createdAt: row.createdAt,
+      })
+    );
+    map.set(row.reclamationId, group);
+  });
+
+  return map;
+};
+
+const loadJustificationAttachmentsMap = async (justificationIds: number[]) => {
+  const map = new Map<number, RequestAttachmentPayload[]>();
+
+  if (!justificationIds.length) {
+    return map;
+  }
+
+  const rows = await prisma.$queryRaw<JustificationDocumentRow[]>(Prisma.sql`
+    SELECT
+      id,
+      justification_id AS "justificationId",
+      file_path AS "filePath",
+      file_name AS "fileName",
+      mime_type AS "mimeType",
+      file_size AS "fileSize",
+      created_at AS "createdAt"
+    FROM student_justification_documents
+    WHERE justification_id IN (${Prisma.join(justificationIds)})
+    ORDER BY created_at DESC
+  `);
+
+  rows.forEach((row) => {
+    const group = map.get(row.justificationId) || [];
+    group.push(
+      buildAttachmentPayload({
+        id: row.id,
+        filePath: row.filePath,
+        fileName: row.fileName,
+        mimeType: row.mimeType,
+        fileSize: row.fileSize,
+        createdAt: row.createdAt,
+      })
+    );
+    map.set(row.justificationId, group);
+  });
+
+  return map;
+};
 
 // ─── Helper: récupérer Etudiant.id depuis User.id ───────────────────────────
 const getEtudiantId = async (userId?: number): Promise<number | null> => {
@@ -35,6 +383,90 @@ const mapJustificationStatusToUi = (status: StatusJustification, comment?: strin
   if (comment && comment.includes("[INFO_REQUEST]")) return "info-requested";
   if (status === StatusJustification.en_verification) return "under-review";
   return "submitted";
+};
+
+const mapWorkflowStageToUiStatus = (stage: RequestWorkflowStage): string => {
+  if (stage === "final_decision") {
+    return "resolved";
+  }
+
+  if (["under_review", "teacher_response", "council_review"].includes(stage)) {
+    return "under-review";
+  }
+
+  return "submitted";
+};
+
+const DECISION_ACTIONS = ["approve", "reject", "info", "teacher", "council"] as const;
+
+type DecisionAction = (typeof DECISION_ACTIONS)[number];
+
+const isDecisionAction = (value: string): value is DecisionAction => {
+  return DECISION_ACTIONS.includes(value as DecisionAction);
+};
+
+const getWorkflowTransitionForDecision = (
+  action: DecisionAction
+): { stage: RequestWorkflowStage; actionCode: RequestWorkflowAction } => {
+  switch (action) {
+    case "approve":
+      return { stage: "final_decision", actionCode: "approve" };
+    case "reject":
+      return { stage: "final_decision", actionCode: "reject" };
+    case "teacher":
+      return { stage: "teacher_response", actionCode: "teacher_feedback" };
+    case "council":
+      return { stage: "council_review", actionCode: "escalate_to_council" };
+    case "info":
+    default:
+      return { stage: "under_review", actionCode: "request_info" };
+  }
+};
+
+const buildDecisionComment = (action: DecisionAction, responseText: string): string | null => {
+  const trimmed = responseText.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (action === "info") {
+    return `[INFO_REQUEST] ${trimmed}`;
+  }
+
+  if (action === "teacher") {
+    return `[TEACHER_REVIEW] ${trimmed}`;
+  }
+
+  if (action === "council") {
+    return `[COUNCIL_REVIEW] ${trimmed}`;
+  }
+
+  return trimmed;
+};
+
+const writeRequestAuditEvent = async (
+  req: AuthRequest,
+  input: {
+    eventKey: string;
+    action: string;
+    entityType: string;
+    entityId: number;
+    payload?: Record<string, unknown>;
+  }
+) => {
+  await writeAuditLogSafe({
+    eventKey: input.eventKey,
+    action: input.action,
+    entityType: input.entityType,
+    entityId: input.entityId,
+    actorUserId: req.user?.id ?? null,
+    actorRoles: req.user?.roles || [],
+    requestPath: req.originalUrl,
+    requestMethod: req.method,
+    ipAddress: req.ip,
+    userAgent: req.headers["user-agent"] || null,
+    payload: input.payload || null,
+  });
 };
 
 const DEFAULT_RECLAMATION_TYPES = [
@@ -115,6 +547,25 @@ const getRelatedTeacherUserIds = async (etudiantId: number): Promise<number[]> =
   });
 
   return Array.from(ids);
+};
+
+const getAdminUserIds = async (): Promise<number[]> => {
+  const adminUsers = await prisma.user.findMany({
+    where: {
+      userRoles: {
+        some: {
+          role: {
+            nom: {
+              in: ["admin", "vice_doyen"],
+            },
+          },
+        },
+      },
+    },
+    select: { id: true },
+  });
+
+  return adminUsers.map((user) => user.id);
 };
 
 const notifyRequestDecision = async (
@@ -243,6 +694,8 @@ const resolveJustificationTypeId = async (typeIdRaw: unknown, typeNameRaw: unkno
 // POST /api/v1/requests/reclamations
 export const createReclamation = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    await ensureRequestSupportTables();
+
     const userId = req.user?.id;
     const etudiantId = await getEtudiantId(userId);
 
@@ -257,24 +710,104 @@ export const createReclamation = async (req: AuthRequest, res: Response): Promis
     const { typeId, typeName, objet, description, priorite } = req.body;
     const resolvedTypeId = await resolveReclamationTypeId(typeId, typeName);
 
-    const reclamation = await prisma.reclamation.create({
-      data: {
-        etudiantId,
-        typeId: resolvedTypeId,
-        objet,
-        description,
-        priorite: priorite ?? "normale",
-        status: "soumise",
-      },
-      include: {
-        type: { select: { nom: true } },
-        etudiant: {
-          include: {
-            user: { select: { nom: true, prenom: true, email: true } },
+    const uploadedFiles = (Array.isArray(req.files) ? req.files : []) as Express.Multer.File[];
+    const preparedFiles = uploadedFiles.map((file) => ({
+      storedPath: normalizeStoredPath(path.relative(process.cwd(), file.path)),
+      fileName: file.originalname || path.basename(file.path),
+      mimeType: file.mimetype || null,
+      fileSize: typeof file.size === "number" ? file.size : null,
+    }));
+
+    const reclamation = await prisma.$transaction(async (tx) => {
+      const created = await tx.reclamation.create({
+        data: {
+          etudiantId,
+          typeId: resolvedTypeId,
+          objet,
+          description,
+          priorite: priorite ?? "normale",
+          status: "soumise",
+        },
+        include: {
+          type: { select: { nom: true } },
+          etudiant: {
+            include: {
+              user: { select: { nom: true, prenom: true, email: true } },
+            },
           },
         },
+      });
+
+      for (const file of preparedFiles) {
+        await tx.$executeRaw(Prisma.sql`
+          INSERT INTO student_reclamation_documents (
+            reclamation_id,
+            etudiant_id,
+            file_path,
+            file_name,
+            mime_type,
+            file_size,
+            created_at
+          )
+          VALUES (
+            ${created.id},
+            ${etudiantId},
+            ${file.storedPath},
+            ${file.fileName},
+            ${file.mimeType},
+            ${file.fileSize},
+            NOW()
+          )
+        `);
+      }
+
+      return created;
+    });
+
+    await ensureRequestWorkflowSubmitted({
+      requestCategory: "reclamation",
+      requestId: reclamation.id,
+      actorUserId: req.user?.id ?? null,
+      actorRoles: req.user?.roles || [],
+      note: "Student submitted reclamation",
+      metadata: {
+        status: reclamation.status,
+        source: "student_portal",
       },
     });
+
+    await writeRequestAuditEvent(req, {
+      eventKey: "requests.reclamation.created",
+      action: "create",
+      entityType: "reclamation",
+      entityId: reclamation.id,
+      payload: {
+        etudiantId,
+        typeId: resolvedTypeId,
+      },
+    });
+
+    try {
+      const adminUserIds = await getAdminUserIds();
+      const studentName = `${reclamation.etudiant.user.prenom ?? ""} ${reclamation.etudiant.user.nom ?? ""}`.trim() || "Student";
+      await Promise.all(
+        adminUserIds.map((adminUserId) =>
+          createNotification({
+            userId: adminUserId,
+            type: "request-reclamation-submitted",
+            title: "New reclamation submitted",
+            message: `${studentName} submitted reclamation #${reclamation.id}.`,
+            metadata: {
+              category: "reclamation",
+              requestId: reclamation.id,
+              etudiantId,
+            },
+          })
+        )
+      );
+    } catch (notificationError) {
+      console.warn("Unable to notify admins for reclamation submission", notificationError);
+    }
 
     res.status(201).json({
       success: true,
@@ -316,6 +849,11 @@ export const getMyReclamations = async (req: AuthRequest, res: Response): Promis
       },
     });
 
+    const workflowStageMap = await loadLatestWorkflowStageMap(
+      "reclamation",
+      reclamations.map((item) => item.id)
+    );
+
     // Stats pour les cartes du dashboard
     const all = await prisma.reclamation.findMany({
       where: { etudiantId },
@@ -331,7 +869,10 @@ export const getMyReclamations = async (req: AuthRequest, res: Response): Promis
 
     res.status(200).json({
       success: true,
-      data: reclamations,
+      data: reclamations.map((item) => ({
+        ...item,
+        workflowStage: workflowStageMap.get(item.id) || mapReclamationStatusToWorkflowStage(item.status),
+      })),
       stats,
     });
   } catch (error) {
@@ -354,6 +895,8 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
       return;
     }
 
+    await ensureRequestSupportTables();
+
     const [reclamations, justifications] = await Promise.all([
       prisma.reclamation.findMany({
         include: {
@@ -361,6 +904,7 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
           etudiant: {
             select: {
               id: true,
+              userId: true,
               matricule: true,
               promo: { select: { section: true } },
               user: { select: { nom: true, prenom: true } },
@@ -374,6 +918,7 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
           etudiant: {
             select: {
               id: true,
+              userId: true,
               matricule: true,
               promo: { select: { section: true } },
               user: { select: { nom: true, prenom: true } },
@@ -383,8 +928,23 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
       }),
     ]);
 
+    const [
+      reclamationAttachmentsMap,
+      justificationAttachmentsMap,
+      reclamationWorkflowStageMap,
+      justificationWorkflowStageMap,
+    ] = await Promise.all([
+      loadReclamationAttachmentsMap(reclamations.map((item) => item.id)),
+      loadJustificationAttachmentsMap(justifications.map((item) => item.id)),
+      loadLatestWorkflowStageMap("reclamation", reclamations.map((item) => item.id)),
+      loadLatestWorkflowStageMap("justification", justifications.map((item) => item.id)),
+    ]);
+
     const mappedReclamations = reclamations.map((item) => {
       const studentName = `${item.etudiant.user.prenom ?? ""} ${item.etudiant.user.nom ?? ""}`.trim() || "Student";
+      const workflowStage =
+        reclamationWorkflowStageMap.get(item.id) || mapReclamationStatusToWorkflowStage(item.status);
+
       return {
         id: `REC-${item.id}`,
         requestId: item.id,
@@ -396,16 +956,38 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
         priority: ["haute", "urgente"].includes(String(item.priorite)) ? "high" : "normal",
         dateSubmitted: item.createdAt,
         studentName,
+        studentEtudiantId: item.etudiant.id,
+        studentUserId: item.etudiant.userId || null,
         studentId: item.etudiant.matricule || `ETU-${item.etudiant.id}`,
         department: item.etudiant.promo?.section || "N/A",
-        attachments: [],
+        attachments: reclamationAttachmentsMap.get(item.id) || [],
         internalNotes: item.reponse || "",
         linkedExam: null,
+        workflowStage,
+        workflowStatus: mapWorkflowStageToUiStatus(workflowStage),
       };
     });
 
     const mappedJustifications = justifications.map((item) => {
       const studentName = `${item.etudiant.user.prenom ?? ""} ${item.etudiant.user.nom ?? ""}`.trim() || "Student";
+      const workflowStage =
+        justificationWorkflowStageMap.get(item.id) || mapJustificationStatusToWorkflowStage(item.status);
+      const tableAttachments = justificationAttachmentsMap.get(item.id) || [];
+      const mergedByKey = new Map<string, RequestAttachmentPayload>();
+
+      tableAttachments.forEach((attachment) => {
+        mergedByKey.set(`${attachment.name}-${attachment.url || ""}`, attachment);
+      });
+
+      if (!tableAttachments.length) {
+        parseLegacyJustificationAttachments(item.document).forEach((attachment) => {
+          const key = `${attachment.name}-${attachment.url || ""}`;
+          if (!mergedByKey.has(key)) {
+            mergedByKey.set(key, attachment);
+          }
+        });
+      }
+
       return {
         id: `JUS-${item.id}`,
         requestId: item.id,
@@ -417,11 +999,15 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
         priority: "normal",
         dateSubmitted: item.createdAt,
         studentName,
+        studentEtudiantId: item.etudiant.id,
+        studentUserId: item.etudiant.userId || null,
         studentId: item.etudiant.matricule || `ETU-${item.etudiant.id}`,
         department: item.etudiant.promo?.section || "N/A",
-        attachments: item.document ? [{ name: "Attachment", type: "Document", size: "N/A" }] : [],
+        attachments: Array.from(mergedByKey.values()),
         internalNotes: item.commentaireAdmin || "",
         linkedExam: null,
+        workflowStage,
+        workflowStatus: mapWorkflowStageToUiStatus(workflowStage),
       };
     });
 
@@ -458,7 +1044,7 @@ export const decideReclamation = async (req: AuthRequest, res: Response): Promis
 
     const action = String(req.body?.action || "").toLowerCase();
     const responseText = String(req.body?.responseText || "").trim();
-    if (!["approve", "reject", "info"].includes(action)) {
+    if (!isDecisionAction(action)) {
       res.status(400).json({ success: false, error: { code: "BAD_REQUEST", message: "Invalid action" } });
       return;
     }
@@ -470,7 +1056,8 @@ export const decideReclamation = async (req: AuthRequest, res: Response): Promis
           ? StatusReclamation.refusee
           : StatusReclamation.en_cours;
 
-    const responseValue = action === "info" ? `[INFO_REQUEST] ${responseText}`.trim() : responseText || null;
+    const responseValue = buildDecisionComment(action, responseText);
+    const workflowTransition = getWorkflowTransitionForDecision(action);
 
     const updated = await prisma.reclamation.update({
       where: { id: reclamationId },
@@ -485,6 +1072,31 @@ export const decideReclamation = async (req: AuthRequest, res: Response): Promis
       },
     });
 
+    await appendRequestWorkflowEvent({
+      requestCategory: "reclamation",
+      requestId: updated.id,
+      stage: workflowTransition.stage,
+      action: workflowTransition.actionCode,
+      actorUserId: req.user?.id ?? null,
+      actorRoles: req.user?.roles || [],
+      note: responseText || undefined,
+      metadata: {
+        decision: action,
+        status,
+      },
+    });
+
+    await writeRequestAuditEvent(req, {
+      eventKey: "requests.reclamation.decision",
+      action: action,
+      entityType: "reclamation",
+      entityId: updated.id,
+      payload: {
+        decision: action,
+        status,
+      },
+    });
+
     if (action === "approve" || action === "reject") {
       await notifyRequestDecision(
         updated.etudiant.id,
@@ -495,7 +1107,13 @@ export const decideReclamation = async (req: AuthRequest, res: Response): Promis
       );
     }
 
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json({
+      success: true,
+      data: {
+        ...updated,
+        workflowStage: workflowTransition.stage,
+      },
+    });
   } catch (error) {
     console.error("decideReclamation error:", error);
     res.status(500).json({
@@ -512,6 +1130,8 @@ export const decideReclamation = async (req: AuthRequest, res: Response): Promis
 // POST /api/v1/requests/justifications
 export const createJustification = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    await ensureRequestSupportTables();
+
     const userId = req.user?.id;
     const etudiantId = await getEtudiantId(userId);
 
@@ -526,23 +1146,104 @@ export const createJustification = async (req: AuthRequest, res: Response): Prom
     const { typeId, typeName, dateAbsence, motif } = req.body;
     const resolvedTypeId = await resolveJustificationTypeId(typeId, typeName);
 
-    const justification = await prisma.justification.create({
-      data: {
-        etudiantId,
-        typeId: resolvedTypeId,
-        dateAbsence: new Date(dateAbsence),
-        motif: motif ?? null,
-        status: "soumis",
-      },
-      include: {
-        type: { select: { nom: true } },
-        etudiant: {
-          include: {
-            user: { select: { nom: true, prenom: true, email: true } },
+    const uploadedFiles = (Array.isArray(req.files) ? req.files : []) as Express.Multer.File[];
+    const preparedFiles = uploadedFiles.map((file) => ({
+      storedPath: normalizeStoredPath(path.relative(process.cwd(), file.path)),
+      fileName: file.originalname || path.basename(file.path),
+      mimeType: file.mimetype || null,
+      fileSize: typeof file.size === "number" ? file.size : null,
+    }));
+
+    const justification = await prisma.$transaction(async (tx) => {
+      const created = await tx.justification.create({
+        data: {
+          etudiantId,
+          typeId: resolvedTypeId,
+          dateAbsence: new Date(dateAbsence),
+          motif: motif ?? null,
+          document: preparedFiles[0]?.storedPath || null,
+          status: "soumis",
+        },
+        include: {
+          type: { select: { nom: true } },
+          etudiant: {
+            include: {
+              user: { select: { nom: true, prenom: true, email: true } },
+            },
           },
         },
+      });
+
+      for (const file of preparedFiles) {
+        await tx.$executeRaw(Prisma.sql`
+          INSERT INTO student_justification_documents (
+            justification_id,
+            etudiant_id,
+            file_path,
+            file_name,
+            mime_type,
+            file_size,
+            created_at
+          )
+          VALUES (
+            ${created.id},
+            ${etudiantId},
+            ${file.storedPath},
+            ${file.fileName},
+            ${file.mimeType},
+            ${file.fileSize},
+            NOW()
+          )
+        `);
+      }
+
+      return created;
+    });
+
+    await ensureRequestWorkflowSubmitted({
+      requestCategory: "justification",
+      requestId: justification.id,
+      actorUserId: req.user?.id ?? null,
+      actorRoles: req.user?.roles || [],
+      note: "Student submitted justification",
+      metadata: {
+        status: justification.status,
+        source: "student_portal",
       },
     });
+
+    await writeRequestAuditEvent(req, {
+      eventKey: "requests.justification.created",
+      action: "create",
+      entityType: "justification",
+      entityId: justification.id,
+      payload: {
+        etudiantId,
+        typeId: resolvedTypeId,
+      },
+    });
+
+    try {
+      const adminUserIds = await getAdminUserIds();
+      const studentName = `${justification.etudiant.user.prenom ?? ""} ${justification.etudiant.user.nom ?? ""}`.trim() || "Student";
+      await Promise.all(
+        adminUserIds.map((adminUserId) =>
+          createNotification({
+            userId: adminUserId,
+            type: "request-justification-submitted",
+            title: "New justification submitted",
+            message: `${studentName} submitted justification #${justification.id}.`,
+            metadata: {
+              category: "justification",
+              requestId: justification.id,
+              etudiantId,
+            },
+          })
+        )
+      );
+    } catch (notificationError) {
+      console.warn("Unable to notify admins for justification submission", notificationError);
+    }
 
     res.status(201).json({
       success: true,
@@ -584,6 +1285,11 @@ export const getMyJustifications = async (req: AuthRequest, res: Response): Prom
       },
     });
 
+    const workflowStageMap = await loadLatestWorkflowStageMap(
+      "justification",
+      justifications.map((item) => item.id)
+    );
+
     const all = await prisma.justification.findMany({
       where: { etudiantId },
       select: { status: true },
@@ -598,7 +1304,10 @@ export const getMyJustifications = async (req: AuthRequest, res: Response): Prom
 
     res.status(200).json({
       success: true,
-      data: justifications,
+      data: justifications.map((item) => ({
+        ...item,
+        workflowStage: workflowStageMap.get(item.id) || mapJustificationStatusToWorkflowStage(item.status),
+      })),
       stats,
     });
   } catch (error) {
@@ -629,7 +1338,7 @@ export const decideJustification = async (req: AuthRequest, res: Response): Prom
 
     const action = String(req.body?.action || "").toLowerCase();
     const responseText = String(req.body?.responseText || "").trim();
-    if (!["approve", "reject", "info"].includes(action)) {
+    if (!isDecisionAction(action)) {
       res.status(400).json({ success: false, error: { code: "BAD_REQUEST", message: "Invalid action" } });
       return;
     }
@@ -641,7 +1350,8 @@ export const decideJustification = async (req: AuthRequest, res: Response): Prom
           ? StatusJustification.refuse
           : StatusJustification.en_verification;
 
-    const adminComment = action === "info" ? `[INFO_REQUEST] ${responseText}`.trim() : responseText || null;
+    const adminComment = buildDecisionComment(action, responseText);
+    const workflowTransition = getWorkflowTransitionForDecision(action);
 
     const updated = await prisma.justification.update({
       where: { id: justificationId },
@@ -656,6 +1366,31 @@ export const decideJustification = async (req: AuthRequest, res: Response): Prom
       },
     });
 
+    await appendRequestWorkflowEvent({
+      requestCategory: "justification",
+      requestId: updated.id,
+      stage: workflowTransition.stage,
+      action: workflowTransition.actionCode,
+      actorUserId: req.user?.id ?? null,
+      actorRoles: req.user?.roles || [],
+      note: responseText || undefined,
+      metadata: {
+        decision: action,
+        status,
+      },
+    });
+
+    await writeRequestAuditEvent(req, {
+      eventKey: "requests.justification.decision",
+      action: action,
+      entityType: "justification",
+      entityId: updated.id,
+      payload: {
+        decision: action,
+        status,
+      },
+    });
+
     if (action === "approve" || action === "reject") {
       await notifyRequestDecision(
         updated.etudiant.id,
@@ -666,9 +1401,108 @@ export const decideJustification = async (req: AuthRequest, res: Response): Prom
       );
     }
 
-    res.status(200).json({ success: true, data: updated });
+    res.status(200).json({
+      success: true,
+      data: {
+        ...updated,
+        workflowStage: workflowTransition.stage,
+      },
+    });
   } catch (error) {
     console.error("decideJustification error:", error);
+    res.status(500).json({
+      success: false,
+      error: { code: "INTERNAL_ERROR", message: "Internal server error" },
+    });
+  }
+};
+
+// GET /api/v1/requests/admin/:category/:id/workflow
+export const getAdminRequestWorkflowHistory = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!isAdminRole(req.user?.roles)) {
+      res.status(403).json({
+        success: false,
+        error: { code: "FORBIDDEN", message: "Only admin can access request workflow history" },
+      });
+      return;
+    }
+
+    const requestId = Number(req.params.id);
+    if (!Number.isInteger(requestId) || requestId <= 0) {
+      res.status(400).json({ success: false, error: { code: "BAD_REQUEST", message: "Invalid request id" } });
+      return;
+    }
+
+    const categoryRaw = String(req.params.category || "").trim().toLowerCase();
+    const requestCategory: RequestWorkflowCategory | null =
+      categoryRaw === "reclamation" || categoryRaw === "justification"
+        ? (categoryRaw as RequestWorkflowCategory)
+        : null;
+
+    if (!requestCategory) {
+      res.status(400).json({
+        success: false,
+        error: { code: "BAD_REQUEST", message: "Category must be reclamation or justification" },
+      });
+      return;
+    }
+
+    const recordStatus =
+      requestCategory === "reclamation"
+        ? await prisma.reclamation.findUnique({ where: { id: requestId }, select: { status: true } })
+        : await prisma.justification.findUnique({ where: { id: requestId }, select: { status: true } });
+
+    if (!recordStatus) {
+      res.status(404).json({
+        success: false,
+        error: { code: "NOT_FOUND", message: "Request not found" },
+      });
+      return;
+    }
+
+    let history = await listRequestWorkflowHistory(requestCategory, requestId, 200);
+
+    if (!history.length) {
+      const fallbackStage =
+        requestCategory === "reclamation"
+          ? mapReclamationStatusToWorkflowStage(recordStatus.status)
+          : mapJustificationStatusToWorkflowStage(recordStatus.status);
+
+      await appendRequestWorkflowEvent({
+        requestCategory,
+        requestId,
+        stage: fallbackStage,
+        action: "manual_update",
+        actorUserId: req.user?.id ?? null,
+        actorRoles: req.user?.roles || [],
+        note: "Backfilled workflow from current request status",
+        metadata: {
+          backfilled: true,
+          sourceStatus: recordStatus.status,
+        },
+      });
+
+      history = await listRequestWorkflowHistory(requestCategory, requestId, 200);
+    }
+
+    const currentStage =
+      history[history.length - 1]?.stage ||
+      (requestCategory === "reclamation"
+        ? mapReclamationStatusToWorkflowStage(recordStatus.status)
+        : mapJustificationStatusToWorkflowStage(recordStatus.status));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        requestCategory,
+        requestId,
+        currentStage,
+        history,
+      },
+    });
+  } catch (error) {
+    console.error("getAdminRequestWorkflowHistory error:", error);
     res.status(500).json({
       success: false,
       error: { code: "INTERNAL_ERROR", message: "Internal server error" },
