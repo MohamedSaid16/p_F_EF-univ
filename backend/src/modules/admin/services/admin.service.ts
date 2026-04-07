@@ -282,10 +282,10 @@ const resolveAnnouncementTypeId = async (input: {
   const typeName = input.typeName.trim();
   const existingType = await prisma.annonceType.findFirst({
     where: {
-      nom: {
-        equals: typeName,
-        mode: "insensitive",
-      },
+      OR: [
+        { nom_ar: { equals: typeName, mode: "insensitive" } },
+        { nom_en: { equals: typeName, mode: "insensitive" } },
+      ],
     },
     select: { id: true },
   });
@@ -295,7 +295,7 @@ const resolveAnnouncementTypeId = async (input: {
   }
 
   const createdType = await prisma.annonceType.create({
-    data: { nom: typeName },
+    data: { nom_ar: typeName },
     select: { id: true },
   });
 
@@ -315,7 +315,8 @@ type AnnouncementRecord = Prisma.AnnonceGetPayload<{
     type: {
       select: {
         id: true;
-        nom: true;
+        nom_ar: true;
+        nom_en: true;
       };
     };
     documents: true;
@@ -324,15 +325,15 @@ type AnnouncementRecord = Prisma.AnnonceGetPayload<{
 
 const mapAnnouncementRecord = (announcement: AnnouncementRecord) => ({
   id: announcement.id,
-  title: announcement.titre,
-  content: announcement.contenu,
+  title: announcement.titre_ar || announcement.titre_en || "Announcement",
+  content: announcement.contenu_ar || announcement.contenu_en || "",
   status: ANNOUNCEMENT_STATUS_DB_TO_UI[announcement.status],
   target: ANNOUNCEMENT_TARGET_DB_TO_UI[announcement.cible],
   priority: ANNOUNCEMENT_PRIORITY_DB_TO_UI[announcement.priorite],
   type: announcement.type
     ? {
         id: announcement.type.id,
-        name: announcement.type.nom,
+        name: announcement.type.nom_ar || announcement.type.nom_en || null,
       }
     : null,
   publishedAt: announcement.datePublication,
@@ -350,7 +351,7 @@ const mapAnnouncementRecord = (announcement: AnnouncementRecord) => ({
 
     return {
       id: document.id,
-      description: document.description,
+      description: document.description_ar || document.description_en || null,
       type: document.type,
       storedPath: normalizedPath,
       fileName: path.basename(normalizedPath),
@@ -743,15 +744,17 @@ export const listAnnouncements = async (filters: AnnouncementListFilters) => {
 
   if (searchTerm) {
     where.OR = [
-      { titre: { contains: searchTerm, mode: "insensitive" } },
-      { contenu: { contains: searchTerm, mode: "insensitive" } },
+      { titre_ar: { contains: searchTerm, mode: "insensitive" } },
+      { titre_en: { contains: searchTerm, mode: "insensitive" } },
+      { contenu_ar: { contains: searchTerm, mode: "insensitive" } },
+      { contenu_en: { contains: searchTerm, mode: "insensitive" } },
       {
         type: {
           is: {
-            nom: {
-              contains: searchTerm,
-              mode: "insensitive",
-            },
+            OR: [
+              { nom_ar: { contains: searchTerm, mode: "insensitive" } },
+              { nom_en: { contains: searchTerm, mode: "insensitive" } },
+            ],
           },
         },
       },
@@ -777,7 +780,8 @@ export const listAnnouncements = async (filters: AnnouncementListFilters) => {
         type: {
           select: {
             id: true,
-            nom: true,
+            nom_ar: true,
+            nom_en: true,
           },
         },
         documents: true,
@@ -829,8 +833,8 @@ export const createAnnouncement = async (
   const created = await prisma.$transaction(async (tx) => {
     const announcement = await tx.annonce.create({
       data: {
-        titre: title,
-        contenu: content,
+        titre_ar: title,
+        contenu_ar: content,
         auteurId: authorUserId,
         typeId,
         status,
@@ -870,7 +874,8 @@ export const createAnnouncement = async (
       type: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
       documents: true,
@@ -905,7 +910,7 @@ export const updateAnnouncement = async (
     if (!title) {
       throw new AdminServiceError("Announcement title cannot be empty", 400, "INVALID_ANNOUNCEMENT_TITLE");
     }
-    updateData.titre = title;
+    updateData.titre_ar = title;
   }
 
   if (typeof input.content === "string") {
@@ -913,7 +918,7 @@ export const updateAnnouncement = async (
     if (!content) {
       throw new AdminServiceError("Announcement content cannot be empty", 400, "INVALID_ANNOUNCEMENT_CONTENT");
     }
-    updateData.contenu = content;
+    updateData.contenu_ar = content;
   }
 
   if (typeof input.status === "string") {
@@ -1010,7 +1015,8 @@ export const updateAnnouncement = async (
         type: {
           select: {
             id: true,
-            nom: true,
+            nom_ar: true,
+            nom_en: true,
           },
         },
         documents: true,
@@ -1065,8 +1071,10 @@ export const listReclamations = async (filters: ReclamationListFilters) => {
 
   if (searchTerm) {
     where.OR = [
-      { objet: { contains: searchTerm, mode: "insensitive" } },
-      { description: { contains: searchTerm, mode: "insensitive" } },
+      { objet_ar: { contains: searchTerm, mode: "insensitive" } },
+      { objet_en: { contains: searchTerm, mode: "insensitive" } },
+      { description_ar: { contains: searchTerm, mode: "insensitive" } },
+      { description_en: { contains: searchTerm, mode: "insensitive" } },
       {
         etudiant: {
           is: {
@@ -1129,7 +1137,8 @@ export const listReclamations = async (filters: ReclamationListFilters) => {
       include: {
         type: {
           select: {
-            nom: true,
+            nom_ar: true,
+            nom_en: true,
           },
         },
         etudiant: {
@@ -1138,7 +1147,8 @@ export const listReclamations = async (filters: ReclamationListFilters) => {
             matricule: true,
             promo: {
               select: {
-                nom: true,
+                nom_ar: true,
+                nom_en: true,
                 section: true,
               },
             },
@@ -1157,13 +1167,13 @@ export const listReclamations = async (filters: ReclamationListFilters) => {
 
   const items = records.map((record) => ({
     id: record.id,
-    title: record.objet,
-    description: record.description,
-    type: record.type.nom || "N/A",
+    title: record.objet_ar || record.objet_en || "Request",
+    description: record.description_ar || record.description_en || "",
+    type: record.type.nom_ar || record.type.nom_en || "N/A",
     priority: record.priorite,
     status: mapReclamationStatusToUi(record.status),
     rawStatus: record.status,
-    adminResponse: record.reponse,
+    adminResponse: record.reponse_ar || record.reponse_en || null,
     submittedAt: record.createdAt,
     processedAt: record.dateTraitement,
     student: {
@@ -1172,7 +1182,7 @@ export const listReclamations = async (filters: ReclamationListFilters) => {
       nom: record.etudiant.user.nom,
       prenom: record.etudiant.user.prenom,
       email: record.etudiant.user.email,
-      promo: record.etudiant.promo?.nom || null,
+      promo: record.etudiant.promo?.nom_ar || record.etudiant.promo?.nom_en || null,
       section: record.etudiant.promo?.section || null,
     },
   }));
@@ -1202,14 +1212,15 @@ export const updateReclamation = async (
     where: { id: reclamationId },
     data: {
       status: nextStatus,
-      reponse: input.adminResponse?.trim() || null,
+      reponse_ar: input.adminResponse?.trim() || null,
       traitePar: adminUserId,
       dateTraitement: new Date(),
     },
     include: {
       type: {
         select: {
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
       etudiant: {
@@ -1218,7 +1229,8 @@ export const updateReclamation = async (
           matricule: true,
           promo: {
             select: {
-              nom: true,
+              nom_ar: true,
+              nom_en: true,
               section: true,
             },
           },
@@ -1236,13 +1248,13 @@ export const updateReclamation = async (
 
   return {
     id: updated.id,
-    title: updated.objet,
-    description: updated.description,
-    type: updated.type.nom || "N/A",
+    title: updated.objet_ar || updated.objet_en || "Request",
+    description: updated.description_ar || updated.description_en || "",
+    type: updated.type.nom_ar || updated.type.nom_en || "N/A",
     priority: updated.priorite,
     status: mapReclamationStatusToUi(updated.status),
     rawStatus: updated.status,
-    adminResponse: updated.reponse,
+    adminResponse: updated.reponse_ar || updated.reponse_en || null,
     submittedAt: updated.createdAt,
     processedAt: updated.dateTraitement,
     student: {
@@ -1251,7 +1263,7 @@ export const updateReclamation = async (
       nom: updated.etudiant.user.nom,
       prenom: updated.etudiant.user.prenom,
       email: updated.etudiant.user.email,
-      promo: updated.etudiant.promo?.nom || null,
+      promo: updated.etudiant.promo?.nom_ar || updated.etudiant.promo?.nom_en || null,
       section: updated.etudiant.promo?.section || null,
     },
   };
@@ -1291,11 +1303,15 @@ export const listDocuments = async (filters: DocumentListFilters) => {
         ? {
             OR: [
               { fichier: { contains: searchTerm, mode: "insensitive" } },
-              { description: { contains: searchTerm, mode: "insensitive" } },
+              { description_ar: { contains: searchTerm, mode: "insensitive" } },
+              { description_en: { contains: searchTerm, mode: "insensitive" } },
               {
                 annonce: {
                   is: {
-                    titre: { contains: searchTerm, mode: "insensitive" },
+                    OR: [
+                      { titre_ar: { contains: searchTerm, mode: "insensitive" } },
+                      { titre_en: { contains: searchTerm, mode: "insensitive" } },
+                    ],
                   },
                 },
               },
@@ -1306,7 +1322,8 @@ export const listDocuments = async (filters: DocumentListFilters) => {
         annonce: {
           select: {
             id: true,
-            titre: true,
+            titre_ar: true,
+            titre_en: true,
           },
         },
       },
@@ -1327,7 +1344,7 @@ export const listDocuments = async (filters: DocumentListFilters) => {
         linkedEntity: {
           type: "announcement",
           id: document.annonce.id,
-          title: document.annonce.titre,
+          title: document.annonce.titre_ar || document.annonce.titre_en || "Announcement",
         },
       });
     });
@@ -1341,7 +1358,8 @@ export const listDocuments = async (filters: DocumentListFilters) => {
           ? {
               OR: [
                 { documentUrl: { contains: searchTerm, mode: "insensitive" } },
-                { description: { contains: searchTerm, mode: "insensitive" } },
+                { description_ar: { contains: searchTerm, mode: "insensitive" } },
+                { description_en: { contains: searchTerm, mode: "insensitive" } },
               ],
             }
           : {}),
@@ -1354,7 +1372,8 @@ export const listDocuments = async (filters: DocumentListFilters) => {
       select: {
         id: true,
         documentUrl: true,
-        description: true,
+        description_ar: true,
+        description_en: true,
         dateDemande: true,
         dateTraitement: true,
       },
@@ -1374,7 +1393,7 @@ export const listDocuments = async (filters: DocumentListFilters) => {
         linkedEntity: {
           type: "document-request",
           id: document.id,
-          title: document.description || `Document request #${document.id}`,
+          title: document.description_ar || document.description_en || `Document request #${document.id}`,
         },
       });
     });
@@ -1388,7 +1407,8 @@ export const listDocuments = async (filters: DocumentListFilters) => {
           ? {
               OR: [
                 { document: { contains: searchTerm, mode: "insensitive" } },
-                { motif: { contains: searchTerm, mode: "insensitive" } },
+                { motif_ar: { contains: searchTerm, mode: "insensitive" } },
+                { motif_en: { contains: searchTerm, mode: "insensitive" } },
               ],
             }
           : {}),
@@ -1397,7 +1417,8 @@ export const listDocuments = async (filters: DocumentListFilters) => {
       select: {
         id: true,
         document: true,
-        motif: true,
+        motif_ar: true,
+        motif_en: true,
         createdAt: true,
       },
     });
@@ -1416,7 +1437,7 @@ export const listDocuments = async (filters: DocumentListFilters) => {
         linkedEntity: {
           type: "justification",
           id: document.id,
-          title: document.motif || `Justification #${document.id}`,
+          title: document.motif_ar || document.motif_en || `Justification #${document.id}`,
         },
       });
     });

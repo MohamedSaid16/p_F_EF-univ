@@ -11,7 +11,8 @@ type AnnouncementWithRelations = Prisma.AnnonceGetPayload<{
     };
     type: {
       select: {
-        nom: true;
+        nom_ar: true;
+        nom_en: true;
       };
     };
   };
@@ -64,13 +65,13 @@ const includesAnyKeyword = (value: string, keywords: string[]): boolean =>
   keywords.some((keyword) => value.includes(keyword));
 
 const getAnnouncementTitle = (announcement: AnnouncementWithRelations): string =>
-  normalizeText(announcement.titre) || "Announcement";
+  normalizeText(announcement.titre_ar) || normalizeText(announcement.titre_en) || "Announcement";
 
 const getAnnouncementContent = (announcement: AnnouncementWithRelations): string =>
-  normalizeText(announcement.contenu);
+  normalizeText(announcement.contenu_ar) || normalizeText(announcement.contenu_en);
 
 const getAnnouncementTypeName = (announcement: AnnouncementWithRelations): string =>
-  normalizeText(announcement.type?.nom);
+  normalizeText(announcement.type?.nom_ar) || normalizeText(announcement.type?.nom_en);
 
 const getAnnouncementDate = (announcement: AnnouncementWithRelations): Date =>
   announcement.datePublication || announcement.createdAt;
@@ -166,7 +167,8 @@ const loadPublicAnnouncements = async (): Promise<AnnouncementWithRelations[]> =
       },
       type: {
         select: {
-          nom: true,
+            nom_ar: true,
+            nom_en: true,
         },
       },
     },

@@ -39,6 +39,10 @@ import DocumentsPage from './pages/DocumentsPage';
 import StudentNotesPage from './pages/StudentNotesPage';
 import StudentSpecialiteChoicePage from './pages/StudentSpecialiteChoicePage';
 import SuperAdminGroupsPage from './pages/SuperAdmin/Groups';
+import ProjectsPage from './pages/PFE/ProjectsPage';
+import SubjectsPage from './pages/PFE/SubjectsPage';
+import GroupsPage from './pages/PFE/GroupsPage';
+import DefensePage from './pages/PFE/DefensePage';
 
 /* ── Misc ── */
 import UnauthorizedPage from './pages/UnauthorizedPage';
@@ -107,7 +111,10 @@ function App() {
               <Route path="/dashboard/actualites" element={<ProtectedRoute><DashboardLayout><ActualitesPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/ai" element={<ProtectedRoute><DashboardLayout><AIAssistantPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/documents" element={<ProtectedRoute><DashboardLayout><DocumentsPage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/projects" element={<NotFoundPage />} />
+              <Route path="/dashboard/projects" element={<ProtectedRoute><DashboardLayout><ProjectsPage /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/dashboard/projects/subjects" element={<ProtectedRoute><DashboardLayout><SubjectsPage /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/dashboard/projects/groups" element={<ProtectedRoute><DashboardLayout><GroupsPage /></DashboardLayout></ProtectedRoute>} />
+              <Route path="/dashboard/projects/defense" element={<ProtectedRoute><DashboardLayout><DefensePage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/notes" element={<ProtectedRoute><DashboardLayout><StudentNotesPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/specialite-choice" element={<ProtectedRoute><DashboardLayout><StudentSpecialiteChoicePage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/calendar" element={<ProtectedRoute><DashboardLayout><CalendarPage /></DashboardLayout></ProtectedRoute>} />

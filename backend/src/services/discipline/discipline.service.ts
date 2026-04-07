@@ -56,7 +56,12 @@ const toGraviteInfraction = (
 const resolveInfraction = async (typeInfraction: string, gravite?: GraviteInfraction) => {
   const name = typeInfraction.trim();
   const existing = await prisma.infraction.findFirst({
-    where: { nom: { equals: name, mode: "insensitive" } },
+    where: {
+      OR: [
+        { nom_ar: { equals: name, mode: "insensitive" } },
+        { nom_en: { equals: name, mode: "insensitive" } },
+      ],
+    },
     select: { id: true },
   });
 
@@ -66,7 +71,7 @@ const resolveInfraction = async (typeInfraction: string, gravite?: GraviteInfrac
 
   const created = await prisma.infraction.create({
     data: {
-      nom: name,
+      nom_ar: name,
       gravite: gravite ?? GraviteInfraction.moyenne,
     },
     select: { id: true },
@@ -95,7 +100,7 @@ export const createDisciplinaryCase = async (input: CreateDisciplinaryCase) => {
             enseignantSignalant: input.enseignantSignalant,
             infractionId,
             dateSignal: input.dateInfraction,
-            descriptionSignal: `${input.titre}\n\n${input.description}`,
+            descriptionSignal_ar: `${input.titre}\n\n${input.description}`,
             status: StatusDossier.signale,
           },
         });
@@ -211,7 +216,7 @@ export const updateDisciplinaryCase = async (
       data: {
         infractionId,
         status: nextStatus,
-        descriptionSignal: input.titre || input.description
+        descriptionSignal_ar: input.titre || input.description
           ? `${input.titre ?? ""}\n\n${input.description ?? ""}`.trim()
           : undefined,
       },
@@ -282,8 +287,8 @@ export const recordDisciplinaryDecision = async (decision: DisciplinaryDecision)
     const caseRecord = await prisma.$transaction(async (tx) => {
       const decisionRecord = await tx.decision.create({
         data: {
-          nom: decision.decision,
-          description: decision.sanctions,
+          nom_ar: decision.decision,
+          description_ar: decision.sanctions,
         },
       });
 
@@ -291,7 +296,7 @@ export const recordDisciplinaryDecision = async (decision: DisciplinaryDecision)
         where: { id: decision.caseId },
         data: {
           decisionId: decisionRecord.id,
-          remarqueDecision: decision.sanctions,
+          remarqueDecision_ar: decision.sanctions,
           dateDecision: decision.dateDecision,
           status: StatusDossier.traite,
         },

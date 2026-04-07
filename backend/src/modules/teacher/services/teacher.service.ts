@@ -348,10 +348,10 @@ const resolveAnnouncementTypeId = async (input: {
   const typeName = input.typeName.trim();
   const existing = await prisma.annonceType.findFirst({
     where: {
-      nom: {
-        equals: typeName,
-        mode: "insensitive",
-      },
+      OR: [
+        { nom_ar: { equals: typeName, mode: "insensitive" } },
+        { nom_en: { equals: typeName, mode: "insensitive" } },
+      ],
     },
     select: { id: true },
   });
@@ -361,7 +361,7 @@ const resolveAnnouncementTypeId = async (input: {
   }
 
   const created = await prisma.annonceType.create({
-    data: { nom: typeName },
+    data: { nom_ar: typeName },
     select: { id: true },
   });
 
@@ -388,14 +388,16 @@ const resolveTeacherContext = async (userId: number): Promise<TeacherContext> =>
           module: {
             select: {
               id: true,
-              nom: true,
+              nom_ar: true,
+              nom_en: true,
               code: true,
             },
           },
           promo: {
             select: {
               id: true,
-              nom: true,
+              nom_ar: true,
+              nom_en: true,
               section: true,
             },
           },
@@ -413,10 +415,10 @@ const resolveTeacherContext = async (userId: number): Promise<TeacherContext> =>
     .map((item) => ({
       enseignementId: item.id,
       moduleId: item.moduleId as number,
-      moduleName: item.module?.nom || "Unknown module",
+      moduleName: item.module?.nom_ar || item.module?.nom_en || "Unknown module",
       moduleCode: item.module?.code || "N/A",
       promoId: item.promoId as number,
-      promoName: item.promo?.nom || "Unknown promo",
+      promoName: item.promo?.nom_ar || item.promo?.nom_en || "Unknown promo",
       section: item.promo?.section || "N/A",
     }));
 
@@ -657,7 +659,8 @@ const resolveTeacherAnnouncementAccess = async (announcementId: number, userId: 
       type: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
     },
@@ -708,7 +711,7 @@ const mapAnnouncementForTeacher = (
   announcement: Prisma.AnnonceGetPayload<{
     include: {
       documents: true;
-      type: { select: { id: true; nom: true } };
+      type: { select: { id: true; nom_ar: true; nom_en: true } };
     };
   }>,
   link?: TeacherAnnouncementLinkRow,
@@ -720,12 +723,12 @@ const mapAnnouncementForTeacher = (
 
   return {
     id: announcement.id,
-    title: announcement.titre,
-    description: announcement.contenu,
+    title: announcement.titre_ar || announcement.titre_en || "Announcement",
+    description: announcement.contenu_ar || announcement.contenu_en || "",
     type: announcement.type
       ? {
           id: announcement.type.id,
-          name: announcement.type.nom,
+          name: announcement.type.nom_ar || announcement.type.nom_en || "N/A",
         }
       : null,
     status: isScheduled ? "scheduled" : baseStatus,
@@ -751,7 +754,7 @@ const mapAnnouncementForTeacher = (
         fileName: path.basename(normalizedPath),
         storedPath: normalizedPath,
         url: toFileUrl(normalizedPath),
-        description: document.description,
+        description: document.description_ar || document.description_en || null,
       };
     }),
   };
@@ -773,7 +776,7 @@ export const getTeacherDashboard = async (userId: number) => {
       where: { auteurId: userId },
       include: {
         type: {
-          select: { id: true, nom: true },
+          select: { id: true, nom_ar: true, nom_en: true },
         },
         documents: true,
       },
@@ -784,7 +787,7 @@ export const getTeacherDashboard = async (userId: number) => {
       where: reclamationWhere,
       include: {
         type: {
-          select: { nom: true },
+          select: { nom_ar: true, nom_en: true },
         },
         etudiant: {
           select: {
@@ -819,8 +822,8 @@ export const getTeacherDashboard = async (userId: number) => {
 
     return {
       id: reclamation.id,
-      title: reclamation.objet,
-      type: reclamation.type.nom || "N/A",
+      title: reclamation.objet_ar || reclamation.objet_en || "Request",
+      type: reclamation.type.nom_ar || reclamation.type.nom_en || "N/A",
       status: mapReclamationStatusToUi(reclamation.status),
       createdAt: reclamation.createdAt,
       student: {
@@ -868,12 +871,17 @@ export const listTeacherAnnouncements = async (userId: number, filters: TeacherA
   const search = filters.search?.trim();
   if (search) {
     where.OR = [
-      { titre: { contains: search, mode: "insensitive" } },
-      { contenu: { contains: search, mode: "insensitive" } },
+      { titre_ar: { contains: search, mode: "insensitive" } },
+      { titre_en: { contains: search, mode: "insensitive" } },
+      { contenu_ar: { contains: search, mode: "insensitive" } },
+      { contenu_en: { contains: search, mode: "insensitive" } },
       {
         type: {
           is: {
-            nom: { contains: search, mode: "insensitive" },
+            OR: [
+              { nom_ar: { contains: search, mode: "insensitive" } },
+              { nom_en: { contains: search, mode: "insensitive" } },
+            ],
           },
         },
       },
@@ -909,7 +917,7 @@ export const listTeacherAnnouncements = async (userId: number, filters: TeacherA
     where,
     include: {
       type: {
-        select: { id: true, nom: true },
+        select: { id: true, nom_ar: true, nom_en: true },
       },
       documents: true,
     },
@@ -983,8 +991,8 @@ export const createTeacherAnnouncement = async (
     const announcement = await tx.annonce.create({
       data: {
         auteurId: userId,
-        titre: title,
-        contenu: description,
+        titre_ar: title,
+        contenu_ar: description,
         typeId,
         status,
         cible: mapAnnouncementTarget(input.target),
@@ -1011,7 +1019,8 @@ export const createTeacherAnnouncement = async (
           annonceId: announcement.id,
           fichier: normalizeStoredPath(path.relative(process.cwd(), file.path)),
           type: inferAnnouncementFileType(file),
-          description: file.originalname || null,
+          description_ar: file.originalname || null,
+          description_en: file.originalname || null,
         })),
       });
     }
@@ -1049,7 +1058,8 @@ export const updateTeacherAnnouncement = async (
     if (!nextTitle) {
       throw new TeacherServiceError("Announcement title cannot be empty", 400, "INVALID_ANNOUNCEMENT_TITLE");
     }
-    updateData.titre = nextTitle;
+    updateData.titre_ar = nextTitle;
+    updateData.titre_en = nextTitle;
   }
 
   if (typeof input.description === "string") {
@@ -1057,7 +1067,7 @@ export const updateTeacherAnnouncement = async (
     if (!nextDescription) {
       throw new TeacherServiceError("Announcement description cannot be empty", 400, "INVALID_ANNOUNCEMENT_DESCRIPTION");
     }
-    updateData.contenu = nextDescription;
+    updateData.contenu_ar = nextDescription;
   }
 
   if (typeof input.typeName === "string" || typeof input.typeId === "number") {
@@ -1151,7 +1161,8 @@ export const updateTeacherAnnouncement = async (
           annonceId: announcementId,
           fichier: normalizeStoredPath(path.relative(process.cwd(), file.path)),
           type: inferAnnouncementFileType(file),
-          description: file.originalname || null,
+          description_ar: file.originalname || null,
+          description_en: file.originalname || null,
         })),
       });
     }
@@ -1168,7 +1179,7 @@ export const updateTeacherAnnouncement = async (
     await notifyStudentsForAnnouncement(
       context,
       refreshed.id,
-      refreshed.titre,
+      refreshed.titre_ar || refreshed.titre_en || "Announcement",
       refreshedLink?.moduleId || null,
       refreshedLink?.scheduledFor || null
     );
@@ -1251,8 +1262,10 @@ export const listTeacherReclamations = async (userId: number, filters: TeacherRe
   const search = filters.search?.trim();
   if (search) {
     where.OR = [
-      { objet: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
+      { objet_ar: { contains: search, mode: "insensitive" } },
+      { objet_en: { contains: search, mode: "insensitive" } },
+      { description_ar: { contains: search, mode: "insensitive" } },
+      { description_en: { contains: search, mode: "insensitive" } },
       {
         etudiant: {
           is: {
@@ -1315,7 +1328,8 @@ export const listTeacherReclamations = async (userId: number, filters: TeacherRe
       include: {
         type: {
           select: {
-            nom: true,
+            nom_ar: true,
+            nom_en: true,
           },
         },
         etudiant: {
@@ -1325,7 +1339,8 @@ export const listTeacherReclamations = async (userId: number, filters: TeacherRe
             promoId: true,
             promo: {
               select: {
-                nom: true,
+                nom_ar: true,
+                nom_en: true,
                 section: true,
               },
             },
@@ -1364,13 +1379,13 @@ export const listTeacherReclamations = async (userId: number, filters: TeacherRe
 
     return {
       id: record.id,
-      title: record.objet,
-      type: record.type.nom || "N/A",
-      description: record.description,
+      title: record.objet_ar || record.objet_en || "Request",
+      type: record.type?.nom_ar || record.type?.nom_en || "N/A",
+      description: record.description_ar || record.description_en,
       status: mapReclamationStatusToUi(record.status),
       rawStatus: record.status,
       priority: record.priorite,
-      response: record.reponse,
+      response: record.reponse_ar || record.reponse_en,
       createdAt: record.createdAt,
       processedAt: record.dateTraitement,
       student: {
@@ -1380,7 +1395,7 @@ export const listTeacherReclamations = async (userId: number, filters: TeacherRe
         nom: record.etudiant.user.nom,
         prenom: record.etudiant.user.prenom,
         email: record.etudiant.user.email,
-        promo: record.etudiant.promo?.nom || null,
+        promo: record.etudiant.promo?.nom_ar || record.etudiant.promo?.nom_en || null,
         section: record.etudiant.promo?.section || null,
       },
       relatedModules,
@@ -1414,7 +1429,8 @@ export const updateTeacherReclamation = async (
     include: {
       type: {
         select: {
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
       etudiant: {
@@ -1432,7 +1448,8 @@ export const updateTeacherReclamation = async (
           },
           promo: {
             select: {
-              nom: true,
+              nom_ar: true,
+              nom_en: true,
               section: true,
             },
           },
@@ -1458,7 +1475,8 @@ export const updateTeacherReclamation = async (
     where: { id: reclamationId },
     data: {
       status: nextStatus,
-      reponse: payload.response?.trim() || null,
+      reponse_ar: payload.response?.trim() || null,
+      reponse_en: payload.response?.trim() || null,
       traitePar: userId,
       dateTraitement: new Date(),
     },
@@ -1512,7 +1530,7 @@ export const updateTeacherReclamation = async (
     userId: reclamation.etudiant.user.id,
     type: "reclamation-status-updated",
     title: "Reclamation status updated",
-    message: `Your reclamation '${reclamation.objet}' is now ${payload.status}.`,
+    message: `Your reclamation '${reclamation.objet_ar || reclamation.objet_en || "Request"}' is now ${payload.status}.`,
     metadata: {
       reclamationId,
       status: payload.status,
@@ -1532,9 +1550,9 @@ export const updateTeacherReclamation = async (
 
   return {
     id: reclamation.id,
-    title: reclamation.objet,
-    type: reclamation.type.nom || "N/A",
-    description: reclamation.description,
+    title: reclamation.objet_ar || reclamation.objet_en || "Request",
+    type: reclamation.type?.nom_ar || reclamation.type?.nom_en || "N/A",
+    description: reclamation.description_ar || reclamation.description_en,
     status: payload.status,
     response: payload.response?.trim() || null,
     processedAt: new Date(),
@@ -1545,7 +1563,7 @@ export const updateTeacherReclamation = async (
       nom: reclamation.etudiant.user.nom,
       prenom: reclamation.etudiant.user.prenom,
       email: reclamation.etudiant.user.email,
-      promo: reclamation.etudiant.promo?.nom || null,
+      promo: reclamation.etudiant.promo?.nom_ar || reclamation.etudiant.promo?.nom_en || null,
       section: reclamation.etudiant.promo?.section || null,
     },
     relatedModules,
@@ -1627,7 +1645,8 @@ export const listTeacherStudents = async (userId: number, filters: TeacherStuden
         promo: {
           select: {
             id: true,
-            nom: true,
+            nom_ar: true,
+            nom_en: true,
             section: true,
           },
         },
@@ -1668,7 +1687,7 @@ export const listTeacherStudents = async (userId: number, filters: TeacherStuden
       promo: student.promo
         ? {
             id: student.promo.id,
-            nom: student.promo.nom,
+            nom: student.promo.nom_ar || student.promo.nom_en,
             section: student.promo.section,
           }
         : null,
@@ -1707,7 +1726,8 @@ export const getTeacherStudentReclamationHistory = async (userId: number, studen
       },
       promo: {
         select: {
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
           section: true,
         },
       },
@@ -1727,7 +1747,8 @@ export const getTeacherStudentReclamationHistory = async (userId: number, studen
     include: {
       type: {
         select: {
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
     },
@@ -1760,12 +1781,12 @@ export const getTeacherStudentReclamationHistory = async (userId: number, studen
     },
     reclamations: reclamations.map((reclamation) => ({
       id: reclamation.id,
-      title: reclamation.objet,
-      type: reclamation.type.nom || "N/A",
-      description: reclamation.description,
+      title: reclamation.objet_ar || reclamation.objet_en || "Request",
+      type: reclamation.type?.nom_ar || reclamation.type?.nom_en || "N/A",
+      description: reclamation.description_ar || reclamation.description_en,
       status: mapReclamationStatusToUi(reclamation.status),
       rawStatus: reclamation.status,
-      response: reclamation.reponse,
+      response: reclamation.reponse_ar || reclamation.reponse_en,
       createdAt: reclamation.createdAt,
       processedAt: reclamation.dateTraitement,
       internalNote: notesMap.get(reclamation.id)?.note || "",

@@ -31,7 +31,12 @@ const resolveTypeId = async (
 
   const typeName = input.typeAnnonce.trim();
   const existing = await prisma.annonceType.findFirst({
-    where: { nom: { equals: typeName, mode: "insensitive" } },
+    where: {
+      OR: [
+        { nom_ar: { equals: typeName, mode: "insensitive" } },
+        { nom_en: { equals: typeName, mode: "insensitive" } },
+      ],
+    },
     select: { id: true },
   });
 
@@ -40,7 +45,7 @@ const resolveTypeId = async (
   }
 
   const created = await prisma.annonceType.create({
-    data: { nom: typeName },
+    data: { nom_ar: typeName },
     select: { id: true },
   });
 
@@ -56,8 +61,8 @@ export const createAnnounce = async (
 
     const announce = await prisma.annonce.create({
       data: {
-        titre: input.titre,
-        contenu: input.contenu,
+        titre_ar: input.titre,
+        contenu_ar: input.contenu,
         auteurId: createdById,
         typeId,
         datePublication: new Date(),
@@ -88,10 +93,10 @@ export const getAnnounces = async (filters?: {
 
     if (filters?.typeAnnonce?.trim()) {
       where.type = {
-        nom: {
-          equals: filters.typeAnnonce.trim(),
-          mode: "insensitive",
-        },
+        OR: [
+          { nom_ar: { equals: filters.typeAnnonce.trim(), mode: "insensitive" } },
+          { nom_en: { equals: filters.typeAnnonce.trim(), mode: "insensitive" } },
+        ],
       };
     }
 
@@ -155,8 +160,8 @@ export const updateAnnounce = async (id: number, input: UpdateAnnounceInput) => 
     const announce = await prisma.annonce.update({
       where: { id },
       data: {
-        titre: input.titre,
-        contenu: input.contenu,
+        titre_ar: input.titre,
+        contenu_ar: input.contenu,
         typeId: typeId ?? undefined,
         dateExpiration: input.dateExpiration,
       },

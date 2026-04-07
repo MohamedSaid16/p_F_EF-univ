@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import aiAPI from '../../services/ai';
 
 /* ── Inline SVG icons ──────────────────────────────────────────── */
 const SparklesIcon = (p) => (
@@ -70,25 +71,18 @@ export default function AIChatbot() {
     }
   }, [isOpen, isMinimized]);
 
-  /**
-   * SCAFFOLD: Replace this with your real AI API call.
-   * Example integration:
-   *   import api from '../../api';
-   *   const res = await api.post('/ai/chat', { message, history: messages });
-   *   return res.data.reply;
-   */
-  const simulateResponse = async (userMessage) => {
-    // Simulated delay — remove when connecting to real API
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+  const requestAIResponse = async (userMessage) => {
+    const apiHistory = messages.slice(-10).map((entry) => ({
+      role: entry.role,
+      content: entry.content,
+    }));
 
-    // Placeholder responses — replace with actual AI endpoint
-    const placeholders = [
-      'I am a placeholder response. The AI module team will connect me to a real backend.',
-      'This is a scaffold component. Replace simulateResponse() with your API integration.',
-      `You asked: "${userMessage}". Once the AI backend is ready, I will provide real answers.`,
-      'I can help with grades, schedules, campus info, and more — once my AI brain is connected.',
-    ];
-    return placeholders[Math.floor(Math.random() * placeholders.length)];
+    const response = await aiAPI.chat({
+      message: userMessage,
+      history: apiHistory,
+    });
+
+    return response?.data?.reply || 'No response returned from AI service.';
   };
 
   const handleSend = async () => {
@@ -107,7 +101,7 @@ export default function AIChatbot() {
     setIsTyping(true);
 
     try {
-      const reply = await simulateResponse(trimmed);
+      const reply = await requestAIResponse(trimmed);
       setMessages((prev) => [
         ...prev,
         {

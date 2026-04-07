@@ -884,7 +884,11 @@ export default function DisciplinaryCasesPage({ role = 'teacher' }) {
   const [reportForm, setReportForm] = useState({ studentId: '', reason: '' });
 
   const currentRoles = Array.isArray(user?.roles) ? user.roles : [];
-  const canTeacherReport = role === 'teacher' || currentRoles.includes('enseignant');
+  const canTeacherReport =
+    role === 'teacher' ||
+    currentRoles.includes('enseignant') ||
+    currentRoles.includes('admin') ||
+    currentRoles.includes('vice_doyen');
 
   const loadCases = async () => {
     const response = await request('/api/v1/disciplinary/cases');

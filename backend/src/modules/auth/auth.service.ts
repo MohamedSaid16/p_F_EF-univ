@@ -451,60 +451,63 @@ export const getAcademicManagementOptions = async (): Promise<{
     prisma.specialite.findMany({
       select: {
         id: true,
-        nom: true,
+        nom_ar: true,
+        nom_en: true,
         niveau: true,
       },
-      orderBy: { nom: "asc" },
+      orderBy: { nom_ar: "asc" },
     }),
     prisma.promo.findMany({
       select: {
         id: true,
-        nom: true,
+        nom_ar: true,
+        nom_en: true,
         section: true,
         anneeUniversitaire: true,
         specialiteId: true,
         specialite: {
-          select: { nom: true },
+          select: { nom_ar: true, nom_en: true },
         },
       },
-      orderBy: [{ anneeUniversitaire: "desc" }, { nom: "asc" }],
+      orderBy: [{ anneeUniversitaire: "desc" }, { nom_ar: "asc" }],
     }),
     prisma.module.findMany({
       select: {
         id: true,
-        nom: true,
+        nom_ar: true,
+        nom_en: true,
         code: true,
         semestre: true,
         specialiteId: true,
         specialite: {
-          select: { nom: true },
+          select: { nom_ar: true, nom_en: true },
         },
       },
-      orderBy: [{ specialiteId: "asc" }, { semestre: "asc" }, { nom: "asc" }],
+      orderBy: [{ specialiteId: "asc" }, { semestre: "asc" }, { nom_ar: "asc" }],
     }),
   ]);
 
   return {
     specialites: specialites.map((item) => ({
       id: item.id,
-      nom: item.nom,
+      nom: item.nom_ar || item.nom_en || `Specialite ${item.id}`,
       niveau: item.niveau ?? null,
     })),
     promos: promos.map((item) => ({
       id: item.id,
-      nom: item.nom,
+      nom: item.nom_ar || item.nom_en,
       section: item.section,
       anneeUniversitaire: item.anneeUniversitaire,
       specialiteId: item.specialiteId,
-      specialiteNom: item.specialite?.nom ?? null,
+      specialiteNom: item.specialite ? (item.specialite.nom_ar || item.specialite.nom_en) : null,
     })),
     modules: modules.map((item) => ({
       id: item.id,
-      nom: item.nom,
+      nom: item.nom_ar || item.nom_en || `Module ${item.id}`,
       code: item.code,
       semestre: item.semestre,
       specialiteId: item.specialiteId,
-      specialiteNom: item.specialite?.nom ?? null,
+      specialiteNom: item.specialite ? (item.specialite.nom_ar || item.specialite.nom_en) : null,
     })),
   };
 };
@@ -531,7 +534,8 @@ export const createSpecialiteForManagement = async (input: {
 
   const created = await prisma.specialite.create({
     data: {
-      nom,
+      nom_ar: nom,
+      nom_en: null,
       niveau,
       filiereId: Number.isInteger(input.filiereId) && (input.filiereId as number) > 0
         ? input.filiereId
@@ -539,13 +543,19 @@ export const createSpecialiteForManagement = async (input: {
     },
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
       niveau: true,
       filiereId: true,
     },
   });
 
-  return created;
+  return {
+    id: created.id,
+    nom: created.nom_ar || created.nom_en || `Specialite ${created.id}`,
+    niveau: created.niveau,
+    filiereId: created.filiereId,
+  };
 };
 
 export const createPromoForManagement = async (input: {
@@ -566,21 +576,29 @@ export const createPromoForManagement = async (input: {
 
   const created = await prisma.promo.create({
     data: {
-      nom: String(input.nom || "").trim() || undefined,
+      nom_ar: String(input.nom || "").trim() || undefined,
+      nom_en: undefined,
       section: String(input.section || "").trim() || undefined,
       anneeUniversitaire: String(input.anneeUniversitaire || "").trim() || undefined,
       specialiteId,
     },
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
       section: true,
       anneeUniversitaire: true,
       specialiteId: true,
     },
   });
 
-  return created;
+  return {
+    id: created.id,
+    nom: created.nom_ar || created.nom_en,
+    section: created.section,
+    anneeUniversitaire: created.anneeUniversitaire,
+    specialiteId: created.specialiteId,
+  };
 };
 
 export const createModuleForManagement = async (input: {
@@ -614,7 +632,8 @@ export const createModuleForManagement = async (input: {
 
   const created = await prisma.module.create({
     data: {
-      nom,
+      nom_ar: nom,
+      nom_en: null,
       code,
       specialiteId,
       semestre: Number.isInteger(input.semestre) ? input.semestre : undefined,
@@ -626,14 +645,21 @@ export const createModuleForManagement = async (input: {
     },
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
       code: true,
       specialiteId: true,
       semestre: true,
     },
   });
 
-  return created;
+  return {
+    id: created.id,
+    nom: created.nom_ar || created.nom_en || `Module ${created.id}`,
+    code: created.code,
+    specialiteId: created.specialiteId,
+    semestre: created.semestre,
+  };
 };
 
 export const getAcademicAssignmentsData = async (): Promise<{
@@ -646,23 +672,25 @@ export const getAcademicAssignmentsData = async (): Promise<{
     prisma.promo.findMany({
       select: {
         id: true,
-        nom: true,
+        nom_ar: true,
+        nom_en: true,
         section: true,
         anneeUniversitaire: true,
-        specialite: { select: { nom: true } },
+        specialite: { select: { nom_ar: true, nom_en: true } },
       },
-      orderBy: [{ anneeUniversitaire: "desc" }, { nom: "asc" }],
+      orderBy: [{ anneeUniversitaire: "desc" }, { nom_ar: "asc" }],
     }),
     prisma.module.findMany({
       select: {
         id: true,
-        nom: true,
+        nom_ar: true,
+        nom_en: true,
         code: true,
         semestre: true,
         specialiteId: true,
-        specialite: { select: { nom: true } },
+        specialite: { select: { nom_ar: true, nom_en: true } },
       },
-      orderBy: [{ specialiteId: "asc" }, { semestre: "asc" }, { nom: "asc" }],
+      orderBy: [{ specialiteId: "asc" }, { semestre: "asc" }, { nom_ar: "asc" }],
     }),
     prisma.etudiant.findMany({
       select: {
@@ -670,7 +698,7 @@ export const getAcademicAssignmentsData = async (): Promise<{
         userId: true,
         promoId: true,
         user: { select: { nom: true, prenom: true, email: true } },
-        promo: { select: { nom: true, section: true, anneeUniversitaire: true } },
+        promo: { select: { nom_ar: true, nom_en: true, section: true, anneeUniversitaire: true } },
       },
       orderBy: { id: "asc" },
     }),
@@ -694,18 +722,18 @@ export const getAcademicAssignmentsData = async (): Promise<{
   return {
     promos: promos.map((promo) => ({
       id: promo.id,
-      nom: promo.nom,
+      nom: promo.nom_ar || promo.nom_en,
       section: promo.section,
       anneeUniversitaire: promo.anneeUniversitaire,
-      specialiteNom: promo.specialite?.nom ?? null,
+      specialiteNom: promo.specialite ? (promo.specialite.nom_ar || promo.specialite.nom_en) : null,
     })),
     modules: modules.map((module) => ({
       id: module.id,
-      nom: module.nom,
+      nom: module.nom_ar || module.nom_en || `Module ${module.id}`,
       code: module.code,
       semestre: module.semestre,
       specialiteId: module.specialiteId,
-      specialiteNom: module.specialite?.nom ?? null,
+      specialiteNom: module.specialite ? (module.specialite.nom_ar || module.specialite.nom_en) : null,
     })),
     students: students.map((student) => ({
       id: student.id,
@@ -715,7 +743,7 @@ export const getAcademicAssignmentsData = async (): Promise<{
       email: student.user.email,
       promoId: student.promoId,
       promoLabel: student.promo
-        ? `${student.promo.nom || `Promo ${student.promoId}`} | ${student.promo.section || "-"} | ${student.promo.anneeUniversitaire || "-"}`
+        ? `${student.promo.nom_ar || student.promo.nom_en || `Promo ${student.promoId}`} | ${student.promo.section || "-"} | ${student.promo.anneeUniversitaire || "-"}`
         : null,
     })),
     teachers: teachers.map((teacher) => ({

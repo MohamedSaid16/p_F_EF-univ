@@ -30,8 +30,8 @@ export const createDocumentType = async (input: CreateDocumentTypeInput) => {
   try {
     const type = await prisma.documentType.create({
       data: {
-        nom: input.nom,
-        description: input.description,
+        nom_ar: input.nom,
+        description_ar: input.description,
         categorie: input.categorie ?? CategorieDocument.autre,
       },
     });
@@ -47,7 +47,7 @@ export const createDocumentType = async (input: CreateDocumentTypeInput) => {
 export const getDocumentTypes = async () => {
   try {
     return await prisma.documentType.findMany({
-      orderBy: { nom: "asc" },
+      orderBy: { nom_ar: "asc" },
     });
   } catch (error) {
     logger.error("Error fetching document types:", error);
@@ -70,7 +70,7 @@ export const createDocument = async (input: CreateDocumentInput) => {
       data: {
         enseignantId: enseignant.id,
         typeDocId: input.typeId,
-        description: input.nom,
+        description_ar: input.nom,
         dateDemande: new Date(),
         documentUrl: input.url,
         status: StatusDocumentRequest.valide,
@@ -183,7 +183,7 @@ export const createDocumentRequest = async (input: CreateDocumentRequestInput) =
     const request = await prisma.documentRequest.create({
       data: {
         typeDocId: input.typeDocId,
-        description: input.description,
+        description_ar: input.description,
         enseignantId: input.enseignantId,
         dateDemande: new Date(),
         status: StatusDocumentRequest.en_attente,
@@ -279,7 +279,7 @@ export const approveDocumentRequest = async (
         status: StatusDocumentRequest.valide,
         traitePar: approvedBy,
         dateTraitement: new Date(),
-        description: feedback,
+        description_ar: feedback,
       },
     });
 
@@ -303,7 +303,7 @@ export const rejectDocumentRequest = async (
         status: StatusDocumentRequest.refuse,
         traitePar: rejectedBy,
         dateTraitement: new Date(),
-        description: reason,
+        description_ar: reason,
       },
     });
 

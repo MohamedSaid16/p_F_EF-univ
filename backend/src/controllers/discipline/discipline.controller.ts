@@ -103,7 +103,7 @@ export const createConseilHandler = async (req: Request, res: Response) => {
           heure: heure ? new Date(heure) : null,
           lieu,
           anneeUniversitaire: anneeUniversitaire || new Date().getFullYear().toString(),
-          description,
+          description_ar: description,
         },
       });
 
@@ -145,7 +145,7 @@ export const updateConseilHandler = async (req: Request, res: Response) => {
         heure: heure ? new Date(heure) : undefined,
         lieu,
         anneeUniversitaire,
-        description,
+          description_ar: description,
         status,
       },
     });
@@ -195,8 +195,10 @@ export const finaliserConseilHandler = async (req: Request, res: Response) => {
         for (const d of drafts) {
           const decisionRecord = await tx.decision.create({
             data: {
-              nom: d.decision,
-              description: d.sanctions,
+              nom_ar: d.decision,
+              nom_en: d.decision,
+              description_ar: d.sanctions,
+              description_en: d.sanctions,
             },
           });
 
@@ -204,7 +206,8 @@ export const finaliserConseilHandler = async (req: Request, res: Response) => {
             where: { id: d.caseId },
             data: {
               decisionId: decisionRecord.id,
-              remarqueDecision: d.sanctions,
+              remarqueDecision_ar: d.sanctions,
+              remarqueDecision_en: d.sanctions,
               dateDecision: d.dateDecision ? new Date(d.dateDecision) : new Date(),
               status: "traite",
             },
@@ -490,7 +493,7 @@ export const deleteDossierHandler = async (req: Request, res: Response) => {
 
 export const listInfractionsHandler = async (_req: Request, res: Response) => {
   try {
-    const infractions = await prisma.infraction.findMany({ orderBy: { nom: "asc" } });
+    const infractions = await prisma.infraction.findMany({ orderBy: { nom_ar: "asc" } });
     res.status(200).json({ success: true, data: infractions });
   } catch (error: any) {
     logger.error("Error listing infractions:", error);
@@ -500,7 +503,7 @@ export const listInfractionsHandler = async (_req: Request, res: Response) => {
 
 export const listDecisionsHandler = async (_req: Request, res: Response) => {
   try {
-    const decisions = await prisma.decision.findMany({ orderBy: { nom: "asc" } });
+    const decisions = await prisma.decision.findMany({ orderBy: { nom_ar: "asc" } });
     res.status(200).json({ success: true, data: decisions });
   } catch (error: any) {
     logger.error("Error listing decisions:", error);

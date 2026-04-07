@@ -41,9 +41,9 @@ export const createDocumentType = async (req: Request, res: Response): Promise<v
 
     const docType = await prisma.documentType.create({
       data: {
-        nom: nom.trim(),
+        nom_ar: nom.trim(),
         categorie,
-        description: description?.trim() || null,
+        description_ar: description?.trim() || null,
       },
     });
 
@@ -68,10 +68,10 @@ export const getDocuments = async (req: Request, res: Response): Promise<void> =
     }
 
     if (typeof search === "string" && search.trim()) {
-      where.nom = {
-        contains: search.trim(),
-        mode: "insensitive",
-      };
+      where.OR = [
+        { nom_ar: { contains: search.trim(), mode: "insensitive" } },
+        { nom_en: { contains: search.trim(), mode: "insensitive" } },
+      ];
     }
 
     const [documents, total] = await Promise.all([
@@ -127,7 +127,8 @@ export const createRequest = async (req: AuthRequest, res: Response): Promise<vo
       data: {
         enseignantId,
         typeDocId: parsedTypeDocId,
-        description: description?.trim() || null,
+        description_ar: description?.trim() || null,
+        description_en: description?.trim() || null,
         dateDemande: new Date(),
       },
     });

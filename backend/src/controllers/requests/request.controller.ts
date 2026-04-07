@@ -487,13 +487,18 @@ const DEFAULT_JUSTIFICATION_TYPES = [
 const ensureDefaultReclamationTypes = async () => {
   for (const item of DEFAULT_RECLAMATION_TYPES) {
     const existing = await prisma.reclamationType.findFirst({
-      where: { nom: { equals: item.nom, mode: "insensitive" } },
+      where: {
+        OR: [
+          { nom_ar: { equals: item.nom, mode: "insensitive" } },
+          { nom_en: { equals: item.nom, mode: "insensitive" } },
+        ],
+      },
       select: { id: true },
     });
 
     if (!existing) {
       await prisma.reclamationType.create({
-        data: { nom: item.nom, description: item.description },
+        data: { nom_ar: item.nom, description_ar: item.description },
       });
     }
   }
@@ -502,13 +507,18 @@ const ensureDefaultReclamationTypes = async () => {
 const ensureDefaultJustificationTypes = async () => {
   for (const item of DEFAULT_JUSTIFICATION_TYPES) {
     const existing = await prisma.typeAbsence.findFirst({
-      where: { nom: { equals: item.nom, mode: "insensitive" } },
+      where: {
+        OR: [
+          { nom_ar: { equals: item.nom, mode: "insensitive" } },
+          { nom_en: { equals: item.nom, mode: "insensitive" } },
+        ],
+      },
       select: { id: true },
     });
 
     if (!existing) {
       await prisma.typeAbsence.create({
-        data: { nom: item.nom, description: item.description },
+        data: { nom_ar: item.nom, description_ar: item.description },
       });
     }
   }
@@ -648,13 +658,23 @@ const resolveReclamationTypeId = async (typeIdRaw: unknown, typeNameRaw: unknown
   const typeName = String(typeNameRaw || "General").trim() || "General";
 
   const byName = await prisma.reclamationType.findFirst({
-    where: { nom: { equals: typeName, mode: "insensitive" } },
+    where: {
+      OR: [
+        { nom_ar: { equals: typeName, mode: "insensitive" } },
+        { nom_en: { equals: typeName, mode: "insensitive" } },
+      ],
+    },
     select: { id: true },
   });
   if (byName) return byName.id;
 
   const created = await prisma.reclamationType.create({
-    data: { nom: typeName, description: "Auto-created by public request submission" },
+    data: {
+      nom_ar: typeName,
+      nom_en: typeName,
+      description_ar: "Auto-created by public request submission",
+      description_en: "Auto-created by public request submission",
+    },
     select: { id: true },
   });
 
@@ -674,13 +694,23 @@ const resolveJustificationTypeId = async (typeIdRaw: unknown, typeNameRaw: unkno
   const typeName = String(typeNameRaw || "General").trim() || "General";
 
   const byName = await prisma.typeAbsence.findFirst({
-    where: { nom: { equals: typeName, mode: "insensitive" } },
+    where: {
+      OR: [
+        { nom_ar: { equals: typeName, mode: "insensitive" } },
+        { nom_en: { equals: typeName, mode: "insensitive" } },
+      ],
+    },
     select: { id: true },
   });
   if (byName) return byName.id;
 
   const created = await prisma.typeAbsence.create({
-    data: { nom: typeName, description: "Auto-created by public justification submission" },
+    data: {
+      nom_ar: typeName,
+      nom_en: typeName,
+      description_ar: "Auto-created by public justification submission",
+      description_en: "Auto-created by public justification submission",
+    },
     select: { id: true },
   });
 
@@ -723,13 +753,15 @@ export const createReclamation = async (req: AuthRequest, res: Response): Promis
         data: {
           etudiantId,
           typeId: resolvedTypeId,
-          objet,
-          description,
+          objet_ar: objet,
+          objet_en: objet,
+          description_ar: description,
+          description_en: description,
           priorite: priorite ?? "normale",
           status: "soumise",
         },
         include: {
-          type: { select: { nom: true } },
+          type: { select: { nom_ar: true, nom_en: true } },
           etudiant: {
             include: {
               user: { select: { nom: true, prenom: true, email: true } },
@@ -845,7 +877,7 @@ export const getMyReclamations = async (req: AuthRequest, res: Response): Promis
       where,
       orderBy: { createdAt: "desc" },
       include: {
-        type: { select: { nom: true } },
+        type: { select: { nom_ar: true, nom_en: true } },
       },
     });
 
@@ -900,7 +932,7 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
     const [reclamations, justifications] = await Promise.all([
       prisma.reclamation.findMany({
         include: {
-          type: { select: { nom: true } },
+          type: { select: { nom_ar: true, nom_en: true } },
           etudiant: {
             select: {
               id: true,
@@ -914,7 +946,7 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
       }),
       prisma.justification.findMany({
         include: {
-          type: { select: { nom: true } },
+          type: { select: { nom_ar: true, nom_en: true } },
           etudiant: {
             select: {
               id: true,
@@ -949,10 +981,10 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
         id: `REC-${item.id}`,
         requestId: item.id,
         category: "reclamation",
-        title: item.objet,
-        description: item.description,
-        type: item.type.nom || "Reclamation",
-        status: mapReclamationStatusToUi(item.status, item.reponse),
+        title: item.objet_ar || item.objet_en,
+        description: item.description_ar || item.description_en,
+        type: item.type?.nom_ar || item.type?.nom_en || "Reclamation",
+        status: mapReclamationStatusToUi(item.status, item.reponse_ar || item.reponse_en),
         priority: ["haute", "urgente"].includes(String(item.priorite)) ? "high" : "normal",
         dateSubmitted: item.createdAt,
         studentName,
@@ -961,7 +993,7 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
         studentId: item.etudiant.matricule || `ETU-${item.etudiant.id}`,
         department: item.etudiant.promo?.section || "N/A",
         attachments: reclamationAttachmentsMap.get(item.id) || [],
-        internalNotes: item.reponse || "",
+        internalNotes: item.reponse_ar || item.reponse_en || "",
         linkedExam: null,
         workflowStage,
         workflowStatus: mapWorkflowStageToUiStatus(workflowStage),
@@ -992,10 +1024,10 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
         id: `JUS-${item.id}`,
         requestId: item.id,
         category: "justification",
-        title: item.motif || "Absence Justification",
-        description: item.motif || "No additional description provided",
-        type: item.type.nom || "Justification",
-        status: mapJustificationStatusToUi(item.status, item.commentaireAdmin),
+        title: item.motif_ar || item.motif_en || "Absence Justification",
+        description: item.motif_ar || item.motif_en || "No additional description provided",
+        type: item.type?.nom_ar || item.type?.nom_en || "Justification",
+        status: mapJustificationStatusToUi(item.status, item.commentaireAdmin_ar || item.commentaireAdmin_en),
         priority: "normal",
         dateSubmitted: item.createdAt,
         studentName,
@@ -1004,7 +1036,7 @@ export const getAdminRequestsInbox = async (req: AuthRequest, res: Response): Pr
         studentId: item.etudiant.matricule || `ETU-${item.etudiant.id}`,
         department: item.etudiant.promo?.section || "N/A",
         attachments: Array.from(mergedByKey.values()),
-        internalNotes: item.commentaireAdmin || "",
+        internalNotes: item.commentaireAdmin_ar || item.commentaireAdmin_en || "",
         linkedExam: null,
         workflowStage,
         workflowStatus: mapWorkflowStageToUiStatus(workflowStage),
@@ -1065,7 +1097,8 @@ export const decideReclamation = async (req: AuthRequest, res: Response): Promis
         status,
         traitePar: req.user?.id,
         dateTraitement: new Date(),
-        reponse: responseValue,
+        reponse_ar: responseValue,
+        reponse_en: responseValue,
       },
       include: {
         etudiant: { select: { id: true } },
@@ -1160,12 +1193,13 @@ export const createJustification = async (req: AuthRequest, res: Response): Prom
           etudiantId,
           typeId: resolvedTypeId,
           dateAbsence: new Date(dateAbsence),
-          motif: motif ?? null,
+          motif_ar: motif ?? null,
+          motif_en: motif ?? null,
           document: preparedFiles[0]?.storedPath || null,
           status: "soumis",
         },
         include: {
-          type: { select: { nom: true } },
+          type: { select: { nom_ar: true, nom_en: true } },
           etudiant: {
             include: {
               user: { select: { nom: true, prenom: true, email: true } },
@@ -1281,7 +1315,7 @@ export const getMyJustifications = async (req: AuthRequest, res: Response): Prom
       where,
       orderBy: { createdAt: "desc" },
       include: {
-        type: { select: { nom: true } },
+        type: { select: { nom_ar: true, nom_en: true } },
       },
     });
 
@@ -1359,7 +1393,8 @@ export const decideJustification = async (req: AuthRequest, res: Response): Prom
         status,
         traitePar: req.user?.id,
         dateTraitement: new Date(),
-        commentaireAdmin: adminComment,
+        commentaireAdmin_ar: adminComment,
+        commentaireAdmin_en: adminComment,
       },
       include: {
         etudiant: { select: { id: true } },
@@ -1515,7 +1550,7 @@ export const getReclamationTypes = async (_req: AuthRequest, res: Response): Pro
   try {
     await ensureDefaultReclamationTypes();
     const types = await prisma.reclamationType.findMany({
-      select: { id: true, nom: true, description: true },
+      select: { id: true, nom_ar: true, nom_en: true, description_ar: true, description_en: true },
       orderBy: { id: "asc" },
     });
     res.status(200).json({ success: true, data: types });
@@ -1529,7 +1564,7 @@ export const getJustificationTypes = async (_req: AuthRequest, res: Response): P
   try {
     await ensureDefaultJustificationTypes();
     const types = await prisma.typeAbsence.findMany({
-      select: { id: true, nom: true, description: true },
+      select: { id: true, nom_ar: true, nom_en: true, description_ar: true, description_en: true },
       orderBy: { id: "asc" },
     });
     res.status(200).json({ success: true, data: types });

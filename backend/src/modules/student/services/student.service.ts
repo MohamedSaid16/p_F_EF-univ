@@ -88,7 +88,7 @@ export const getStudentProfile = async (userId: number) => {
       promo: student.promo
         ? {
             id: student.promo.id,
-            nom: student.promo.nom,
+            nom: student.promo.nom_ar || student.promo.nom_en || null,
             section: student.promo.section,
             anneeUniversitaire: student.promo.anneeUniversitaire,
           }
@@ -96,13 +96,16 @@ export const getStudentProfile = async (userId: number) => {
       specialite: student.promo?.specialite
         ? {
             id: student.promo.specialite.id,
-            nom: student.promo.specialite.nom,
+            nom: student.promo.specialite.nom_ar || student.promo.specialite.nom_en || null,
             niveau: student.promo.specialite.niveau,
             filiere: student.promo.specialite.filiere
               ? {
                   id: student.promo.specialite.filiere.id,
-                  nom: student.promo.specialite.filiere.nom,
-                  departement: student.promo.specialite.filiere.departement?.nom ?? null,
+                  nom: student.promo.specialite.filiere.nom_ar || student.promo.specialite.filiere.nom_en || null,
+                  departement:
+                    student.promo.specialite.filiere.departement?.nom_ar ||
+                    student.promo.specialite.filiere.departement?.nom_en ||
+                    null,
                 }
               : null,
           }
@@ -136,7 +139,7 @@ export const getStudentSpecialties = async (userId: number) => {
   return enseignements.map((enseignement) => ({
     id: enseignement.id,
     code: enseignement.module?.code ?? `MOD-${enseignement.id}`,
-    name: enseignement.module?.nom ?? "Module",
+    name: enseignement.module?.nom_ar || enseignement.module?.nom_en || "Module",
     teacher: enseignement.enseignant
       ? `${enseignement.enseignant.user.prenom} ${enseignement.enseignant.user.nom}`
       : "N/A",
@@ -166,7 +169,7 @@ export const getStudentDeadlines = async (userId: number) => {
     .filter((item) => item.group.dateSoutenance)
     .map((item) => ({
       id: `pfe-${item.group.id}`,
-      title: item.group.sujetFinal.titre,
+      title: item.group.sujetFinal.titre_ar || item.group.sujetFinal.titre_en || "PFE",
       type: "presentation",
       module: "PFE",
       due: item.group.dateSoutenance,
@@ -182,7 +185,7 @@ export const getStudentDocuments = async () => {
 
   return types.map((type) => ({
     id: type.id,
-    name: type.nom || "Document",
+    name: type.nom_ar || type.nom_en || "Document",
     format: "PDF",
     size: "N/A",
     category: type.categorie,
@@ -203,10 +206,11 @@ export const getStudentNotes = async (userId: number) => {
 
   const modules = await prisma.module.findMany({
     where: { specialiteId: student.promo?.specialiteId ?? -1 },
-    orderBy: [{ semestre: "asc" }, { nom: "asc" }],
+    orderBy: [{ semestre: "asc" }, { nom_ar: "asc" }],
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
       code: true,
       credit: true,
       coef: true,
@@ -218,7 +222,7 @@ export const getStudentNotes = async (userId: number) => {
     moyenneGenerale: toNumber(student.moyenne),
     modules: modules.map((module) => ({
       id: module.id,
-      nom: module.nom,
+      nom: module.nom_ar || module.nom_en || null,
       code: module.code,
       semestre: module.semestre,
       credit: module.credit,
@@ -238,10 +242,11 @@ export const getSpecialiteOptions = async (userId: number) => {
 
   const specialites = await prisma.specialite.findMany({
     where: { filiereId },
-    orderBy: { nom: "asc" },
+    orderBy: { nom_ar: "asc" },
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
       niveau: true,
     },
   });
@@ -319,7 +324,8 @@ export const getMySpecialiteChoices = async (userId: number) => {
       campagne: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
           anneeUniversitaire: true,
           status: true,
         },
@@ -327,7 +333,8 @@ export const getMySpecialiteChoices = async (userId: number) => {
       specialite: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
           niveau: true,
         },
       },
@@ -343,7 +350,8 @@ export const getOpenCampagnes = async () => {
     where: { status: StatusCampagne.ouverte },
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
       anneeUniversitaire: true,
       dateDebut: true,
       dateFin: true,

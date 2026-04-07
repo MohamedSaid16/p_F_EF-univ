@@ -8,23 +8,36 @@ const toNumber = (value: Prisma.Decimal | null | undefined): number => {
 };
 
 export interface CreatePFESubjectInput {
-  titre: string;
-  description?: string;
-  objectifs?: string;
-  prerequis?: string;
-  resultatsAttendus?: string;
-  ressourcesDisponibles?: string;
+  titreAr: string;
+  titreEn?: string;
+  descriptionAr: string;
+  descriptionEn?: string;
+  keywordsAr?: string;
+  keywordsEn?: string;
+  workplanAr?: string;
+  workplanEn?: string;
+  bibliographieAr?: string;
+  bibliographieEn?: string;
+  typeProjet?: string;
+  maxGrps?: number;
   promoId?: number;
   enseignantId: number;
 }
 
 export interface UpdatePFESubjectInput {
-  titre?: string;
-  description?: string;
-  objectifs?: string;
-  prerequis?: string;
-  resultatsAttendus?: string;
-  ressourcesDisponibles?: string;
+  titreAr?: string;
+  titreEn?: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
+  keywordsAr?: string;
+  keywordsEn?: string;
+  workplanAr?: string;
+  workplanEn?: string;
+  bibliographieAr?: string;
+  bibliographieEn?: string;
+  typeProjet?: string;
+  status?: string;
+  maxGrps?: number;
 }
 
 export interface AssignStudentsInput {
@@ -45,6 +58,16 @@ const resolveStatusSujet = (value?: string): StatusSujet | undefined => {
   return allowed.includes(value as StatusSujet) ? (value as StatusSujet) : undefined;
 };
 
+const resolveTypeProjet = (value?: string) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) {
+    return undefined;
+  }
+
+  const allowed = new Set(["application", "recherche", "innovation", "etude"]);
+  return allowed.has(normalized) ? normalized : undefined;
+};
+
 export const createPFESubject = async (input: CreatePFESubjectInput) => {
   try {
     if (!input.promoId) {
@@ -53,15 +76,22 @@ export const createPFESubject = async (input: CreatePFESubjectInput) => {
 
     const subject = await prisma.pfeSujet.create({
       data: {
-        titre: input.titre,
-        description: input.description ?? "",
-        keywords: input.prerequis,
-        workplan: input.objectifs,
-        bibliographie: input.ressourcesDisponibles,
+        titre_ar: input.titreAr,
+        titre_en: input.titreEn ?? null,
+        description_ar: input.descriptionAr,
+        description_en: input.descriptionEn ?? null,
+        keywords_ar: input.keywordsAr ?? null,
+        keywords_en: input.keywordsEn ?? null,
+        workplan_ar: input.workplanAr ?? null,
+        workplan_en: input.workplanEn ?? null,
+        bibliographie_ar: input.bibliographieAr ?? null,
+        bibliographie_en: input.bibliographieEn ?? null,
+        typeProjet: resolveTypeProjet(input.typeProjet) as any,
         enseignantId: input.enseignantId,
         promoId: input.promoId,
         status: StatusSujet.propose,
         anneeUniversitaire: new Date().getFullYear().toString(),
+        maxGrps: input.maxGrps ?? 1,
       },
       include: {
         enseignant: {
@@ -105,7 +135,25 @@ export const getPFESubjects = async (filters?: {
             groupMembers: {
               include: { etudiant: { include: { user: true } } },
             },
+            coEncadrant: { include: { user: true } },
+            pfeJury: {
+              include: {
+                enseignant: { include: { user: true } },
+              },
+            },
           },
+        },
+        groupSujets: {
+          include: {
+            group: {
+              include: {
+                groupMembers: {
+                  include: { etudiant: { include: { user: true } } },
+                },
+              },
+            },
+          },
+          orderBy: { ordre: "asc" },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -130,8 +178,26 @@ export const getPFESubjectById = async (id: number) => {
             groupMembers: {
               include: { etudiant: { include: { user: true } } },
             },
-            pfeJury: true,
+            coEncadrant: { include: { user: true } },
+            pfeJury: {
+              include: {
+                enseignant: { include: { user: true } },
+              },
+            },
           },
+        },
+        groupSujets: {
+          include: {
+            group: {
+              include: {
+                groupMembers: {
+                  include: { etudiant: { include: { user: true } } },
+                },
+              },
+            },
+            sujet: true,
+          },
+          orderBy: { ordre: "asc" },
         },
       },
     });
@@ -155,11 +221,19 @@ export const updatePFESubject = async (
     const subject = await prisma.pfeSujet.update({
       where: { id },
       data: {
-        titre: input.titre,
-        description: input.description,
-        workplan: input.objectifs,
-        keywords: input.prerequis,
-        bibliographie: input.ressourcesDisponibles,
+        titre_ar: input.titreAr,
+        titre_en: input.titreEn,
+        description_ar: input.descriptionAr,
+        description_en: input.descriptionEn,
+        keywords_ar: input.keywordsAr,
+        keywords_en: input.keywordsEn,
+        workplan_ar: input.workplanAr,
+        workplan_en: input.workplanEn,
+        bibliographie_ar: input.bibliographieAr,
+        bibliographie_en: input.bibliographieEn,
+        typeProjet: resolveTypeProjet(input.typeProjet) as any,
+        status: resolveStatusSujet(input.status),
+        maxGrps: input.maxGrps,
       },
     });
 
@@ -192,8 +266,8 @@ export const submitPFEGroup = async (
     const updatedSubject = await prisma.pfeSujet.update({
       where: { id: group.sujetFinalId },
       data: {
-        titre: sujetFinal.titre,
-        description: `${sujetFinal.abstractFR}\n\n${sujetFinal.abstractEN}`,
+        description_ar: sujetFinal.abstractFR,
+        description_en: sujetFinal.abstractEN,
         status: StatusSujet.termine,
       },
     });

@@ -107,10 +107,10 @@ export const getAdminDashboardStats = async (): Promise<AdminDashboardStats> => 
     });
 
     const promoNames = await prisma.promo.findMany({
-      select: { id: true, nom: true },
+      select: { id: true, nom_ar: true, nom_en: true },
     });
 
-    const promoMap = new Map(promoNames.map((p) => [p.id, p.nom]));
+    const promoMap = new Map(promoNames.map((p) => [p.id, p.nom_ar || p.nom_en || `Promo ${p.id}`]));
     const studentsByPromoRecord: Record<string, number> = {};
 
     studentsByPromo.forEach((item) => {
@@ -201,14 +201,14 @@ export const getAdminReports = async () => {
       recentActivity: {
         requests: recentRequests.map((r) => ({
           id: r.id,
-          titre: r.objet,
+          titre: r.objet_ar || r.objet_en,
           status: r.status,
           submittedAt: r.dateReclamation,
           submittedBy: `${r.etudiant.user.nom} ${r.etudiant.user.prenom}`,
         })),
         disciplinaryCases: recentDisciplinaryCases.map((c) => ({
           id: c.id,
-          titre: c.infraction.nom,
+          titre: c.infraction.nom_ar || c.infraction.nom_en,
           status: c.status,
           gravite: c.infraction.gravite,
           dateRapport: c.dateSignal,

@@ -45,7 +45,7 @@ export const createAffectationCampaign = async (
     const campaign = await prisma.$transaction(async (tx) => {
       const newCampaign = await tx.campagneAffectation.create({
         data: {
-          nom: input.nom,
+          nom_ar: input.nom,
           anneeUniversitaire: input.anneeUniversitaire,
           dateDebut: input.dateDebut,
           dateFin: input.dateFin,
@@ -138,7 +138,7 @@ export const updateAffectationCampaign = async (
     const campaign = await prisma.campagneAffectation.update({
       where: { id },
       data: {
-        nom: input.nom,
+        nom_ar: input.nom,
         dateDebut: input.dateDebut,
         dateFin: input.dateFin,
         status: mapCampaignStatus(input.status),

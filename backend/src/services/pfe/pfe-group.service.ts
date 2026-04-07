@@ -23,7 +23,8 @@ export interface GroupStudentInfo {
   moyenne: number | null;
   promo: {
     id: number;
-    nom: string | null;
+    nom_ar: string | null;
+    nom_en: string | null;
   } | null;
   role: "membre" | "chef_groupe";
 }
@@ -76,7 +77,8 @@ export const getGroupStudents = async (
       promo: member.etudiant.promo
         ? {
             id: member.etudiant.promo.id,
-            nom: member.etudiant.promo.nom,
+            nom_ar: member.etudiant.promo.nom_ar,
+            nom_en: member.etudiant.promo.nom_en,
           }
         : null,
       role: member.role,
@@ -190,6 +192,8 @@ export const bulkAssignStudentsToGroup = async (
   input: AssignStudentsInput
 ): Promise<{ added: number; updated: number; failed: number; errors: string[] }> => {
   try {
+    const MAX_GROUP_MEMBERS = 3;
+
     // Verify group exists
     const group = await prisma.groupPfe.findUnique({
       where: { id: input.groupId },
@@ -206,6 +210,15 @@ export const bulkAssignStudentsToGroup = async (
 
     // Get existing member IDs
     const existingMemberIds = new Set(group.groupMembers.map((m) => m.etudiantId));
+    const currentMembersCount = group.groupMembers.length;
+
+    if (currentMembersCount >= MAX_GROUP_MEMBERS) {
+      throw new Error(`Group already reached the maximum of ${MAX_GROUP_MEMBERS} members`);
+    }
+
+    if (currentMembersCount + input.studentIds.length > MAX_GROUP_MEMBERS) {
+      throw new Error(`A PFE group can contain at most ${MAX_GROUP_MEMBERS} students`);
+    }
 
     // Separate new and existing assignments
     const newStudentIds = input.studentIds.filter((id) => !existingMemberIds.has(id));
@@ -366,11 +379,14 @@ export const getGroupWithTeacher = async (groupId: number) => {
 
     return {
       id: group.id,
-      nom: group.nom,
+      nom: group.nom_ar || group.nom_en || `Groupe ${group.id}`,
+      nom_ar: group.nom_ar,
+      nom_en: group.nom_en,
       sujet: group.sujetFinal
         ? {
             id: group.sujetFinal.id,
-            titre: group.sujetFinal.titre,
+            titre_ar: group.sujetFinal.titre_ar,
+            titre_en: group.sujetFinal.titre_en,
             enseignant: group.sujetFinal.enseignant
               ? {
                   id: group.sujetFinal.enseignant.id,

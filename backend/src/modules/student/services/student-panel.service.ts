@@ -34,11 +34,11 @@ type StudentContext = {
     anneeUniversitaire: string | null;
     specialite: {
       id: number;
-      nom: string;
+      nom: string | null;
       niveau: string | null;
       filiere: {
         id: number;
-        nom: string;
+        nom: string | null;
       } | null;
     } | null;
   } | null;
@@ -298,10 +298,20 @@ const ensureDefaultReclamationTypes = async () => {
   for (const item of DEFAULT_RECLAMATION_TYPES) {
     const existing = await prisma.reclamationType.findFirst({
       where: {
-        nom: {
-          equals: item.nom,
-          mode: "insensitive",
-        },
+        OR: [
+          {
+            nom_ar: {
+              equals: item.nom,
+              mode: "insensitive",
+            },
+          },
+          {
+            nom_en: {
+              equals: item.nom,
+              mode: "insensitive",
+            },
+          },
+        ],
       },
       select: { id: true },
     });
@@ -309,8 +319,10 @@ const ensureDefaultReclamationTypes = async () => {
     if (!existing) {
       await prisma.reclamationType.create({
         data: {
-          nom: item.nom,
-          description: item.description,
+          nom_ar: item.nom,
+          nom_en: item.nom,
+          description_ar: item.description,
+          description_en: item.description,
         },
       });
     }
@@ -333,18 +345,21 @@ const resolveStudentContext = async (userId: number): Promise<StudentContext> =>
       promo: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
           section: true,
           anneeUniversitaire: true,
           specialite: {
             select: {
               id: true,
-              nom: true,
+              nom_ar: true,
+              nom_en: true,
               niveau: true,
               filiere: {
                 select: {
                   id: true,
-                  nom: true,
+                  nom_ar: true,
+                  nom_en: true,
                 },
               },
             },
@@ -371,7 +386,8 @@ const resolveStudentContext = async (userId: number): Promise<StudentContext> =>
           module: {
             select: {
               id: true,
-              nom: true,
+              nom_ar: true,
+              nom_en: true,
               code: true,
             },
           },
@@ -401,13 +417,13 @@ const resolveStudentContext = async (userId: number): Promise<StudentContext> =>
 
     moduleById.set(teaching.moduleId, {
       id: teaching.moduleId,
-      name: teaching.module.nom,
+      name: teaching.module.nom_ar || teaching.module.nom_en || "Module",
       code: teaching.module.code,
     });
 
     modules.push({
       moduleId: teaching.moduleId,
-      moduleName: teaching.module.nom,
+      moduleName: teaching.module.nom_ar || teaching.module.nom_en || "Module",
       moduleCode: teaching.module.code,
     });
   });
@@ -427,18 +443,18 @@ const resolveStudentContext = async (userId: number): Promise<StudentContext> =>
     promo: student.promo
       ? {
           id: student.promo.id,
-          nom: student.promo.nom,
+          nom: student.promo.nom_ar || student.promo.nom_en || null,
           section: student.promo.section,
           anneeUniversitaire: student.promo.anneeUniversitaire,
           specialite: student.promo.specialite
             ? {
                 id: student.promo.specialite.id,
-                nom: student.promo.specialite.nom,
+                nom: student.promo.specialite.nom_ar || student.promo.specialite.nom_en || null,
                 niveau: student.promo.specialite.niveau,
                 filiere: student.promo.specialite.filiere
                   ? {
                       id: student.promo.specialite.filiere.id,
-                      nom: student.promo.specialite.filiere.nom,
+                      nom: student.promo.specialite.filiere.nom_ar || student.promo.specialite.filiere.nom_en || null,
                     }
                   : null,
               }
@@ -518,15 +534,27 @@ const fetchVisibleAnnouncements = async (
   if (searchTerm) {
     andConditions.push({
       OR: [
-        { titre: { contains: searchTerm, mode: "insensitive" } },
-        { contenu: { contains: searchTerm, mode: "insensitive" } },
+        { titre_ar: { contains: searchTerm, mode: "insensitive" } },
+        { titre_en: { contains: searchTerm, mode: "insensitive" } },
+        { contenu_ar: { contains: searchTerm, mode: "insensitive" } },
+        { contenu_en: { contains: searchTerm, mode: "insensitive" } },
         {
           type: {
             is: {
-              nom: {
-                contains: searchTerm,
-                mode: "insensitive",
-              },
+              OR: [
+                {
+                  nom_ar: {
+                    contains: searchTerm,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  nom_en: {
+                    contains: searchTerm,
+                    mode: "insensitive",
+                  },
+                },
+              ],
             },
           },
         },
@@ -562,7 +590,8 @@ const fetchVisibleAnnouncements = async (
       type: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
       documents: true,
@@ -593,7 +622,7 @@ const mapAnnouncementForStudent = (
   context: StudentContext,
   announcement: Prisma.AnnonceGetPayload<{
     include: {
-      type: { select: { id: true; nom: true } };
+      type: { select: { id: true; nom_ar: true; nom_en: true } };
       documents: true;
     };
   }>,
@@ -605,15 +634,15 @@ const mapAnnouncementForStudent = (
 
   return {
     id: announcement.id,
-    title: announcement.titre,
-    description: announcement.contenu,
+    title: announcement.titre_ar || announcement.titre_en || "Announcement",
+    description: announcement.contenu_ar || announcement.contenu_en || "",
     status: (isScheduled ? "scheduled" : "published") as StudentPanelAnnouncementStatus,
     publishedAt: announcement.datePublication,
     expiresAt: announcement.dateExpiration,
     type: announcement.type
       ? {
           id: announcement.type.id,
-          name: announcement.type.nom,
+          name: announcement.type.nom_ar || announcement.type.nom_en || null,
         }
       : null,
     module: moduleMeta
@@ -630,7 +659,7 @@ const mapAnnouncementForStudent = (
         fileName: path.basename(normalizedPath),
         storedPath: normalizedPath,
         downloadUrl: `/api/v1/student/panel/announcements/${announcement.id}/documents/${document.id}/download`,
-        description: document.description,
+        description: document.description_ar || document.description_en || null,
         createdAt: document.createdAt,
       };
     }),
@@ -647,7 +676,8 @@ const resolveAccessibleAnnouncement = async (
       type: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
       documents: true,
@@ -754,10 +784,10 @@ const resolveReclamationTypeId = async (input: {
 
   const type = await prisma.reclamationType.findFirst({
     where: {
-      nom: {
-        equals: typeName,
-        mode: "insensitive",
-      },
+      OR: [
+        { nom_ar: { equals: typeName, mode: "insensitive" } },
+        { nom_en: { equals: typeName, mode: "insensitive" } },
+      ],
     },
     select: { id: true },
   });
@@ -780,7 +810,8 @@ const resolveReclamationContext = async (context: StudentContext, reclamationId:
       type: {
         select: {
           id: true,
-          nom: true,
+          nom_ar: true,
+          nom_en: true,
         },
       },
     },
@@ -911,10 +942,11 @@ export const listStudentPanelAnnouncements = async (
   const types = await prisma.annonceType.findMany({
     select: {
       id: true,
-      nom: true,
+      nom_ar: true,
+      nom_en: true,
     },
     orderBy: {
-      nom: "asc",
+      nom_ar: "asc",
     },
   });
 
@@ -929,7 +961,7 @@ export const listStudentPanelAnnouncements = async (
     modules: context.modules,
     types: types.map((type) => ({
       id: type.id,
-      name: type.nom,
+      name: type.nom_ar || type.nom_en || null,
     })),
   };
 };
@@ -989,8 +1021,10 @@ export const listStudentPanelReclamationTypes = async () => {
   const types = await prisma.reclamationType.findMany({
     select: {
       id: true,
-      nom: true,
-      description: true,
+      nom_ar: true,
+      nom_en: true,
+      description_ar: true,
+      description_en: true,
     },
     orderBy: {
       id: "asc",
@@ -999,8 +1033,8 @@ export const listStudentPanelReclamationTypes = async () => {
 
   return types.map((type) => ({
     id: type.id,
-    name: type.nom,
-    description: type.description,
+    name: type.nom_ar || type.nom_en || null,
+    description: type.description_ar || type.description_en || null,
   }));
 };
 
@@ -1041,8 +1075,8 @@ export const createStudentPanelReclamation = async (
       data: {
         etudiantId: context.etudiantId,
         typeId,
-        objet: title,
-        description,
+        objet_ar: title,
+        description_ar: description,
         priorite: priority,
         status: StatusReclamation.soumise,
       },
@@ -1111,15 +1145,17 @@ export const listStudentPanelReclamations = async (
   const searchTerm = filters.search?.trim();
   if (searchTerm) {
     where.OR = [
-      { objet: { contains: searchTerm, mode: "insensitive" } },
-      { description: { contains: searchTerm, mode: "insensitive" } },
+      { objet_ar: { contains: searchTerm, mode: "insensitive" } },
+      { objet_en: { contains: searchTerm, mode: "insensitive" } },
+      { description_ar: { contains: searchTerm, mode: "insensitive" } },
+      { description_en: { contains: searchTerm, mode: "insensitive" } },
       {
         type: {
           is: {
-            nom: {
-              contains: searchTerm,
-              mode: "insensitive",
-            },
+            OR: [
+              { nom_ar: { contains: searchTerm, mode: "insensitive" } },
+              { nom_en: { contains: searchTerm, mode: "insensitive" } },
+            ],
           },
         },
       },
@@ -1146,7 +1182,8 @@ export const listStudentPanelReclamations = async (
         type: {
           select: {
             id: true,
-            nom: true,
+            nom_ar: true,
+            nom_en: true,
           },
         },
       },
@@ -1159,7 +1196,10 @@ export const listStudentPanelReclamations = async (
     prisma.reclamationType.findMany({
       select: {
         id: true,
-        nom: true,
+        nom_ar: true,
+        nom_en: true,
+        description_ar: true,
+        description_en: true,
       },
       orderBy: {
         id: "asc",
@@ -1177,18 +1217,18 @@ export const listStudentPanelReclamations = async (
 
     return {
       id: reclamation.id,
-      title: reclamation.objet,
-      description: reclamation.description,
+      title: reclamation.objet_ar || reclamation.objet_en || "Request",
+      description: reclamation.description_ar || reclamation.description_en || "",
       status: mapReclamationStatusToUi(reclamation.status),
       rawStatus: reclamation.status,
       priority: reclamation.priorite,
       type: reclamation.type
         ? {
             id: reclamation.type.id,
-            name: reclamation.type.nom,
+            name: reclamation.type.nom_ar || reclamation.type.nom_en || null,
           }
         : null,
-      adminResponse: reclamation.reponse,
+      adminResponse: reclamation.reponse_ar || reclamation.reponse_en || null,
       createdAt: reclamation.createdAt,
       updatedAt: reclamation.updatedAt,
       processedAt: reclamation.dateTraitement,
@@ -1213,7 +1253,7 @@ export const listStudentPanelReclamations = async (
     },
     types: types.map((type) => ({
       id: type.id,
-      name: type.nom,
+      name: type.nom_ar || type.nom_en,
     })),
   };
 };
@@ -1228,18 +1268,18 @@ export const getStudentPanelReclamationDetails = async (userId: number, reclamat
 
   return {
     id: reclamation.id,
-    title: reclamation.objet,
-    description: reclamation.description,
+    title: reclamation.objet_ar || reclamation.objet_en || "Request",
+    description: reclamation.description_ar || reclamation.description_en || "",
     status: mapReclamationStatusToUi(reclamation.status),
     rawStatus: reclamation.status,
     priority: reclamation.priorite,
     type: reclamation.type
       ? {
           id: reclamation.type.id,
-          name: reclamation.type.nom,
+          name: reclamation.type.nom_ar || reclamation.type.nom_en || null,
         }
       : null,
-    adminResponse: reclamation.reponse,
+    adminResponse: reclamation.reponse_ar || reclamation.reponse_en || null,
     createdAt: reclamation.createdAt,
     updatedAt: reclamation.updatedAt,
     processedAt: reclamation.dateTraitement,

@@ -149,6 +149,17 @@ npx prisma generate
 npx prisma db seed
 ```
 
+### Start from a fresh database (same DB name, wipe old data)
+
+If you already used the same DB name before and want a clean restart:
+
+```bash
+cd backend
+npm run db:fresh
+```
+
+This command resets the schema, regenerates Prisma client, and seeds test data again.
+
 ### Verify it worked
 
 ```bash
@@ -243,6 +254,8 @@ The endpoint returns row-level results with:
 | `npx prisma db push`    | Sync schema → database (no migration files) |
 | `npx prisma db seed`    | Insert test data                      |
 | `npx prisma generate`   | Regenerate Prisma client after schema changes |
+| `npm run prisma:reset`  | Drop & recreate DB via migrations     |
+| `npm run db:fresh`      | Force-reset schema + generate + seed  |
 
 ---
 

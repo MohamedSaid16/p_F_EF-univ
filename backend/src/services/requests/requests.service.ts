@@ -70,7 +70,12 @@ const resolveEtudiantId = async (studentId: number | undefined, submittedBy: num
 const resolveTypeId = async (typeRequest: string): Promise<number> => {
   const name = typeRequest.trim();
   const existing = await prisma.reclamationType.findFirst({
-    where: { nom: { equals: name, mode: "insensitive" } },
+    where: {
+      OR: [
+        { nom_ar: { equals: name, mode: "insensitive" } },
+        { nom_en: { equals: name, mode: "insensitive" } },
+      ],
+    },
     select: { id: true },
   });
 
@@ -79,7 +84,7 @@ const resolveTypeId = async (typeRequest: string): Promise<number> => {
   }
 
   const created = await prisma.reclamationType.create({
-    data: { nom: name },
+    data: { nom_ar: name },
     select: { id: true },
   });
 
@@ -93,13 +98,13 @@ export const createRequest = async (input: CreateRequestInput) => {
 
     const request = await prisma.reclamation.create({
       data: {
-        objet: input.titre,
-        description: input.description,
+        objet_ar: input.titre,
+        description_ar: input.description,
         etudiantId,
         typeId,
         status: StatusReclamation.soumise,
         dateReclamation: new Date(),
-        reponse: input.documents?.join("\n") || null,
+        reponse_ar: input.documents?.join("\n") || null,
       },
       include: {
         etudiant: {
@@ -141,10 +146,10 @@ export const getRequests = async (filters?: {
 
     if (filters?.typeRequest?.trim()) {
       where.type = {
-        nom: {
-          equals: filters.typeRequest.trim(),
-          mode: "insensitive",
-        },
+        OR: [
+          { nom_ar: { equals: filters.typeRequest.trim(), mode: "insensitive" } },
+          { nom_en: { equals: filters.typeRequest.trim(), mode: "insensitive" } },
+        ],
       };
     }
 
@@ -206,11 +211,11 @@ export const updateRequest = async (id: number, input: UpdateRequestInput) => {
     const request = await prisma.reclamation.update({
       where: { id },
       data: {
-        objet: input.titre,
-        description: input.description,
+        objet_ar: input.titre,
+        description_ar: input.description,
         typeId,
         status: mapStatus(input.status),
-        reponse: input.feedback,
+        reponse_ar: input.feedback,
       },
       include: {
         etudiant: {
@@ -235,7 +240,7 @@ export const approveRequest = async (input: ApproveRequestInput) => {
       data: {
         status: StatusReclamation.traitee,
         traitePar: input.approvedBy,
-        reponse: input.feedback,
+        reponse_ar: input.feedback,
         dateTraitement: new Date(),
       },
       include: {
@@ -261,7 +266,7 @@ export const rejectRequest = async (input: RejectRequestInput) => {
       data: {
         status: StatusReclamation.refusee,
         traitePar: input.rejectedBy,
-        reponse: input.reason,
+        reponse_ar: input.reason,
         dateTraitement: new Date(),
       },
       include: {
