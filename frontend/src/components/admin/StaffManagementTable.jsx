@@ -180,8 +180,8 @@ const StaffManagementTable = ({ refreshKey = 0 }) => {
   // Get role badge color
   const getRoleBadgeColor = (roleNames) => {
     if (!roleNames) return 'bg-surface-200 text-ink-secondary border border-edge';
-    if (roleNames.includes('admin')) return 'bg-danger/10 text-danger border border-danger/30';
-    if (roleNames.some((r) => ['enseignant', 'directeur_etude'].includes(r))) return 'bg-brand-light text-brand border border-brand/30';
+    if (roleNames.includes('admin')) return 'bg-danger/10 text-danger border border-edge-strong';
+    if (roleNames.some((r) => ['enseignant', 'directeur_etude'].includes(r))) return 'bg-brand-light text-brand border border-edge-strong';
     if (roleNames.includes('etudiant')) return 'bg-success/10 text-success border border-success/30';
     return 'bg-surface-200 text-ink-secondary border border-edge';
   };
@@ -451,3 +451,4 @@ const StaffManagementTable = ({ refreshKey = 0 }) => {
 };
 
 export default StaffManagementTable;
+

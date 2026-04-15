@@ -69,7 +69,7 @@ export const createAnnonceHandler = async (req: AuthRequest, res: Response): Pro
       return;
     }
 
-    const { titre, contenu, typeAnnonce, typeId, dateExpiration } = req.body;
+    const { titre, contenu, priority, priorite, typeAnnonce, typeId, dateExpiration } = req.body;
     const file = req.file;
 
     const normalizedTitle = typeof titre === "string" ? titre.trim() : "";
@@ -84,6 +84,7 @@ export const createAnnonceHandler = async (req: AuthRequest, res: Response): Pro
       {
         titre: normalizedTitle,
         contenu: normalizedContent,
+        priority: typeof priority === "string" ? priority : typeof priorite === "string" ? priorite : undefined,
         typeAnnonce: typeof typeAnnonce === "string" ? typeAnnonce : undefined,
         typeId: typeId !== undefined ? Number(typeId) : undefined,
         dateExpiration: dateExpiration ? new Date(dateExpiration) : undefined,
@@ -112,11 +113,12 @@ export const updateAnnonceHandler = async (req: AuthRequest, res: Response): Pro
       return;
     }
 
-    const { titre, contenu, typeAnnonce, typeId, dateExpiration } = req.body;
+    const { titre, contenu, priority, priorite, typeAnnonce, typeId, dateExpiration } = req.body;
 
     const data = await updateAnnounce(id, {
       titre: typeof titre === "string" ? titre.trim() : undefined,
       contenu: typeof contenu === "string" ? contenu.trim() : undefined,
+      priority: typeof priority === "string" ? priority : typeof priorite === "string" ? priorite : undefined,
       typeAnnonce: typeof typeAnnonce === "string" ? typeAnnonce : undefined,
       typeId: typeId !== undefined ? Number(typeId) : undefined,
       dateExpiration: dateExpiration ? new Date(dateExpiration) : undefined,

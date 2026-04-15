@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import bannerBg from '../../assets/images/computer.jpg';
+import { resolveMediaUrl } from '../../services/api';
+import { getLocalizedSetting, useSiteSettings } from '../../contexts/SiteSettingsContext';
 
 /* Inline SVG icons */
 const GraduationCapIcon = ({ className }) => (
@@ -25,21 +27,28 @@ const AwardIcon = ({ className }) => (
   </svg>
 );
 
-const statCards = [
-  { Icon: GraduationCapIcon, value: '28K+', labelKey: 'banner.students' },
-  { Icon: UsersIcon, value: '1.1K+', labelKey: 'banner.teachersStat' },
-  { Icon: BookIcon, value: '8', labelKey: 'banner.faculties' },
-  { Icon: AwardIcon, value: '15th', labelKey: 'banner.nationalRank' },
-];
-
 export default function BannerSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { settings } = useSiteSettings();
+
+  const bannerBackgroundSource = settings?.bannerBackgroundUrl
+    ? resolveMediaUrl(settings.bannerBackgroundUrl)
+    : bannerBg;
+
+  const universityName = getLocalizedSetting(settings, 'universityName', i18n.language, t('banner.universityName'));
+
+  const statCards = [
+    { Icon: GraduationCapIcon, value: settings?.bannerStudentsStat || '28K+', labelKey: 'banner.students' },
+    { Icon: UsersIcon, value: settings?.bannerTeachersStat || '1.1K+', labelKey: 'banner.teachersStat' },
+    { Icon: BookIcon, value: settings?.bannerFacultiesStat || '8', labelKey: 'banner.faculties' },
+    { Icon: AwardIcon, value: settings?.bannerNationalRankStat || '15th', labelKey: 'banner.nationalRank' },
+  ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img src={bannerBg} alt="University Campus" className="w-full h-full object-cover" />
+        <img src={bannerBackgroundSource} alt={universityName} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
@@ -51,7 +60,7 @@ export default function BannerSection() {
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               {t('banner.welcome')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
-                {t('banner.universityName')}
+                {universityName}
               </span>
             </h2>
             <p className="text-xl mb-8 text-white/90 leading-relaxed">

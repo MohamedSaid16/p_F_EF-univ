@@ -25,15 +25,15 @@ export default function StudentsBoard({ students, enseignementId, onDataChange }
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-control-border border-control-border overflow-hidden">
+      <div className="px-6 py-4 border-b border-control-border border-control-border flex justify-between items-center">
         <h3 className="font-bold text-slate-800 dark:text-white">
           {t('studentsBoard')} ({students.length})
         </h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-          <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
+          <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-control-border border-control-border">
             <tr>
               <th className="px-6 py-4">{t('matricule')}</th>
               <th className="px-6 py-4">{t('studentName')}</th>
@@ -93,3 +93,4 @@ export default function StudentsBoard({ students, enseignementId, onDataChange }
     </div>
   );
 }
+

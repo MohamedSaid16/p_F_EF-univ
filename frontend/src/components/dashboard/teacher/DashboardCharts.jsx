@@ -72,7 +72,7 @@ export default function DashboardCharts({ data }) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
       
       {/* Bar Chart for Modules */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-control-border border-control-border">
         <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-6">
           {t('charts.moduleDistribution')}
         </h3>
@@ -98,7 +98,7 @@ export default function DashboardCharts({ data }) {
       </div>
 
       {/* Pie Chart for PFE Stats */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-control-border border-control-border">
         <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-6">
           {t('charts.pfeStatus')}
         </h3>
@@ -132,3 +132,4 @@ export default function DashboardCharts({ data }) {
     </div>
   );
 }
+

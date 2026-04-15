@@ -1,6 +1,24 @@
 import prisma from "../../config/database";
-import { Prisma, TypeFichierAnnonce } from "@prisma/client";
+import { Prisma, PrioriteAnnonce, TypeFichierAnnonce } from "@prisma/client";
 import logger from "../../utils/logger";
+
+const normalizeAnnouncementPriority = (value?: string): PrioriteAnnonce => {
+  const normalized = String(value ?? "").trim().toLowerCase();
+
+  if (normalized === "basse" || normalized === "low") {
+    return "basse";
+  }
+
+  if (normalized === "haute" || normalized === "high") {
+    return "haute";
+  }
+
+  if (normalized === "urgente" || normalized === "urgent") {
+    return "urgente";
+  }
+
+  return "normale";
+};
 
 const resolveFileType = (mimeType?: string): TypeFichierAnnonce => {
   if (!mimeType) {
@@ -28,6 +46,7 @@ const resolveFileType = (mimeType?: string): TypeFichierAnnonce => {
 export interface CreateAnnounceInput {
   titre: string;
   contenu: string;
+  priority?: string;
   typeAnnonce?: string;
   typeId?: number;
   dateExpiration?: Date;
@@ -38,6 +57,7 @@ export interface CreateAnnounceInput {
 export interface UpdateAnnounceInput {
   titre?: string;
   contenu?: string;
+  priority?: string;
   typeAnnonce?: string;
   typeId?: number;
   dateExpiration?: Date;
@@ -93,6 +113,7 @@ export const createAnnounce = async (
         titre_en: input.titre,
         contenu_ar: input.contenu,
         contenu_en: input.contenu,
+        priorite: normalizeAnnouncementPriority(input.priority),
         auteurId: createdById,
         typeId,
         datePublication: new Date(),
@@ -207,6 +228,7 @@ export const updateAnnounce = async (id: number, input: UpdateAnnounceInput) => 
         titre_en: input.titre,
         contenu_ar: input.contenu,
         contenu_en: input.contenu,
+        priorite: input.priority ? normalizeAnnouncementPriority(input.priority) : undefined,
         typeId: typeId ?? undefined,
         dateExpiration: input.dateExpiration,
       },

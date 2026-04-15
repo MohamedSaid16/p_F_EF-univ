@@ -18,6 +18,7 @@ import teacherRoutes from "./modules/teacher/routes/teacher.routes";
 import actualitesRoutes from "./modules/actualites/routes/actualites.routes";
 import annoncesRoutes from "./modules/annonces/routes/annonces.routes";
 import aiRoutes from "./modules/ai/routes/ai.routes";
+import siteSettingsRoutes from "./modules/settings/routes/site-settings.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
 const app = express();
@@ -84,6 +85,7 @@ app.use("/api/v1/teacher", teacherRoutes);
 app.use("/api/v1/actualites", actualitesRoutes);
 app.use("/api/v1/annonces", annoncesRoutes);
 app.use("/api/v1/ai", aiRoutes);
+app.use("/api/v1/site-settings", siteSettingsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

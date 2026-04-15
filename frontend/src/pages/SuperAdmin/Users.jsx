@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import UserRegistrationForm from '../../components/admin/UserRegistrationForm';
 import StaffManagementTable from '../../components/admin/StaffManagementTable';
 import { Users, Plus, Settings } from 'lucide-react';
@@ -65,7 +65,7 @@ const Users = () => {
         </div>
 
         {/* Info Box */}
-        <div className="bg-brand-light border border-brand/30 rounded-lg p-6 max-w-7xl mx-auto">
+        <div className="bg-brand-light border border-edge-strong rounded-lg p-6 max-w-7xl mx-auto">
           <h3 className="font-bold text-brand mb-3">Role Management Best Practices</h3>
           <ul className="space-y-2 text-brand text-sm">
             <li>Teacher roles (Enseignant, Admin, Vice Doyen) cannot be mixed with student roles.</li>
@@ -80,3 +80,4 @@ const Users = () => {
 };
 
 export default Users;
+

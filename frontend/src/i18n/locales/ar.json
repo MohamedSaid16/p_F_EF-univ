@@ -20,7 +20,8 @@
     "adminHub": "مركز تحكم الإدارة",
     "userManagement": "إدارة المستخدمين",
     "academicStructure": "الهيكلة الأكاديمية",
-    "academicAssignments": "الإسنادات الأكاديمية"
+    "academicAssignments": "الإسنادات الأكاديمية",
+    "siteConfiguration": "تهيئة الموقع"
   },
   "sections": {
     "academic": "أكاديمي",

@@ -891,7 +891,7 @@ export default function TeacherDashboard() {
               <button
                 type="button"
                 onClick={() => toggleAnnouncementStatus(row, 'draft')}
-                className="rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
+                className="rounded-md border border-edge-strong bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
               >
                 Unpublish
               </button>
@@ -899,7 +899,7 @@ export default function TeacherDashboard() {
               <button
                 type="button"
                 onClick={() => toggleAnnouncementStatus(row, 'published')}
-                className="rounded-md border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
+                className="rounded-md border border-edge-strong bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
               >
                 Publish
               </button>
@@ -907,7 +907,7 @@ export default function TeacherDashboard() {
             <button
               type="button"
               onClick={() => setAnnouncementDeleteModal(row)}
-              className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700"
+              className="rounded-md border border-edge-strong bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700"
             >
               Delete
             </button>
@@ -1085,7 +1085,7 @@ export default function TeacherDashboard() {
             <button
               type="button"
               onClick={() => setDocumentDeleteModal(row)}
-              className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700"
+              className="rounded-md border border-edge-strong bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700"
             >
               Delete
             </button>
@@ -1123,13 +1123,13 @@ export default function TeacherDashboard() {
           </p>
 
           {error ? (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mt-4 rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           ) : null}
 
           {successMessage ? (
-            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div className="mt-4 rounded-xl border border-edge-strong bg-green-50 px-4 py-3 text-sm text-green-700">
               {successMessage}
             </div>
           ) : null}
@@ -1508,7 +1508,7 @@ export default function TeacherDashboard() {
             <p className="mt-1 text-sm text-ink-tertiary">Update your visible identity and contact information.</p>
 
             {profileLoading ? (
-              <div className="mt-4 h-10 w-10 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+              <div className="mt-4 h-10 w-10 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
             ) : (
               <form className="mt-4 space-y-3" onSubmit={submitProfile}>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -1930,7 +1930,7 @@ export default function TeacherDashboard() {
       >
         {studentHistoryLoading ? (
           <div className="flex items-center justify-center py-10">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
           </div>
         ) : (
           <div className="space-y-3">
@@ -2058,3 +2058,4 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+

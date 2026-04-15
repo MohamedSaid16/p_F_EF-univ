@@ -20,7 +20,8 @@
     "adminHub": "Admin Control Center",
     "userManagement": "User Management",
     "academicStructure": "Academic Structure",
-    "academicAssignments": "Academic Assignments"
+    "academicAssignments": "Academic Assignments",
+    "siteConfiguration": "Site Configuration"
   },
   "sections": {
     "academic": "Academic",

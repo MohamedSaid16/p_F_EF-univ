@@ -57,7 +57,7 @@ export default function StatCards({ data }) {
       {cards.map((card, index) => (
         <div 
           key={index} 
-          className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center space-x-4 rtl:space-x-reverse transition-transform hover:-translate-y-1 hover:shadow-lg duration-300 group"
+          className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-control-border border-control-border flex items-center space-x-4 rtl:space-x-reverse transition-transform hover:-translate-y-1 hover:shadow-lg duration-300 group"
         >
           <div className={`p-4 rounded-xl ${card.lightColor} group-hover:scale-110 transition-transform`}>
             {card.icon}
@@ -75,3 +75,4 @@ export default function StatCards({ data }) {
     </div>
   );
 }
+

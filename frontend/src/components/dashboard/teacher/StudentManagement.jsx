@@ -55,7 +55,7 @@ export default function StudentManagement({ enseignements }) {
   return (
     <div className="space-y-6">
       {/* Module Selector Header */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-control-border border-control-border flex flex-col sm:flex-row justify-between items-center gap-4">
         <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
           <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -68,7 +68,7 @@ export default function StudentManagement({ enseignements }) {
             {t('selectModule')}:
           </label>
           <select 
-            className="w-full sm:w-64 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 p-2.5 outline-none font-medium"
+            className="w-full sm:w-64 bg-slate-50 dark:bg-slate-900 border border-control-border border-control-border text-slate-700 dark:text-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 p-2.5 outline-none font-medium"
             value={selectedEnseignement || ''}
             onChange={(e) => setSelectedEnseignement(parseInt(e.target.value))}
           >
@@ -82,7 +82,7 @@ export default function StudentManagement({ enseignements }) {
       </div>
 
       {/* Navigation Pills */}
-      <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-100 dark:border-slate-700 mx-auto w-max mb-6 shadow-sm">
+      <div className="flex bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-control-border border-control-border mx-auto w-max mb-6 shadow-sm">
         <button
           onClick={() => setActiveBoard('students')}
           className={`px-6 py-2 text-sm font-bold rounded-md transition-colors ${
@@ -147,3 +147,4 @@ export default function StudentManagement({ enseignements }) {
     </div>
   );
 }
+

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { adminPanelAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import DataTable from '../components/admin/shared/DataTable';
@@ -99,18 +100,18 @@ function formatTokenLabel(value) {
 
 function normalizeStatusClass(status) {
   if (status === 'active' || status === 'approved' || status === 'published') {
-    return 'bg-green-50 text-green-700 border-green-200';
+    return 'bg-green-50 text-green-700 border-edge-strong';
   }
 
   if (status === 'pending' || status === 'draft' || status === 'inactive') {
-    return 'bg-amber-50 text-amber-700 border-amber-200';
+    return 'bg-amber-50 text-amber-700 border-edge-strong';
   }
 
   if (status === 'rejected' || status === 'suspended' || status === 'archived') {
-    return 'bg-red-50 text-red-700 border-red-200';
+    return 'bg-red-50 text-red-700 border-edge-strong';
   }
 
-  return 'bg-blue-50 text-blue-700 border-blue-200';
+  return 'bg-blue-50 text-blue-700 border-edge-strong';
 }
 
 function mapRoleFilterToApi(roleValue) {
@@ -561,7 +562,7 @@ export default function AdminPanelPage() {
           <button
             type="button"
             onClick={() => setDeleteUserModal(row)}
-            className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+            className="rounded-md border border-edge-strong bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
           >
             Delete
           </button>
@@ -621,7 +622,7 @@ export default function AdminPanelPage() {
           <button
             type="button"
             onClick={() => setAnnouncementDeleteModal(row)}
-            className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+            className="rounded-md border border-edge-strong bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
           >
             Delete
           </button>
@@ -760,7 +761,7 @@ export default function AdminPanelPage() {
             type="button"
             onClick={() => setDocumentDeleteModal(row)}
             disabled={documentActionLoading === `download-${row.id}`}
-            className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+            className="rounded-md border border-edge-strong bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
           >
             Delete
           </button>
@@ -937,50 +938,52 @@ export default function AdminPanelPage() {
 
   const announcementsContent = (
     <div className="space-y-4">
-      <div className="grid gap-3 lg:grid-cols-5">
-        <input
-          type="text"
-          value={announcementFilters.search}
-          onChange={(event) => setAnnouncementFilters((previous) => ({ ...previous, search: event.target.value, page: 1 }))}
-          placeholder="Search announcements"
-          className={inputClassName}
-        />
+      <div className="rounded-lg border border-edge bg-surface p-4 pt-6 shadow-card">
+        <div className="grid gap-3 lg:grid-cols-5">
+          <input
+            type="text"
+            value={announcementFilters.search}
+            onChange={(event) => setAnnouncementFilters((previous) => ({ ...previous, search: event.target.value, page: 1 }))}
+            placeholder="Search announcements"
+            className={inputClassName}
+          />
 
-        <select
-          value={announcementFilters.status}
-          onChange={(event) => setAnnouncementFilters((previous) => ({ ...previous, status: event.target.value, page: 1 }))}
-          className={selectClassName}
-        >
-          {ANNOUNCEMENT_STATUS_OPTIONS.map((option, index) => (
-            <option key={`${option.value}-${index}`} value={option.value}>{option.label}</option>
-          ))}
-        </select>
+          <select
+            value={announcementFilters.status}
+            onChange={(event) => setAnnouncementFilters((previous) => ({ ...previous, status: event.target.value, page: 1 }))}
+            className={selectClassName}
+          >
+            {ANNOUNCEMENT_STATUS_OPTIONS.map((option, index) => (
+              <option key={`${option.value}-${index}`} value={option.value}>{option.label}</option>
+            ))}
+          </select>
 
-        <select
-          value={announcementFilters.target}
-          onChange={(event) => setAnnouncementFilters((previous) => ({ ...previous, target: event.target.value, page: 1 }))}
-          className={selectClassName}
-        >
-          {ANNOUNCEMENT_TARGET_OPTIONS.map((option, index) => (
-            <option key={`${option.value}-${index}`} value={option.value}>{option.label}</option>
-          ))}
-        </select>
+          <select
+            value={announcementFilters.target}
+            onChange={(event) => setAnnouncementFilters((previous) => ({ ...previous, target: event.target.value, page: 1 }))}
+            className={selectClassName}
+          >
+            {ANNOUNCEMENT_TARGET_OPTIONS.map((option, index) => (
+              <option key={`${option.value}-${index}`} value={option.value}>{option.label}</option>
+            ))}
+          </select>
 
-        <button
-          type="button"
-          onClick={loadAnnouncements}
-          className="rounded-lg border border-edge bg-surface px-3 py-2 text-sm font-medium text-ink-secondary hover:bg-surface-200"
-        >
-          Refresh
-        </button>
+          <button
+            type="button"
+            onClick={loadAnnouncements}
+            className="rounded-md border border-edge bg-surface px-4 py-2.5 text-sm font-medium text-ink-secondary transition-all duration-150 hover:bg-surface-200 hover:text-ink focus:outline-none focus:ring-2 focus:ring-brand/30 focus:ring-offset-2 focus:ring-offset-canvas"
+          >
+            Refresh
+          </button>
 
-        <button
-          type="button"
-          onClick={openCreateAnnouncementModal}
-          className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-hover"
-        >
-          New announcement
-        </button>
+          <button
+            type="button"
+            onClick={openCreateAnnouncementModal}
+            className="rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-hover active:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/30 focus:ring-offset-2 focus:ring-offset-canvas"
+          >
+            New announcement
+          </button>
+        </div>
       </div>
 
       <DataTable
@@ -1197,17 +1200,25 @@ export default function AdminPanelPage() {
             Manage users, announcements, reclamations, documents, and audit visibility from one secure interface.
             Signed in as {user?.prenom} {user?.nom}.
           </p>
+          <div className="mt-4">
+            <Link
+              to="/dashboard/admin/site-settings"
+              className="inline-flex rounded-md border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:bg-surface-200"
+            >
+              Open Site Configuration
+            </Link>
+          </div>
         </div>
       </header>
 
       {error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-xl border border-edge-strong bg-green-50 px-4 py-3 text-sm text-green-700">
           {successMessage}
         </div>
       ) : null}
@@ -1402,7 +1413,7 @@ export default function AdminPanelPage() {
             </select>
           </label>
 
-          <label className="space-y-1 text-sm text-ink-secondary">
+          <label className="space-y-1 text-sm text-ink-secondary md:col-span-2">
             <span>Priority</span>
             <select
               value={announcementForm.priority}
@@ -1413,6 +1424,7 @@ export default function AdminPanelPage() {
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
+            <p className="text-xs text-ink-tertiary">Urgent and high priority items appear in the public important announcements slider.</p>
           </label>
 
           <label className="space-y-1 text-sm text-ink-secondary">
@@ -1612,13 +1624,13 @@ export default function AdminPanelPage() {
 
           {workflowLoading ? (
             <div className="py-6 text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
               <p className="mt-3 text-sm text-ink-tertiary">Loading workflow history...</p>
             </div>
           ) : null}
 
           {!workflowLoading && workflowError ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
               {workflowError}
             </div>
           ) : null}
@@ -1717,3 +1729,4 @@ export default function AdminPanelPage() {
     </div>
   );
 }
+

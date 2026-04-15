@@ -181,13 +181,13 @@ const waitForNodeImages = async (container) => {
 
 const CASE_STATUS_CONFIG = {
   pending:    { label: 'Pending Investigation', bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/30', dot: 'bg-warning' },
-  hearing:    { label: 'Hearing Scheduled', bg: 'bg-brand-light', text: 'text-brand', border: 'border-brand/30', dot: 'bg-brand' },
-  sanctioned: { label: 'Sanction Applied', bg: 'bg-danger/10', text: 'text-danger', border: 'border-danger/30', dot: 'bg-danger' },
+  hearing:    { label: 'Hearing Scheduled', bg: 'bg-brand-light', text: 'text-brand', border: 'border-edge-strong', dot: 'bg-brand' },
+  sanctioned: { label: 'Sanction Applied', bg: 'bg-danger/10', text: 'text-danger', border: 'border-edge-strong', dot: 'bg-danger' },
   closed:     { label: 'Case Closed', bg: 'bg-success/10', text: 'text-success', border: 'border-success/30', dot: 'bg-success' },
 };
 
 const MEETING_STATUS_CONFIG = {
-  scheduled: { label: 'Scheduled', bg: 'bg-brand-light', text: 'text-brand', border: 'border-brand/30', dot: 'bg-brand' },
+  scheduled: { label: 'Scheduled', bg: 'bg-brand-light', text: 'text-brand', border: 'border-edge-strong', dot: 'bg-brand' },
   finalized: { label: 'Finalized', bg: 'bg-success/10', text: 'text-success', border: 'border-success/30', dot: 'bg-success' },
 };
 
@@ -973,7 +973,7 @@ export default function DisciplinaryCasesPage({ role = 'teacher' }) {
   if (dataLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-8 h-8 border-4 border-brand/30 border-t-brand rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-edge-strong border-t-brand rounded-full animate-spin" />
       </div>
     );
   }
@@ -1273,7 +1273,7 @@ function CasesTab({
                         </button>
                         <button
                           onClick={e => { e.stopPropagation(); onSelectCase(c); }}
-                          className="px-3 py-1 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
+                          className="px-3 py-1 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
                         >
                           View
                         </button>
@@ -1413,7 +1413,7 @@ function MeetingsTab({ meetings, cases, filterStatus, setFilterStatus, search, s
                     <td className="px-6 py-3.5 text-right">
                       <button
                         onClick={e => { e.stopPropagation(); onViewMeeting(m); }}
-                        className="px-3 py-1 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
+                        className="px-3 py-1 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
                       >
                         View
                       </button>
@@ -1511,7 +1511,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
           <h3 className="text-base font-semibold text-ink mb-4">Related Cases</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedCases.map(c => (
-              <div key={c.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md text-xs font-medium text-brand">
+              <div key={c.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md text-xs font-medium text-brand">
                 <Avatar name={c.studentName} size="w-5 h-5 text-[8px]" />
                 {c.studentName}
                 <button
@@ -1613,7 +1613,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
           {/* Chair */}
           <div className="mb-4">
             <label className="block text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Chair</label>
-            <div className="flex items-center gap-3 px-3 py-2.5 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/50 rounded-md">
+            <div className="flex items-center gap-3 px-3 py-2.5 bg-green-50 dark:bg-green-950/40 border border-edge-strong border-edge-strong rounded-md">
               <Avatar name={form.president} size="w-6 h-6 text-[9px]" />
               <span className="text-sm font-medium text-success">{form.president}</span>
             </div>
@@ -1645,7 +1645,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
         {/* Action buttons */}
         <div className="flex flex-col gap-2">
           {saveError && (
-            <p className="text-xs text-danger bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded-md px-3 py-2">
+            <p className="text-xs text-danger bg-red-50 dark:bg-red-950/40 border border-edge-strong border-edge-strong rounded-md px-3 py-2">
               {saveError}
             </p>
           )}
@@ -1872,7 +1872,7 @@ function MeetingDetailView({ meeting, cases, onBack }) {
       )}
 
       {finalizeError && (
-        <div className="rounded-lg border border-danger/30 bg-danger/10 px-5 py-4">
+        <div className="rounded-lg border border-edge-strong bg-danger/10 px-5 py-4">
           <span className="text-sm font-medium text-danger">{finalizeError}</span>
         </div>
       )}
@@ -1886,3 +1886,4 @@ function MeetingDetailView({ meeting, cases, onBack }) {
     </div>
   );
 }
+

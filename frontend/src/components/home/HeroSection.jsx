@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import heroBg from '../../assets/images/hero-bg.jpg';
+import { resolveMediaUrl } from '../../services/api';
+import { getLocalizedSetting, useSiteSettings } from '../../contexts/SiteSettingsContext';
 
 /* Inline SVG icons — replaces lucide-react dependency */
 const GraduationCapIcon = ({ className }) => (
@@ -31,13 +33,27 @@ const PlayIcon = ({ className }) => (
 );
 
 export default function HeroSection() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { settings } = useSiteSettings();
+
+  const heroBackgroundSource = settings?.heroBackgroundUrl
+    ? resolveMediaUrl(settings.heroBackgroundUrl)
+    : heroBg;
+
+  const universityName = getLocalizedSetting(settings, 'universityName', i18n.language, 'Ibn Khaldoun University');
+
+  const heroStats = [
+    { value: settings?.heroStudentsStat || '2500+', label: t('hero.students') },
+    { value: settings?.heroTeachersStat || '150+', label: t('hero.teachers') },
+    { value: settings?.heroCoursesStat || '200+', label: t('hero.courses') },
+    { value: settings?.heroSatisfactionStat || '98%', label: t('hero.satisfaction') },
+  ];
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image + Overlay */}
       <div className="absolute inset-0">
-        <img src={heroBg} alt="University Background" className="w-full h-full object-cover" />
+        <img src={heroBackgroundSource} alt={universityName} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
@@ -97,12 +113,7 @@ export default function HeroSection() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-          {[
-            { value: '2500+', label: t('hero.students') },
-            { value: '150+', label: t('hero.teachers') },
-            { value: '200+', label: t('hero.courses') },
-            { value: '98%', label: t('hero.satisfaction') },
-          ].map((stat, i) => (
+          {heroStats.map((stat, i) => (
             <div key={i} className="text-center bg-black/20 backdrop-blur-sm rounded-xl p-4">
               <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
               <div className="text-sm text-white/80 uppercase tracking-wider">{stat.label}</div>

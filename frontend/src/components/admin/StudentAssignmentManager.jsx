@@ -221,8 +221,8 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
         <div
           className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
             message.type === 'success'
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-green-50 border border-edge-strong'
+              : 'bg-red-50 border border-edge-strong'
           }`}
         >
           {message.type === 'success' ? (
@@ -256,7 +256,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
               placeholder="Search by name, email, or matricule..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-control-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -395,7 +395,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
           </div>
 
           {/* Summary Card */}
-          <div className="mt-4 p-4 bg-brand-light border border-brand/30 rounded-lg">
+          <div className="mt-4 p-4 bg-brand-light border border-edge-strong rounded-lg">
             <p className="text-sm text-brand">
               <strong>Stats:</strong> {assignedStudents.length} students assigned
               {groupLeader && (
@@ -412,3 +412,4 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
 };
 
 export default StudentAssignmentManager;
+

@@ -551,7 +551,7 @@ export default function AdminUsersListPage() {
     return (
       <div className="rounded-2xl border border-edge bg-surface p-8 shadow-card">
         <div className="flex items-center gap-3 text-ink-secondary">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand/30 border-t-brand" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
           <span>Loading list creation...</span>
         </div>
       </div>
@@ -579,7 +579,7 @@ export default function AdminUsersListPage() {
           <button
             type="button"
             onClick={() => navigate('/dashboard/admin/users')}
-            className="relative rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand"
+            className="relative rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand"
           >
             Back to Admin Users
           </button>
@@ -587,7 +587,7 @@ export default function AdminUsersListPage() {
       </section>
 
       {message ? <div className="rounded-2xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success shadow-card">{message}</div> : null}
-      {error ? <div className="rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger shadow-card">{error}</div> : null}
+      {error ? <div className="rounded-2xl border border-edge-strong bg-danger/10 px-4 py-3 text-sm text-danger shadow-card">{error}</div> : null}
 
       <section className="rounded-2xl border border-edge bg-surface shadow-card p-6 space-y-4">
         <div>
@@ -639,7 +639,7 @@ export default function AdminUsersListPage() {
                     <input
                       value={row.nom}
                       onChange={(e) => updateRow(index, 'nom', e.target.value)}
-                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
+                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-edge-strong focus:ring-2 focus:ring-cyan-100"
                       placeholder="Nom"
                     />
                   </td>
@@ -647,7 +647,7 @@ export default function AdminUsersListPage() {
                     <input
                       value={row.prenom}
                       onChange={(e) => updateRow(index, 'prenom', e.target.value)}
-                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
+                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-edge-strong focus:ring-2 focus:ring-cyan-100"
                       placeholder="Prenom"
                     />
                   </td>
@@ -656,7 +656,7 @@ export default function AdminUsersListPage() {
                       type="email"
                       value={row.email}
                       onChange={(e) => updateRow(index, 'email', e.target.value)}
-                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
+                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-edge-strong focus:ring-2 focus:ring-cyan-100"
                       placeholder="email@univ.dz"
                     />
                   </td>
@@ -664,7 +664,7 @@ export default function AdminUsersListPage() {
                     <input
                       value={row.telephone}
                       onChange={(e) => updateRow(index, 'telephone', e.target.value)}
-                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
+                      className="w-full rounded-lg border border-edge bg-canvas px-3 py-2 text-sm focus:border-edge-strong focus:ring-2 focus:ring-cyan-100"
                       placeholder="055..."
                     />
                   </td>
@@ -687,7 +687,7 @@ export default function AdminUsersListPage() {
                     <button
                       type="button"
                       onClick={() => removeRow(index)}
-                      className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:border-red-300 hover:bg-red-100"
+                      className="rounded-lg border border-edge-strong bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:border-edge-strong hover:bg-red-100"
                     >
                       Remove
                     </button>
@@ -702,7 +702,7 @@ export default function AdminUsersListPage() {
           <button
             type="button"
             onClick={addRow}
-            className="rounded-xl border border-cyan-300 bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800 transition hover:border-cyan-400 hover:bg-cyan-100"
+            className="rounded-xl border border-edge-strong bg-cyan-50 px-4 py-2 text-sm font-semibold text-cyan-800 transition hover:border-edge-strong hover:bg-cyan-100"
           >
             Add row
           </button>

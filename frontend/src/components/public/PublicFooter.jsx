@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { getLocalizedSetting, useSiteSettings } from '../../contexts/SiteSettingsContext';
 
 /* Inline SVG social icons — no external dependency */
 const FacebookIcon = (props) => (
@@ -24,6 +26,15 @@ const InstagramIcon = (props) => (
 );
 
 export default function PublicFooter() {
+  const { i18n } = useTranslation();
+  const { settings } = useSiteSettings();
+
+  const universityName = getLocalizedSetting(settings, 'universityName', i18n.language, 'Ibn Khaldoun University');
+  const city = getLocalizedSetting(settings, 'city', i18n.language, 'Tiaret');
+  const aboutLine1 = getLocalizedSetting(settings, 'aboutLine1', i18n.language, 'Ibn Khaldoun University - Tiaret');
+  const aboutLine2 = getLocalizedSetting(settings, 'aboutLine2', i18n.language, 'Established in 1980, dedicated to excellence in education and research.');
+  const contactAddress = getLocalizedSetting(settings, 'contactAddress', i18n.language, 'Tiaret, Algeria');
+
   return (
     <footer className="bg-surface-300 dark:bg-canvas text-ink-secondary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -32,12 +43,10 @@ export default function PublicFooter() {
           <div>
             <h3 className="text-xl font-bold text-ink mb-4">About University</h3>
             <p className="text-ink-tertiary text-sm leading-relaxed">
-              Ibn Khaldoun University — Tiaret
-              <br />
-              Faculty of Mathematics and Computer Science
+              {aboutLine1}
             </p>
             <p className="text-ink-tertiary text-sm mt-4">
-              Established in 1980, dedicated to excellence in education and research.
+              {aboutLine2}
             </p>
           </div>
 
@@ -70,15 +79,15 @@ export default function PublicFooter() {
             <ul className="space-y-3 text-ink-tertiary">
               <li className="flex items-start">
                 <span className="inline-block w-20 font-medium text-ink-secondary">Phone:</span>
-                <span>+213 555 55 55 55</span>
+                <span>{settings?.contactPhone || '+213 555 55 55 55'}</span>
               </li>
               <li className="flex items-start">
                 <span className="inline-block w-20 font-medium text-ink-secondary">Email:</span>
-                <span>info@univ-tiaret.dz</span>
+                <span>{settings?.contactEmail || 'info@univ-tiaret.dz'}</span>
               </li>
               <li className="flex items-start">
                 <span className="inline-block w-20 font-medium text-ink-secondary">Address:</span>
-                <span>Tiaret, Algeria</span>
+                <span>{contactAddress}</span>
               </li>
             </ul>
           </div>
@@ -124,7 +133,7 @@ export default function PublicFooter() {
         {/* Bottom Bar */}
         <div className="border-t border-edge mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-ink-tertiary text-sm">
-            <p>© {new Date().getFullYear()} Ibn Khaldoun University — Tiaret. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} {universityName} — {city}. All rights reserved.</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <button type="button" className="hover:text-brand transition-colors duration-150">
                 Privacy Policy

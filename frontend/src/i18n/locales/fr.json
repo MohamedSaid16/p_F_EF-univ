@@ -20,7 +20,8 @@
     "adminHub": "Centre de contrôle admin",
     "userManagement": "Gestion des utilisateurs",
     "academicStructure": "Structure académique",
-    "academicAssignments": "Affectations académiques"
+    "academicAssignments": "Affectations académiques",
+    "siteConfiguration": "Configuration du site"
   },
   "sections": {
     "academic": "Académique",

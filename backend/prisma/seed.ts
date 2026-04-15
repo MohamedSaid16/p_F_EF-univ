@@ -53,6 +53,51 @@ async function main() {
   }
   console.log("✅ Permissions created");
 
+  // ── Site settings (singleton) ───────────────────────────
+  await prisma.siteSetting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      universityNameAr: "جامعة ابن خلدون",
+      universityNameEn: "Ibn Khaldoun University",
+      universityNameFr: "Université Ibn Khaldoun",
+      universitySubtitleAr: "كلية الرياضيات والإعلام الآلي",
+      universitySubtitleEn: "Faculty of Mathematics and Computer Science",
+      universitySubtitleFr: "Faculté des Mathématiques et d'Informatique",
+      cityAr: "تيارت",
+      cityEn: "Tiaret",
+      cityFr: "Tiaret",
+      heroStudentsStat: "2500+",
+      heroTeachersStat: "150+",
+      heroCoursesStat: "200+",
+      heroSatisfactionStat: "98%",
+      bannerStudentsStat: "28K+",
+      bannerTeachersStat: "1.1K+",
+      bannerFacultiesStat: "8",
+      bannerNationalRankStat: "15th",
+      statisticsStudentsStat: "2500+",
+      statisticsTeachersStat: "150+",
+      statisticsProjectsStat: "500+",
+      statisticsSatisfactionStat: "98%",
+      statisticsQuoteAr: "تمكين التعليم عبر التكنولوجيا",
+      statisticsQuoteEn: "Empowering education through technology",
+      statisticsQuoteFr: "Autonomiser l'éducation grâce à la technologie",
+      aboutLine1Ar: "جامعة ابن خلدون - تيارت، كلية الرياضيات والإعلام الآلي",
+      aboutLine1En: "Ibn Khaldoun University - Tiaret, Faculty of Mathematics and Computer Science",
+      aboutLine1Fr: "Université Ibn Khaldoun - Tiaret, Faculté des Mathématiques et d'Informatique",
+      aboutLine2Ar: "تأسست سنة 1980 ومكرسة للتميز في التعليم والبحث العلمي.",
+      aboutLine2En: "Established in 1980, dedicated to excellence in education and research.",
+      aboutLine2Fr: "Fondée en 1980, dédiée à l'excellence en enseignement et en recherche.",
+      contactPhone: "+213 555 55 55 55",
+      contactEmail: "info@univ-tiaret.dz",
+      contactAddressAr: "تيارت، الجزائر",
+      contactAddressEn: "Tiaret, Algeria",
+      contactAddressFr: "Tiaret, Algérie",
+    },
+  });
+  console.log("✅ Site settings seeded");
+
   // ── University structure ─────────────────────────────────
   const faculte = await prisma.faculte.create({
     data: {

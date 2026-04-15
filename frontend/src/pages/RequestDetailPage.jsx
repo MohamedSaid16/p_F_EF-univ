@@ -34,10 +34,10 @@ function daysUntil(dateStr) {
 
 const STATUS_CONFIG = {
   draft:          { label: 'Draft',         bg: 'bg-surface-200',                        text: 'text-ink-tertiary', border: 'border-edge',                               dot: 'bg-ink-muted'    },
-  submitted:      { label: 'Submitted',     bg: 'bg-blue-50 dark:bg-blue-950/40',        text: 'text-brand',        border: 'border-blue-200 dark:border-blue-800/50',   dot: 'bg-brand'        },
-  'under-review': { label: 'Under Review',  bg: 'bg-amber-50 dark:bg-amber-950/40',      text: 'text-warning',      border: 'border-amber-200 dark:border-amber-800/50', dot: 'bg-warning'      },
-  resolved:       { label: 'Resolved',      bg: 'bg-green-50 dark:bg-green-950/40',      text: 'text-success',      border: 'border-green-200 dark:border-green-800/50', dot: 'bg-success'      },
-  rejected:       { label: 'Rejected',      bg: 'bg-red-50 dark:bg-red-950/40',          text: 'text-danger',       border: 'border-red-200 dark:border-red-800/50',     dot: 'bg-danger'       },
+  submitted:      { label: 'Submitted',     bg: 'bg-blue-50 dark:bg-blue-950/40',        text: 'text-brand',        border: 'border-edge-strong border-edge-strong',   dot: 'bg-brand'        },
+  'under-review': { label: 'Under Review',  bg: 'bg-amber-50 dark:bg-amber-950/40',      text: 'text-warning',      border: 'border-edge-strong border-edge-strong', dot: 'bg-warning'      },
+  resolved:       { label: 'Resolved',      bg: 'bg-green-50 dark:bg-green-950/40',      text: 'text-success',      border: 'border-edge-strong border-edge-strong', dot: 'bg-success'      },
+  rejected:       { label: 'Rejected',      bg: 'bg-red-50 dark:bg-red-950/40',          text: 'text-danger',       border: 'border-edge-strong border-edge-strong',     dot: 'bg-danger'       },
 };
 
 /* ── Timeline icons ─────────────────────────────────────────── */
@@ -123,7 +123,7 @@ export default function RequestDetailPage({ request, onBack }) {
 
       {/* ── Deadline Warning ──────────────────────────────────── */}
       {request.linkedExam && request.status !== 'resolved' && request.status !== 'rejected' && (
-        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-lg px-4 py-3 flex items-center gap-3">
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-edge-strong border-edge-strong rounded-lg px-4 py-3 flex items-center gap-3">
           <svg className="w-5 h-5 text-warning shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -168,13 +168,13 @@ export default function RequestDetailPage({ request, onBack }) {
           {request.adminResponse ? (
             <div className={`rounded-lg border shadow-card overflow-hidden ${
               request.adminResponse.decision === 'Approved'
-                ? 'bg-green-50/50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50'
-                : 'bg-red-50/50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50'
+                ? 'bg-green-50/50 dark:bg-green-950/30 border-edge-strong border-edge-strong'
+                : 'bg-red-50/50 dark:bg-red-950/30 border-edge-strong border-edge-strong'
             }`}>
               <div className={`px-6 py-4 border-b flex items-center gap-2 ${
                 request.adminResponse.decision === 'Approved'
-                  ? 'border-green-200 dark:border-green-800/50'
-                  : 'border-red-200 dark:border-red-800/50'
+                  ? 'border-edge-strong border-edge-strong'
+                  : 'border-edge-strong border-edge-strong'
               }`}>
                 {request.adminResponse.decision === 'Approved' ? (
                   <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -299,3 +299,4 @@ export default function RequestDetailPage({ request, onBack }) {
     </div>
   );
 }
+

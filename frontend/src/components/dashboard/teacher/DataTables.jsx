@@ -8,8 +8,8 @@ export default function DataTables({ data }) {
     <div className="mt-8 space-y-8">
       
       {/* 1. Enseignements Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-control-border border-control-border overflow-hidden">
+        <div className="p-6 border-b border-control-border border-control-border">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">
             {t('tables.enseignements')}
           </h2>
@@ -27,7 +27,7 @@ export default function DataTables({ data }) {
             <tbody>
               {data?.enseignements?.length > 0 ? (
                 data.enseignements.map((enseign, idx) => (
-                  <tr key={idx} className="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                  <tr key={idx} className="bg-white border-b dark:bg-slate-800 border-control-border hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white whitespace-nowrap">
                       {enseign.module?.nom || `Module #${enseign.id}`} <span className="text-slate-400">({enseign.module?.code || 'N/A'})</span>
                     </td>
@@ -53,8 +53,8 @@ export default function DataTables({ data }) {
       </div>
 
       {/* 2. PFE Sujets Table */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-control-border border-control-border overflow-hidden">
+        <div className="p-6 border-b border-control-border border-control-border">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white">
             {t('tables.pfe')}
           </h2>
@@ -81,7 +81,7 @@ export default function DataTables({ data }) {
                   const sColor = statusInfo[pfe.status] || 'bg-gray-100 text-gray-800';
 
                   return (
-                    <tr key={idx} className="bg-white border-b dark:bg-slate-800 dark:border-slate-700 hover:bg-slate-50 transition-colors">
+                    <tr key={idx} className="bg-white border-b dark:bg-slate-800 border-control-border hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4 font-medium text-slate-900 dark:text-white max-w-xs truncate">
                         {pfe.titre}
                       </td>
@@ -110,3 +110,4 @@ export default function DataTables({ data }) {
     </div>
   );
 }
+

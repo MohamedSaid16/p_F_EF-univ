@@ -54,7 +54,7 @@ function AttendanceRow({ student, enseignementId, selectedDate, onAttendanceMark
       <td className="px-6 py-4">
         {status === 'None' && <span className="text-ink-muted italic text-xs">{t('unmarked')}</span>}
         {status === 'Present' && <span className="rounded-md border border-success/30 bg-success/10 px-2 py-1 text-xs font-medium text-success">{t('present')}</span>}
-        {status === 'Unjustified' && <span className="rounded-md border border-danger/30 bg-danger/10 px-2 py-1 text-xs font-medium text-danger">{t('absent')}</span>}
+        {status === 'Unjustified' && <span className="rounded-md border border-edge-strong bg-danger/10 px-2 py-1 text-xs font-medium text-danger">{t('absent')}</span>}
         {status === 'Justified' && <span className="rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-xs font-medium text-warning">{t('justified')}</span>}
       </td>
 
@@ -75,7 +75,7 @@ function AttendanceRow({ student, enseignementId, selectedDate, onAttendanceMark
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 border focus:outline-none focus:ring-2 focus:ring-brand/30 ${
               status === 'Unjustified' 
                 ? 'bg-danger text-white border-danger shadow-soft' 
-                : 'bg-surface text-danger border-danger/30 hover:bg-danger/10'
+                : 'bg-surface text-danger border-edge-strong hover:bg-danger/10'
             }`}
           >
             &#x2716; A
@@ -176,7 +176,7 @@ export default function AttendanceBoard({ students, enseignementId, onDataChange
               <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-ink-tertiary">{t('totalPresent')}</span>
               <span className="text-xl font-bold text-success">{summary.present}</span>
             </div>
-            <div className="min-w-[100px] rounded-md border border-danger/30 bg-danger/10 px-4 py-2 text-center">
+            <div className="min-w-[100px] rounded-md border border-edge-strong bg-danger/10 px-4 py-2 text-center">
               <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-ink-tertiary">{t('totalAbsent')}</span>
               <span className="text-xl font-bold text-danger">{summary.absent}</span>
             </div>
@@ -191,3 +191,4 @@ export default function AttendanceBoard({ students, enseignementId, onDataChange
     </div>
   );
 }
+

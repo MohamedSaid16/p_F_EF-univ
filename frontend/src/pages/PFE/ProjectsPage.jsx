@@ -100,10 +100,10 @@ export default function ProjectsPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Link to="/dashboard/projects/subjects" className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand">
+              <Link to="/dashboard/projects/subjects" className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand">
                 Subjects
               </Link>
-              <Link to="/dashboard/projects/groups" className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand">
+              <Link to="/dashboard/projects/groups" className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand">
                 Groups
               </Link>
               <Link to="/dashboard/projects/defense" className="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover">
@@ -123,7 +123,7 @@ export default function ProjectsPage() {
               </div>
             ) : highlightSubjects.length ? (
               highlightSubjects.map((subject) => (
-                <article key={subject.id} className="rounded-2xl border border-edge bg-canvas px-5 py-4 transition hover:border-brand/25">
+                <article key={subject.id} className="rounded-2xl border border-edge bg-canvas px-5 py-4 transition hover:border-edge-strong">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-semibold text-ink">{localTitle(subject)}</p>
@@ -161,13 +161,13 @@ export default function ProjectsPage() {
           <div className="rounded-3xl border border-edge bg-surface p-6 shadow-card">
             <h2 className="text-lg font-semibold tracking-tight text-ink">Quick links</h2>
             <div className="mt-4 grid gap-3">
-              <Link to="/dashboard/projects/subjects" className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand">
+              <Link to="/dashboard/projects/subjects" className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand">
                 Browse all subjects
               </Link>
-              <Link to="/dashboard/projects/groups" className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand">
+              <Link to="/dashboard/projects/groups" className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand">
                 Review group assignments
               </Link>
-              <Link to="/dashboard/projects/defense" className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand">
+              <Link to="/dashboard/projects/defense" className="rounded-2xl border border-edge bg-canvas px-4 py-3 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand">
                 Plan defenses
               </Link>
             </div>

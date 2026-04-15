@@ -763,7 +763,7 @@ export default function AdminUsersPage() {
     return (
       <div className="rounded-2xl border border-edge bg-surface p-8 shadow-card">
         <div className="flex items-center gap-3 text-ink-secondary">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand/30 border-t-brand" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
           <span>Loading user management...</span>
         </div>
       </div>
@@ -810,7 +810,7 @@ export default function AdminUsersPage() {
       </section>
 
       {message ? <div className="rounded-2xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success shadow-card">{message}</div> : null}
-      {error ? <div className="rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger shadow-card">{error}</div> : null}
+      {error ? <div className="rounded-2xl border border-edge-strong bg-danger/10 px-4 py-3 text-sm text-danger shadow-card">{error}</div> : null}
 
       <section className={`${sectionClassName} p-6`}>
         <div className="flex flex-col gap-2 border-b border-edge-subtle pb-5">
@@ -870,7 +870,7 @@ export default function AdminUsersPage() {
               <h2 className="text-xl font-semibold tracking-tight text-ink">Create New User</h2>
               <p className="mt-1 text-sm text-ink-secondary">Single-user creation is managed here. Use the dedicated list page for table-based bulk creation.</p>
             </div>
-            <div className="rounded-md border border-brand/20 bg-brand-light px-3 py-1.5 text-xs font-medium text-brand">
+            <div className="rounded-md border border-edge-strong bg-brand-light px-3 py-1.5 text-xs font-medium text-brand">
               {roles.length} roles available
             </div>
           </div>
@@ -975,7 +975,7 @@ export default function AdminUsersPage() {
                 <span className="text-xs text-ink-tertiary">{createForm.roleNames.length} selected</span>
               </div>
               {!roles.length ? (
-                <div className="rounded-md border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+                <div className="rounded-md border border-edge-strong bg-danger/10 px-4 py-3 text-sm text-danger">
                   No roles found. Make sure your backend has roles data and your account has admin access.
                 </div>
               ) : null}
@@ -988,7 +988,7 @@ export default function AdminUsersPage() {
                       className={`flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 transition-all duration-150 ${
                         selected
                           ? 'border-brand bg-brand-light/70 text-ink shadow-sm'
-                          : 'border-edge bg-canvas text-ink-secondary hover:border-brand/30 hover:text-ink'
+                          : 'border-edge bg-canvas text-ink-secondary hover:border-edge-strong hover:text-ink'
                       }`}
                     >
                       <input
@@ -1035,7 +1035,7 @@ export default function AdminUsersPage() {
               </ul>
             </div>
 
-            <div className="rounded-lg border border-brand/20 bg-brand-light px-4 py-4">
+            <div className="rounded-lg border border-edge-strong bg-brand-light px-4 py-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-brand">Academic Workflow</p>
               <p className="mt-2 text-xs text-brand">Use dedicated pages for structure creation and assignments.</p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -1169,7 +1169,7 @@ export default function AdminUsersPage() {
               const avatarUrl = resolveMediaUrl(u.photo);
 
               return (
-                <div key={u.id} className="rounded-2xl border border-edge bg-canvas p-5 shadow-sm transition hover:border-brand/25">
+                <div key={u.id} className="rounded-2xl border border-edge bg-canvas p-5 shadow-sm transition hover:border-edge-strong">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-start gap-4">
                     {avatarUrl ? (
@@ -1269,7 +1269,7 @@ export default function AdminUsersPage() {
                           className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
                             checked
                               ? 'border-brand bg-brand-light/70 text-ink'
-                              : 'border-edge bg-surface text-ink-secondary hover:border-brand/30 hover:text-ink'
+                              : 'border-edge bg-surface text-ink-secondary hover:border-edge-strong hover:text-ink'
                           }`}
                         >
                           <input
@@ -1292,7 +1292,7 @@ export default function AdminUsersPage() {
                       type="button"
                       onClick={() => handleResetUserPassword(u)}
                       disabled={!!savingByUserId[u.id]}
-                      className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand disabled:opacity-60"
+                      className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand disabled:opacity-60"
                     >
                       {savingByUserId[u.id] ? 'Processing...' : 'Reset Temp Password'}
                     </button>

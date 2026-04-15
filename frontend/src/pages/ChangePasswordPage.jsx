@@ -59,7 +59,7 @@ const ChangePasswordPage = () => {
         </p>
 
         {error ? (
-          <div className="mb-4 px-3 py-2 rounded-md border border-danger/30 bg-danger/10 text-danger text-sm">
+          <div className="mb-4 px-3 py-2 rounded-md border border-edge-strong bg-danger/10 text-danger text-sm">
             {error}
           </div>
         ) : null}
@@ -127,3 +127,4 @@ const ChangePasswordPage = () => {
 };
 
 export default ChangePasswordPage;
+

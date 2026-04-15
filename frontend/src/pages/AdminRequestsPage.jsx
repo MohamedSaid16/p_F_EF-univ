@@ -17,11 +17,11 @@ import request, { resolveMediaUrl } from '../services/api';
 /* ── Status Config ──────────────────────────────────────────── */
 
 const STATUS_CONFIG = {
-  submitted:        { label: 'New',             bg: 'bg-blue-50 dark:bg-blue-950/40',     text: 'text-brand',        border: 'border-blue-200 dark:border-blue-800/50',    dot: 'bg-brand'     },
-  'under-review':   { label: 'Under Review',    bg: 'bg-amber-50 dark:bg-amber-950/40',   text: 'text-warning',      border: 'border-amber-200 dark:border-amber-800/50',  dot: 'bg-warning'   },
+  submitted:        { label: 'New',             bg: 'bg-blue-50 dark:bg-blue-950/40',     text: 'text-brand',        border: 'border-edge-strong border-edge-strong',    dot: 'bg-brand'     },
+  'under-review':   { label: 'Under Review',    bg: 'bg-amber-50 dark:bg-amber-950/40',   text: 'text-warning',      border: 'border-edge-strong border-edge-strong',  dot: 'bg-warning'   },
   'info-requested': { label: 'Info Requested',  bg: 'bg-violet-50 dark:bg-violet-950/40', text: 'text-violet-600 dark:text-violet-400',   border: 'border-violet-200 dark:border-violet-800/50', dot: 'bg-violet-500' },
-  resolved:         { label: 'Approved',        bg: 'bg-green-50 dark:bg-green-950/40',   text: 'text-success',      border: 'border-green-200 dark:border-green-800/50',  dot: 'bg-success'   },
-  rejected:         { label: 'Rejected',        bg: 'bg-red-50 dark:bg-red-950/40',       text: 'text-danger',       border: 'border-red-200 dark:border-red-800/50',      dot: 'bg-danger'    },
+  resolved:         { label: 'Approved',        bg: 'bg-green-50 dark:bg-green-950/40',   text: 'text-success',      border: 'border-edge-strong border-edge-strong',  dot: 'bg-success'   },
+  rejected:         { label: 'Rejected',        bg: 'bg-red-50 dark:bg-red-950/40',       text: 'text-danger',       border: 'border-edge-strong border-edge-strong',      dot: 'bg-danger'    },
 };
 
 /* ── Helpers ────────────────────────────────────────────────── */
@@ -218,7 +218,7 @@ export default function AdminRequestsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-8 h-8 border-4 border-brand/30 border-t-brand rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-edge-strong border-t-brand rounded-full animate-spin" />
       </div>
     );
   }
@@ -334,7 +334,7 @@ export default function AdminRequestsPage() {
               <span className="font-mono text-xs text-ink-muted">{req.id}</span>
               <StatusBadge status={req.status} />
               {req.priority === 'high' && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-danger bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-danger bg-red-50 dark:bg-red-950/40 border border-edge-strong border-edge-strong rounded">
                   <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
                   HIGH PRIORITY
                 </span>
@@ -362,7 +362,7 @@ export default function AdminRequestsPage() {
             </button>
             <button
               onClick={() => { setActionModal({ type: 'reject', request: req }); setResponseText(''); }}
-              className="px-4 py-2 text-sm font-medium text-danger bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/50 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors duration-150 flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium text-danger bg-red-50 dark:bg-red-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors duration-150 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -383,7 +383,7 @@ export default function AdminRequestsPage() {
 
         {/* Deadline warning */}
         {req.linkedExam && (
-          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-lg px-4 py-3 flex items-center gap-3">
+          <div className="bg-amber-50 dark:bg-amber-950/40 border border-edge-strong border-edge-strong rounded-lg px-4 py-3 flex items-center gap-3">
             <svg className="w-5 h-5 text-warning shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -492,7 +492,7 @@ export default function AdminRequestsPage() {
               </div>
               <div className="p-6">
                 {req.internalNotes && (
-                  <div className="bg-amber-50/50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-800/40 rounded-lg p-3 mb-4">
+                  <div className="bg-amber-50/50 dark:bg-amber-950/30 border border-edge-strong border-edge-strong rounded-lg p-3 mb-4">
                     <p className="text-sm text-ink-secondary italic">{req.internalNotes}</p>
                   </div>
                 )}
@@ -540,7 +540,7 @@ export default function AdminRequestsPage() {
                     },
                   },
                 })}
-                className="w-full px-3 py-2 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 text-center"
+                className="w-full px-3 py-2 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 text-center"
               >
                 View Student Profile
               </button>
@@ -733,7 +733,7 @@ export default function AdminRequestsPage() {
                       <td className="px-6 py-3.5 text-right">
                         <button
                           onClick={(e) => { e.stopPropagation(); setSelectedRequest(req); }}
-                          className="px-3 py-1.5 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100"
+                          className="px-3 py-1.5 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100"
                         >
                           Review
                         </button>
@@ -764,3 +764,4 @@ export default function AdminRequestsPage() {
     </>
   );
 }
+

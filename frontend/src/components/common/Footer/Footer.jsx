@@ -100,7 +100,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-white/10 text-center text-sm opacity-50">
+        <div className="mt-12 pt-8 border-t border-edge-subtle text-center text-sm opacity-50">
           {t('footer.copyright', { year: new Date().getFullYear() })}
         </div>
       </div>

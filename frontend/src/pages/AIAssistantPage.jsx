@@ -99,7 +99,7 @@ export default function AIAssistantPage() {
                 key={starter}
                 type="button"
                 onClick={() => sendPrompt(starter)}
-                className="w-full rounded-xl border border-edge bg-surface px-3.5 py-3 text-left text-sm text-ink-secondary transition hover:border-brand/35 hover:text-ink hover:bg-surface-200"
+                className="w-full rounded-xl border border-edge bg-surface px-3.5 py-3 text-left text-sm text-ink-secondary transition hover:border-edge-strong hover:text-ink hover:bg-surface-200"
               >
                 {starter}
               </button>
@@ -171,3 +171,4 @@ export default function AIAssistantPage() {
     </div>
   );
 }
+

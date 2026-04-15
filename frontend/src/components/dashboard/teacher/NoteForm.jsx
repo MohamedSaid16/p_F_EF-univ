@@ -43,7 +43,7 @@ export default function NoteForm({ student, enseignementId, moduleConfig, onClos
   };
 
   return (
-    <div className="p-6 bg-white dark:bg-slate-800 shadow-inner rounded-b-xl border border-slate-200 dark:border-slate-700">
+    <div className="p-6 bg-white dark:bg-slate-800 shadow-inner rounded-b-xl border border-control-border border-control-border">
       <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
         {t('editNotes')}: {student.nom} {student.prenom}
       </h3>
@@ -58,7 +58,7 @@ export default function NoteForm({ student, enseignementId, moduleConfig, onClos
           <input 
             type="number" step="0.01" min="0" max="20" required
             value={exam} onChange={(e) => setExam(e.target.value)}
-            className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-lg p-2.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+            className="w-full border border-control-border border-control-border bg-slate-50 dark:bg-slate-900 rounded-lg p-2.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
             placeholder="0.00 - 20.00"
           />
         </div>
@@ -70,7 +70,7 @@ export default function NoteForm({ student, enseignementId, moduleConfig, onClos
             <input 
               type="number" step="0.01" min="0" max="20"
               value={td} onChange={(e) => setTd(e.target.value)}
-              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-lg p-2.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+              className="w-full border border-control-border border-control-border bg-slate-50 dark:bg-slate-900 rounded-lg p-2.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
               placeholder="0.00 - 20.00"
             />
           </div>
@@ -83,7 +83,7 @@ export default function NoteForm({ student, enseignementId, moduleConfig, onClos
             <input 
               type="number" step="0.01" min="0" max="20"
               value={tp} onChange={(e) => setTp(e.target.value)}
-              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-lg p-2.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+              className="w-full border border-control-border border-control-border bg-slate-50 dark:bg-slate-900 rounded-lg p-2.5 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
               placeholder="0.00 - 20.00"
             />
           </div>
@@ -109,3 +109,4 @@ export default function NoteForm({ student, enseignementId, moduleConfig, onClos
     </div>
   );
 }
+

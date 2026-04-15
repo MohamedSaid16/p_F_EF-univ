@@ -181,8 +181,8 @@ const TeacherAssignmentWorkflow = ({ onComplete }) => {
         <div
           className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
             message.type === 'success'
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-green-50 border border-edge-strong'
+              : 'bg-red-50 border border-edge-strong'
           }`}
         >
           {message.type === 'success' ? (
@@ -218,7 +218,7 @@ const TeacherAssignmentWorkflow = ({ onComplete }) => {
                     onClick={() => handleTeacherSelect(teacher)}
                     className={`w-full text-left p-3 border rounded-lg transition ${
                       selectedTeacher?.id === teacher.id
-                        ? 'border-blue-600 bg-blue-50'
+                        ? 'border-edge-strong bg-blue-50'
                         : 'border-edge hover:bg-surface-200'
                     }`}
                   >
@@ -257,7 +257,7 @@ const TeacherAssignmentWorkflow = ({ onComplete }) => {
                     onClick={() => handleCourseSelect(course)}
                     className={`w-full text-left p-3 border rounded-lg transition ${
                       selectedCourse?.id === course.id
-                        ? 'border-green-600 bg-green-50'
+                        ? 'border-edge-strong bg-green-50'
                         : 'border-edge hover:bg-surface-200'
                     }`}
                   >
@@ -319,7 +319,7 @@ const TeacherAssignmentWorkflow = ({ onComplete }) => {
       {step === 2 && groupDetails && (
         <div className="space-y-6">
           {/* Group Info Card */}
-          <div className="bg-brand-light border border-brand/30 rounded-lg p-6">
+          <div className="bg-brand-light border border-edge-strong rounded-lg p-6">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               {groupDetails.nom}
             </h3>
@@ -435,3 +435,4 @@ const TeacherAssignmentWorkflow = ({ onComplete }) => {
 };
 
 export default TeacherAssignmentWorkflow;
+

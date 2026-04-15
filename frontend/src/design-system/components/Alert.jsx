@@ -32,9 +32,9 @@ const icons = {
 
 const styles = {
   success: 'bg-success/10 border-success/30 text-success',
-  error:   'bg-danger/10 border-danger/30 text-danger',
+  error:   'bg-danger/10 border-edge-strong text-danger',
   warning: 'bg-warning/10 border-warning/30 text-warning',
-  info:    'bg-brand-light border-brand/30 text-brand',
+  info:    'bg-brand-light border-edge-strong text-brand',
 };
 
 export function Alert({
@@ -73,3 +73,4 @@ export function Alert({
     </div>
   );
 }
+

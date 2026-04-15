@@ -208,7 +208,7 @@ export default function MessagesPage() {
         <p className="mt-1 text-sm text-ink-secondary">Send based on your role permissions.</p>
 
         {error ? (
-          <div className="mt-4 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
+          <div className="mt-4 rounded-lg border border-edge-strong bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>
         ) : null}
         {success ? (
           <div className="mt-4 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{success}</div>
@@ -324,7 +324,7 @@ export default function MessagesPage() {
                   className={`w-full rounded-lg border px-4 py-4 text-left transition ${
                     selected
                       ? 'border-brand bg-brand-light/70 shadow-sm'
-                      : 'border-edge bg-surface hover:border-brand/25 hover:bg-surface-200'
+                      : 'border-edge bg-surface hover:border-edge-strong hover:bg-surface-200'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -369,3 +369,4 @@ export default function MessagesPage() {
     </div>
   );
 }
+

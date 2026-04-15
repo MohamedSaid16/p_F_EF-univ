@@ -50,7 +50,7 @@ function GradeRow({ student, enseignementId, moduleConfig, t }) {
   const isExcludedAlert = student.status === 'Excluded';
 
   return (
-    <tr className={`border-b dark:border-slate-700/50 transition-colors ${isExcludedAlert ? 'bg-red-50/20 dark:bg-red-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
+    <tr className={`border-b border-control-border transition-colors ${isExcludedAlert ? 'bg-red-50/20 dark:bg-red-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
       <td className="px-6 py-3 font-mono text-sm text-slate-500 whitespace-nowrap">{student.matricule || 'N/A'}</td>
       <td className="px-6 py-3 font-bold text-sm text-slate-800 dark:text-slate-200 whitespace-nowrap">
         {student.nom} {student.prenom}
@@ -63,7 +63,7 @@ function GradeRow({ student, enseignementId, moduleConfig, t }) {
           onChange={(e) => setExam(e.target.value)}
           onBlur={(e) => handleBlurAndSave('exam', e.target.value)}
           className={`w-full max-w-[120px] bg-slate-50 dark:bg-slate-900 border text-center text-sm font-bold text-blue-700 dark:text-blue-400 p-2 rounded-lg outline-none transition-all ${
-            synced && exam !== '' ? 'border-green-400 ring-1 ring-green-400' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'
+            synced && exam !== '' ? 'border-edge-strong ring-1 ring-green-400' : 'border-control-border border-control-border focus:border-edge-strong'
           }`}
           placeholder=" / 20"
         />
@@ -77,7 +77,7 @@ function GradeRow({ student, enseignementId, moduleConfig, t }) {
             onChange={(e) => setTd(e.target.value)}
             onBlur={(e) => handleBlurAndSave('td', e.target.value)}
             className={`w-full max-w-[120px] bg-slate-50 dark:bg-slate-900 border text-center text-sm font-bold text-slate-700 dark:text-slate-300 p-2 rounded-lg outline-none transition-all ${
-              synced && td !== '' ? 'border-green-400 ring-1 ring-green-400' : 'border-slate-200 dark:border-slate-700 focus:border-slate-400'
+              synced && td !== '' ? 'border-edge-strong ring-1 ring-green-400' : 'border-control-border border-control-border focus:border-control-border'
             }`}
             placeholder=" / 20"
           />
@@ -92,7 +92,7 @@ function GradeRow({ student, enseignementId, moduleConfig, t }) {
             onChange={(e) => setTp(e.target.value)}
             onBlur={(e) => handleBlurAndSave('tp', e.target.value)}
             className={`w-full max-w-[120px] bg-slate-50 dark:bg-slate-900 border text-center text-sm font-bold text-slate-700 dark:text-slate-300 p-2 rounded-lg outline-none transition-all ${
-              synced && tp !== '' ? 'border-green-400 ring-1 ring-green-400' : 'border-slate-200 dark:border-slate-700 focus:border-slate-400'
+              synced && tp !== '' ? 'border-edge-strong ring-1 ring-green-400' : 'border-control-border border-control-border focus:border-control-border'
             }`}
             placeholder=" / 20"
           />
@@ -116,8 +116,8 @@ export default function NotesBoard({ students, enseignementId }) {
   const moduleConfig = students[0]?.moduleMetrics || { hasTd: false, hasTp: false };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/80 flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-control-border border-control-border overflow-hidden">
+      <div className="px-6 py-4 border-b border-control-border border-control-border bg-slate-50/50 dark:bg-slate-800/80 flex items-center justify-between">
         <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
           <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
           {t('editNotes')}
@@ -127,7 +127,7 @@ export default function NotesBoard({ students, enseignementId }) {
 
       <div className="overflow-x-auto p-4">
         <table className="w-full text-left">
-          <thead className="text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
+          <thead className="text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-control-border border-control-border">
             <tr>
               <th className="px-6 py-3">{t('matricule')}</th>
               <th className="px-6 py-3">{t('studentName')}</th>
@@ -153,3 +153,4 @@ export default function NotesBoard({ students, enseignementId }) {
     </div>
   );
 }
+

@@ -144,7 +144,7 @@ export default function AdminAcademicAssignmentsPage() {
   }
 
   if (!canAccess) {
-    return <div className="rounded-2xl border border-danger/30 bg-danger/10 p-6 text-danger">Restricted area.</div>;
+    return <div className="rounded-2xl border border-edge-strong bg-danger/10 p-6 text-danger">Restricted area.</div>;
   }
 
   return (
@@ -159,7 +159,7 @@ export default function AdminAcademicAssignmentsPage() {
           <button
             type="button"
             onClick={() => navigate('/dashboard/admin/users')}
-            className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink hover:border-brand/30 hover:text-brand"
+            className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink hover:border-edge-strong hover:text-brand"
           >
             Back to User Management
           </button>
@@ -167,7 +167,7 @@ export default function AdminAcademicAssignmentsPage() {
       </section>
 
       {message ? <div className="rounded-xl border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">{message}</div> : null}
-      {error ? <div className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div> : null}
+      {error ? <div className="rounded-xl border border-edge-strong bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div> : null}
 
       <section className="rounded-2xl border border-edge bg-surface p-6 shadow-card">
         <h2 className="text-lg font-semibold text-ink">Student Assignments</h2>
@@ -271,7 +271,7 @@ export default function AdminAcademicAssignmentsPage() {
                           return (
                             <label
                               key={`teacher-module-${teacher.userId}-${module.id}`}
-                              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${checked ? 'border-brand/30 bg-brand-light text-brand' : 'border-edge bg-white text-ink-secondary'}`}
+                              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${checked ? 'border-edge-strong bg-brand-light text-brand' : 'border-edge bg-white text-ink-secondary'}`}
                             >
                               <input
                                 type="checkbox"
@@ -306,3 +306,4 @@ export default function AdminAcademicAssignmentsPage() {
     </div>
   );
 }
+

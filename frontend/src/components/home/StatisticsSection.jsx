@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getLocalizedSetting, useSiteSettings } from '../../contexts/SiteSettingsContext';
 
 /* Inline SVG icons */
 const UsersIcon = (p) => <svg {...p} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>;
@@ -9,12 +10,24 @@ const BuildingIcon = (p) => <svg {...p} fill="none" stroke="currentColor" stroke
 const TrendingUpIcon = (p) => <svg {...p} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" /></svg>;
 const StarIcon = (p) => <svg {...p} fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>;
 
-const stats = [
-  { Icon: UsersIcon, value: 2500, labelKey: 'statistics.students', suffix: '+' },
-  { Icon: BookIcon, value: 150, labelKey: 'statistics.teachers', suffix: '+' },
-  { Icon: AwardIcon, value: 500, labelKey: 'statistics.projects', suffix: '+' },
-  { Icon: BuildingIcon, value: 98, labelKey: 'statistics.satisfaction', suffix: '%' },
-];
+const parseStatString = (rawValue, fallbackValue, fallbackSuffix = '') => {
+  const sourceValue = String(rawValue || '').trim();
+  const matched = sourceValue.match(/(\d+(?:\.\d+)?)(.*)/);
+
+  if (!matched) {
+    return { value: fallbackValue, suffix: fallbackSuffix };
+  }
+
+  const numeric = Number(matched[1]);
+  if (!Number.isFinite(numeric)) {
+    return { value: fallbackValue, suffix: fallbackSuffix };
+  }
+
+  return {
+    value: Math.round(numeric),
+    suffix: matched[2] || fallbackSuffix,
+  };
+};
 
 function Counter({ end, suffix = '', duration = 2000, isVisible }) {
   const [count, setCount] = useState(0);
@@ -41,7 +54,22 @@ function Counter({ end, suffix = '', duration = 2000, isVisible }) {
 export default function StatisticsSection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { settings } = useSiteSettings();
+
+  const parsedStudents = parseStatString(settings?.statisticsStudentsStat, 2500, '+');
+  const parsedTeachers = parseStatString(settings?.statisticsTeachersStat, 150, '+');
+  const parsedProjects = parseStatString(settings?.statisticsProjectsStat, 500, '+');
+  const parsedSatisfaction = parseStatString(settings?.statisticsSatisfactionStat, 98, '%');
+
+  const stats = [
+    { Icon: UsersIcon, value: parsedStudents.value, suffix: parsedStudents.suffix, labelKey: 'statistics.students' },
+    { Icon: BookIcon, value: parsedTeachers.value, suffix: parsedTeachers.suffix, labelKey: 'statistics.teachers' },
+    { Icon: AwardIcon, value: parsedProjects.value, suffix: parsedProjects.suffix, labelKey: 'statistics.projects' },
+    { Icon: BuildingIcon, value: parsedSatisfaction.value, suffix: parsedSatisfaction.suffix, labelKey: 'statistics.satisfaction' },
+  ];
+
+  const statisticsQuote = getLocalizedSetting(settings, 'statisticsQuote', i18n.language, 'Empowering education through technology');
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -153,7 +181,7 @@ export default function StatisticsSection() {
         {/* Bottom quote */}
         <div className="text-center mt-16">
           <p className="text-ink-secondary text-lg italic border-l-4 border-brand pl-4 inline-block">
-            "Empowering education through technology"
+            "{statisticsQuote}"
           </p>
         </div>
       </div>

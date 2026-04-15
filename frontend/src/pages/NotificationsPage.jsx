@@ -198,7 +198,7 @@ export default function NotificationsPage() {
                       type="button"
                       onClick={() => markAsRead(item.id)}
                       disabled={busy}
-                      className="mt-3 rounded-lg border border-brand/25 bg-brand-light px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/15 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-3 rounded-lg border border-edge-strong bg-brand-light px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/15 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Mark as read
                     </button>
@@ -220,3 +220,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

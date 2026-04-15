@@ -27,7 +27,7 @@ const ALL_MODULES = [
   { nameKey: 'nav.actualites', path: '/dashboard/actualites', roles: ['etudiant', 'delegue', 'enseignant', 'membre_conseil', 'president_conseil', 'chef_specialite', 'chef_departement', 'vice_doyen', 'admin', 'admin_faculte'] },
   { nameKey: 'nav.projects', path: '/dashboard/projects', roles: ['etudiant', 'delegue', 'enseignant', 'membre_conseil', 'president_conseil'] },
   { nameKey: 'nav.ai', path: '/dashboard/ai', roles: ['etudiant', 'delegue', 'enseignant', 'membre_conseil', 'president_conseil'] },
-  { nameKey: 'nav.documents', path: '/dashboard/documents', roles: ['etudiant', 'delegue', 'enseignant', 'membre_conseil', 'president_conseil', 'vice_doyen', 'admin', 'admin_faculte'] },
+  { nameKey: 'nav.documents', path: '/dashboard/documents', roles: ['etudiant', 'delegue', 'enseignant', 'vice_doyen', 'admin', 'admin_faculte'] },
   { nameKey: 'nav.calendar', path: '/dashboard/calendar', roles: ['etudiant', 'delegue', 'enseignant', 'membre_conseil', 'president_conseil', 'chef_specialite', 'chef_departement', 'vice_doyen', 'admin', 'admin_faculte'] },
   {
     nameKey: 'nav.disciplinary',
@@ -63,6 +63,7 @@ const ALL_MODULES = [
   { nameKey: 'nav.userManagement', path: '/dashboard/admin/users', roles: ['vice_doyen', 'admin', 'admin_faculte'], permissions: ['users:manage'] },
   { nameKey: 'nav.academicStructure', path: '/dashboard/admin/academic/management', roles: ['vice_doyen', 'admin'], permissions: ['departments:manage', 'specialites:manage'] },
   { nameKey: 'nav.academicAssignments', path: '/dashboard/admin/academic/assignments', roles: ['vice_doyen', 'admin'], permissions: ['users:manage', 'roles:assign'] },
+  { nameKey: 'nav.siteConfiguration', path: '/dashboard/admin/site-settings', roles: ['vice_doyen', 'admin', 'admin_faculte'], permissions: ['users:manage'] },
 ];
 
 const ADMIN_REQUEST_ROLES = ['admin', 'vice_doyen'];
@@ -163,7 +164,7 @@ function AdminHomePanel({ onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('/dashboard/requests')}
-          className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-brand/30 hover:text-brand"
+          className="rounded-xl border border-edge bg-canvas px-4 py-2 text-sm font-medium text-ink transition hover:border-edge-strong hover:text-brand"
         >
           Open Requests
         </button>
@@ -421,3 +422,4 @@ const DashboardLayout = ({ children }) => {
 };
 
 export default DashboardLayout;
+

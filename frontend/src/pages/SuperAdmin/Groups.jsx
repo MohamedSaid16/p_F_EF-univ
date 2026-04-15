@@ -61,7 +61,7 @@ const Groups = () => {
         </div>
 
         {/* Info Box */}
-        <div className="bg-brand-light border border-brand/30 rounded-lg p-6 max-w-7xl mx-auto">
+        <div className="bg-brand-light border border-edge-strong rounded-lg p-6 max-w-7xl mx-auto">
           <h3 className="font-bold text-brand mb-3">Group Management Workflow</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-brand">
             <div>
@@ -84,3 +84,4 @@ const Groups = () => {
 };
 
 export default Groups;
+

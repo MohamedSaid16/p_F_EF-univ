@@ -130,7 +130,7 @@ export default function ProfilePage() {
       </div>
 
       {selectedStudentProfile ? (
-        <div className="rounded-lg border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30 p-4">
+        <div className="rounded-lg border border-edge-strong border-edge-strong bg-blue-50 dark:bg-blue-950/30 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-brand">Selected Student</p>
           <p className="mt-2 text-sm font-semibold text-ink">{selectedUser ? `${selectedUser.prenom || ''} ${selectedUser.nom || ''}`.trim() : (selectedStudentProfile.name || 'Unknown student')}</p>
           <p className="text-xs text-ink-tertiary">
@@ -249,3 +249,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

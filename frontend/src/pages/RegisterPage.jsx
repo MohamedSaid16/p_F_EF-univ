@@ -211,7 +211,7 @@ export default function RegisterPage() {
           </div>
 
           {serverError && (
-            <div className="mb-4 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md flex items-start gap-2">
+            <div className="mb-4 px-3 py-2.5 bg-red-50 dark:bg-red-900/20 border border-edge-strong border-edge-strong rounded-md flex items-start gap-2">
               <svg className="w-4 h-4 text-danger shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
@@ -349,7 +349,7 @@ export default function RegisterPage() {
                 <button type="submit" disabled={isLoading}
                   className={`inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand text-white rounded-md text-sm font-medium hover:bg-brand-hover active:bg-brand-dark focus:ring-2 focus:ring-brand/30 focus:ring-offset-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${step > 1 ? 'ml-auto' : 'w-full justify-center'}`}>
                   {isLoading ? (
-                    <><span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> {t('register.creating')}</>
+                    <><span className="h-4 w-4 rounded-full border-2 border-edge-subtle border-t-white animate-spin" /> {t('register.creating')}</>
                   ) : t('register.createAccount')}
                 </button>
               )}
@@ -365,3 +365,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

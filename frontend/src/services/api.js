@@ -519,4 +519,25 @@ export const messagesAPI = {
     }),
 };
 
+export const siteSettingsAPI = {
+  getPublic: () =>
+    request('/api/v1/site-settings'),
+
+  update: (payload) =>
+    request('/api/v1/site-settings', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }),
+
+  uploadMedia: (kind, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return request(`/api/v1/site-settings/media/${kind}`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+};
+
 export default request;

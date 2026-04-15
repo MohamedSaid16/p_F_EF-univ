@@ -30,7 +30,7 @@ export default function DataTable({
             {loading && (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-12 text-center">
-                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
                   <p className="mt-3 text-sm text-ink-tertiary">Loading...</p>
                 </td>
               </tr>

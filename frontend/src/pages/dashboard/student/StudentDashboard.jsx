@@ -713,13 +713,13 @@ export default function StudentDashboard() {
           </p>
 
           {error ? (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mt-4 rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           ) : null}
 
           {successMessage ? (
-            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div className="mt-4 rounded-xl border border-edge-strong bg-green-50 px-4 py-3 text-sm text-green-700">
               {successMessage}
             </div>
           ) : null}
@@ -1077,7 +1077,7 @@ export default function StudentDashboard() {
             <p className="mt-1 text-sm text-ink-tertiary">Update your contact details.</p>
 
             {profileLoading ? (
-              <div className="mt-4 h-10 w-10 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+              <div className="mt-4 h-10 w-10 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
             ) : (
               <form className="mt-4 space-y-3" onSubmit={submitProfile}>
                 <input
@@ -1260,7 +1260,7 @@ export default function StudentDashboard() {
       >
         {announcementDetailLoading ? (
           <div className="flex items-center justify-center py-10">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -1415,7 +1415,7 @@ export default function StudentDashboard() {
       >
         {reclamationDetailLoading ? (
           <div className="flex items-center justify-center py-10">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand/20 border-t-brand" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
           </div>
         ) : (
           <div className="space-y-4">
@@ -1475,3 +1475,4 @@ export default function StudentDashboard() {
     </div>
   );
 }
+

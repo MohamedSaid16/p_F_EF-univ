@@ -27,10 +27,10 @@ function formatDateShort(dateStr) {
 /* ── Status Config ──────────────────────────────────────────── */
 
 const STATUS_CONFIG = {
-  pending:    { label: 'Pending Investigation', bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-warning', border: 'border-amber-200 dark:border-amber-800/50', dot: 'bg-warning' },
-  hearing:    { label: 'Hearing Scheduled',     bg: 'bg-blue-50 dark:bg-blue-950/40',  text: 'text-brand',   border: 'border-blue-200 dark:border-blue-800/50', dot: 'bg-brand' },
-  sanctioned: { label: 'Sanction Applied',      bg: 'bg-red-50 dark:bg-red-950/40',   text: 'text-danger',  border: 'border-red-200 dark:border-red-800/50',  dot: 'bg-danger' },
-  closed:     { label: 'Case Closed',           bg: 'bg-green-50 dark:bg-green-950/40', text: 'text-success', border: 'border-green-200 dark:border-green-800/50', dot: 'bg-success' },
+  pending:    { label: 'Pending Investigation', bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-warning', border: 'border-edge-strong border-edge-strong', dot: 'bg-warning' },
+  hearing:    { label: 'Hearing Scheduled',     bg: 'bg-blue-50 dark:bg-blue-950/40',  text: 'text-brand',   border: 'border-edge-strong border-edge-strong', dot: 'bg-brand' },
+  sanctioned: { label: 'Sanction Applied',      bg: 'bg-red-50 dark:bg-red-950/40',   text: 'text-danger',  border: 'border-edge-strong border-edge-strong',  dot: 'bg-danger' },
+  closed:     { label: 'Case Closed',           bg: 'bg-green-50 dark:bg-green-950/40', text: 'text-success', border: 'border-edge-strong border-edge-strong', dot: 'bg-success' },
 };
 
 /* ── Timeline step icons ────────────────────────────────────── */
@@ -235,9 +235,9 @@ export default function CaseDetailPage({ caseData, onBack }) {
                 {/* Verdict badge */}
                 <div className="flex items-center gap-3 mb-4">
                   <span className={`px-3 py-1 text-sm font-semibold rounded-md ${
-                    safeCaseData.decision.verdict === 'Warning' ? 'bg-amber-50 dark:bg-amber-950/40 text-warning border border-amber-200 dark:border-amber-800/50'
-                    : safeCaseData.decision.verdict === 'Suspension' ? 'bg-red-50 dark:bg-red-950/40 text-danger border border-red-200 dark:border-red-800/50'
-                    : safeCaseData.decision.verdict === 'Expulsion' ? 'bg-red-100 dark:bg-red-900/40 text-danger border border-red-300 dark:border-red-700/50'
+                    safeCaseData.decision.verdict === 'Warning' ? 'bg-amber-50 dark:bg-amber-950/40 text-warning border border-edge-strong border-edge-strong'
+                    : safeCaseData.decision.verdict === 'Suspension' ? 'bg-red-50 dark:bg-red-950/40 text-danger border border-edge-strong border-edge-strong'
+                    : safeCaseData.decision.verdict === 'Expulsion' ? 'bg-red-100 dark:bg-red-900/40 text-danger border border-edge-strong border-edge-strong'
                     : 'bg-surface-200 text-ink-secondary border border-edge'
                   }`}>
                     {safeCaseData.decision.verdict}
@@ -256,7 +256,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
                     <p className="text-xs text-ink-muted">Issued by</p>
                     <p className="text-sm font-medium text-ink mt-0.5">{safeCaseData.decision.issuedBy}</p>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800/50 rounded-md">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/40 border border-edge-strong border-edge-strong rounded-md">
                     <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -297,7 +297,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
                   },
                 },
               })}
-              className="w-full px-3 py-2 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 text-center"
+              className="w-full px-3 py-2 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 text-center"
             >
               View Student Profile
             </button>
@@ -354,7 +354,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
             </div>
 
             {safeCaseData.hearingDate ? (
-              <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/50 rounded-lg p-3 mb-4">
+              <div className="bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-lg p-3 mb-4">
                 <p className="text-xs text-ink-muted">Hearing Date</p>
                 <p className="text-sm font-semibold text-brand mt-0.5">{formatDate(safeCaseData.hearingDate)}</p>
               </div>
@@ -491,3 +491,4 @@ export default function CaseDetailPage({ caseData, onBack }) {
     </div>
   );
 }
+

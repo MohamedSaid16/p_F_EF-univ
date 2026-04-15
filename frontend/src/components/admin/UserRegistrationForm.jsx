@@ -156,8 +156,8 @@ const UserRegistrationForm = ({ onSuccess }) => {
       {message.text && (
         <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
           message.type === 'success'
-            ? 'bg-green-50 border border-green-200'
-            : 'bg-red-50 border border-red-200'
+            ? 'bg-green-50 border border-edge-strong'
+            : 'bg-red-50 border border-edge-strong'
         }`}>
           {message.type === 'success' ? (
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -182,7 +182,7 @@ const UserRegistrationForm = ({ onSuccess }) => {
             value={formData.email}
             onChange={handleInputChange}
             className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.email ? 'border-red-500' : 'border-gray-300'
+              errors.email ? 'border-edge-strong' : 'border-control-border'
             }`}
             placeholder="user@example.com"
           />
@@ -205,7 +205,7 @@ const UserRegistrationForm = ({ onSuccess }) => {
               value={formData.nom}
               onChange={handleInputChange}
               className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.nom ? 'border-red-500' : 'border-gray-300'
+                errors.nom ? 'border-edge-strong' : 'border-control-border'
               }`}
               placeholder="Dupont"
             />
@@ -224,7 +224,7 @@ const UserRegistrationForm = ({ onSuccess }) => {
               value={formData.prenom}
               onChange={handleInputChange}
               className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.prenom ? 'border-red-500' : 'border-gray-300'
+                errors.prenom ? 'border-edge-strong' : 'border-control-border'
               }`}
               placeholder="Jean"
             />
@@ -245,7 +245,7 @@ const UserRegistrationForm = ({ onSuccess }) => {
               name="telephone"
               value={formData.telephone}
               onChange={handleInputChange}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 border border-control-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="+33 6 12 34 56 78"
             />
           </div>
@@ -344,7 +344,7 @@ const UserRegistrationForm = ({ onSuccess }) => {
       </form>
 
       {/* Helper Information */}
-      <div className="mt-8 p-4 bg-brand-light border border-brand/30 rounded-lg">
+      <div className="mt-8 p-4 bg-brand-light border border-edge-strong rounded-lg">
         <p className="text-sm text-brand">
           <strong>Note:</strong> Teachers and Students cannot have overlapping roles to maintain system integrity.
           A user is either a teacher (Enseignant, Admin, Vice Doyen) or a student (Étudiant).
@@ -355,3 +355,4 @@ const UserRegistrationForm = ({ onSuccess }) => {
 };
 
 export default UserRegistrationForm;
+

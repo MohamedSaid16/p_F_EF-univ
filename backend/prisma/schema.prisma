@@ -11,6 +11,65 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+// ═══════════════════════════════════════════════════════════════
+// Groupe 8 — Table de Configuration 
+// ═══════════════════════════════════════════════════════════════
+
+model SiteSetting {
+  id Int @id @default(1)
+
+  universityNameAr String? @map("university_name_ar") @db.VarChar(200)
+  universityNameEn String? @map("university_name_en") @db.VarChar(200)
+  universityNameFr String? @map("university_name_fr") @db.VarChar(200)
+
+  universitySubtitleAr String? @map("university_subtitle_ar") @db.VarChar(255)
+  universitySubtitleEn String? @map("university_subtitle_en") @db.VarChar(255)
+  universitySubtitleFr String? @map("university_subtitle_fr") @db.VarChar(255)
+
+  cityAr String? @map("city_ar") @db.VarChar(120)
+  cityEn String? @map("city_en") @db.VarChar(120)
+  cityFr String? @map("city_fr") @db.VarChar(120)
+
+  heroStudentsStat String? @map("hero_students_stat") @db.VarChar(30)
+  heroTeachersStat String? @map("hero_teachers_stat") @db.VarChar(30)
+  heroCoursesStat String? @map("hero_courses_stat") @db.VarChar(30)
+  heroSatisfactionStat String? @map("hero_satisfaction_stat") @db.VarChar(30)
+
+  bannerStudentsStat String? @map("banner_students_stat") @db.VarChar(30)
+  bannerTeachersStat String? @map("banner_teachers_stat") @db.VarChar(30)
+  bannerFacultiesStat String? @map("banner_faculties_stat") @db.VarChar(30)
+  bannerNationalRankStat String? @map("banner_national_rank_stat") @db.VarChar(30)
+
+  statisticsStudentsStat String? @map("statistics_students_stat") @db.VarChar(30)
+  statisticsTeachersStat String? @map("statistics_teachers_stat") @db.VarChar(30)
+  statisticsProjectsStat String? @map("statistics_projects_stat") @db.VarChar(30)
+  statisticsSatisfactionStat String? @map("statistics_satisfaction_stat") @db.VarChar(30)
+  statisticsQuoteAr String? @map("statistics_quote_ar") @db.Text
+  statisticsQuoteEn String? @map("statistics_quote_en") @db.Text
+  statisticsQuoteFr String? @map("statistics_quote_fr") @db.Text
+
+  aboutLine1Ar String? @map("about_line1_ar") @db.Text
+  aboutLine1En String? @map("about_line1_en") @db.Text
+  aboutLine1Fr String? @map("about_line1_fr") @db.Text
+  aboutLine2Ar String? @map("about_line2_ar") @db.Text
+  aboutLine2En String? @map("about_line2_en") @db.Text
+  aboutLine2Fr String? @map("about_line2_fr") @db.Text
+
+  contactPhone String? @map("contact_phone") @db.VarChar(60)
+  contactEmail String? @map("contact_email") @db.VarChar(150)
+  contactAddressAr String? @map("contact_address_ar") @db.VarChar(255)
+  contactAddressEn String? @map("contact_address_en") @db.VarChar(255)
+  contactAddressFr String? @map("contact_address_fr") @db.VarChar(255)
+
+  logoUrl String? @map("logo_url") @db.VarChar(255)
+  heroBackgroundUrl String? @map("hero_background_url") @db.VarChar(255)
+  bannerBackgroundUrl String? @map("banner_background_url") @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
 
 // ═══════════════════════════════════════════════════════════════
 // Groupe 4 — Structure universitaire (facultes → promos)

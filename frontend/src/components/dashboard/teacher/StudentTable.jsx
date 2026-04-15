@@ -30,10 +30,10 @@ export default function StudentTable({ students, enseignementId, onDataChange })
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-control-border border-control-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-          <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
+          <thead className="bg-slate-50 dark:bg-slate-900/50 text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-control-border border-control-border">
             <tr>
               <th className="px-6 py-4">{t('matricule')}</th>
               <th className="px-6 py-4">{t('studentName')}</th>
@@ -104,7 +104,7 @@ export default function StudentTable({ students, enseignementId, onDataChange })
                       />
                       <button 
                         onClick={() => setEditingStudent(student.id === editingStudent ? null : student.id)}
-                        className="p-2 ml-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors border border-slate-200 dark:border-slate-600 shadow-sm"
+                        className="p-2 ml-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors border border-control-border border-control-border shadow-sm"
                         title={t('editNotes')}
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,7 +116,7 @@ export default function StudentTable({ students, enseignementId, onDataChange })
 
                   {/* Inline Editor Form if editing this student */}
                   {editingStudent === student.id && (
-                    <tr className="bg-blue-50/40 dark:bg-blue-900/10 border-b border-blue-100 dark:border-blue-900/30">
+                    <tr className="bg-blue-50/40 dark:bg-blue-900/10 border-b border-edge-strong border-edge-strong">
                       <td colSpan="100%" className="p-0">
                         <NoteForm 
                           student={student} 
@@ -140,3 +140,4 @@ export default function StudentTable({ students, enseignementId, onDataChange })
     </div>
   );
 }
+

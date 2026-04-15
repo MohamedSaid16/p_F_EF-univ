@@ -118,10 +118,10 @@ function normalizeJustification(item) {
 
 const STATUS_CONFIG = {
   draft:          { label: 'Draft',        bg: 'bg-surface-200',                        text: 'text-ink-tertiary', border: 'border-edge',                               dot: 'bg-ink-muted'  },
-  submitted:      { label: 'Submitted',    bg: 'bg-brand-light',                         text: 'text-brand',        border: 'border-brand/30',                           dot: 'bg-brand'      },
+  submitted:      { label: 'Submitted',    bg: 'bg-brand-light',                         text: 'text-brand',        border: 'border-edge-strong',                           dot: 'bg-brand'      },
   'under-review': { label: 'Under Review', bg: 'bg-warning/10',                          text: 'text-warning',      border: 'border-warning/30',                         dot: 'bg-warning'    },
   resolved:       { label: 'Resolved',     bg: 'bg-success/10',                          text: 'text-success',      border: 'border-success/30',                         dot: 'bg-success'    },
-  rejected:       { label: 'Rejected',     bg: 'bg-danger/10',                           text: 'text-danger',       border: 'border-danger/30',                          dot: 'bg-danger'     },
+  rejected:       { label: 'Rejected',     bg: 'bg-danger/10',                           text: 'text-danger',       border: 'border-edge-strong',                          dot: 'bg-danger'     },
 };
 
 /* ── Type Options ───────────────────────────────────────────── */
@@ -277,7 +277,7 @@ function FileUploadZone({ files, setFiles, dragActive, setDragActive, fileInputR
 
   const borderActive = accentColor === 'emerald'
     ? 'border-success/40 bg-success/10'
-    : 'border-brand/40 bg-brand-light';
+    : 'border-edge-strong bg-brand-light';
 
   return (
     <div>
@@ -641,7 +641,7 @@ export default function RequestsPage({ role = 'student' }) {
         )}
 
         {/* Info banner */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-brand/30 bg-brand-light px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-edge-strong bg-brand-light px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-md bg-surface">
               <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -1459,3 +1459,4 @@ export default function RequestsPage({ role = 'student' }) {
     );
   }
 }
+

@@ -18,14 +18,14 @@ export default function ProfileHeader({ profile }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 flex flex-col md:flex-row items-center justify-between transition-all duration-300 hover:shadow-md">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-control-border border-control-border p-6 flex flex-col md:flex-row items-center justify-between transition-all duration-300 hover:shadow-md">
       
       <div className="flex items-center space-x-6 rtl:space-x-reverse">
         <div className="relative">
           <img 
             src={profile?.photo || defaultAvatar} 
             alt="Profile Avatar" 
-            className="w-24 h-24 rounded-full object-cover border-4 border-blue-50 dark:border-blue-900/30"
+            className="w-24 h-24 rounded-full object-cover border-4 border-edge-strong border-edge-strong"
           />
           <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
         </div>
@@ -64,7 +64,7 @@ export default function ProfileHeader({ profile }) {
         {/* Secure Logout Feature */}
         <button 
           onClick={handleLogout}
-          className="flex items-center justify-center px-4 py-2 w-full md:w-auto text-sm font-bold transition-colors bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 shadow-sm border border-red-100 dark:border-red-900/50"
+          className="flex items-center justify-center px-4 py-2 w-full md:w-auto text-sm font-bold transition-colors bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/50 shadow-sm border border-edge-strong border-edge-strong"
         >
           <svg className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           {t('logout', { defaultValue: 'Logout' })}
@@ -74,3 +74,4 @@ export default function ProfileHeader({ profile }) {
     </div>
   );
 }
+

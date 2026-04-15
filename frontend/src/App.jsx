@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { AuthProvider } from './contexts/AuthContext';
+import { SiteSettingsProvider } from './contexts/SiteSettingsContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 /* ── Public (guest-accessible) pages ── */
@@ -32,6 +33,7 @@ import AdminUsersListPage from './pages/AdminUsersListPage';
 import AdminPanelPage from './pages/AdminPanelPage';
 import AdminAcademicManagementPage from './pages/AdminAcademicManagementPage';
 import AdminAcademicAssignmentsPage from './pages/AdminAcademicAssignmentsPage';
+import AdminSiteSettingsPage from './pages/AdminSiteSettingsPage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AIAssistantPage from './pages/AIAssistantPage';
@@ -61,15 +63,16 @@ function App() {
 
   return (
     <ThemeProvider>
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <AuthProvider>
-          <div className="min-h-full">
-            <Routes>
+      <SiteSettingsProvider>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <AuthProvider>
+            <div className="min-h-full">
+              <Routes>
               {/* ── Public / Guest routes (PublicLayout: navbar + footer, no sidebar) ── */}
               <Route path="/" element={<Navigate to="/home" replace />} />
               <Route path="/home" element={<HomePage />} />
@@ -110,7 +113,14 @@ function App() {
               />
               <Route path="/dashboard/actualites" element={<ProtectedRoute><DashboardLayout><ActualitesPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/ai" element={<ProtectedRoute><DashboardLayout><AIAssistantPage /></DashboardLayout></ProtectedRoute>} />
-              <Route path="/dashboard/documents" element={<ProtectedRoute><DashboardLayout><DocumentsPage /></DashboardLayout></ProtectedRoute>} />
+              <Route
+                path="/dashboard/documents"
+                element={
+                  <ProtectedRoute allowedRoles={['etudiant', 'delegue', 'enseignant', 'admin', 'vice_doyen', 'admin_faculte']}>
+                    <DashboardLayout><DocumentsPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/dashboard/projects" element={<ProtectedRoute><DashboardLayout><ProjectsPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/projects/subjects" element={<ProtectedRoute><DashboardLayout><SubjectsPage /></DashboardLayout></ProtectedRoute>} />
               <Route path="/dashboard/projects/groups" element={<ProtectedRoute><DashboardLayout><GroupsPage /></DashboardLayout></ProtectedRoute>} />
@@ -181,16 +191,29 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/dashboard/admin/site-settings"
+                element={
+                  <ProtectedRoute
+                    allowedRoles={['admin', 'vice_doyen', 'admin_faculte']}
+                    requiredPermissions={['users:manage']}
+                    accessMode="any"
+                  >
+                    <DashboardLayout><AdminSiteSettingsPage /></DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/dashboard/admin/groups" element={<ProtectedRoute><DashboardLayout><SuperAdminGroupsPage /></DashboardLayout></ProtectedRoute>} />
 
               {/* ── Error pages ── */}
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-            <AIChatbot />
-          </div>
-        </AuthProvider>
-      </BrowserRouter>
+              </Routes>
+              <AIChatbot />
+            </div>
+          </AuthProvider>
+        </BrowserRouter>
+      </SiteSettingsProvider>
     </ThemeProvider>
   );
 }

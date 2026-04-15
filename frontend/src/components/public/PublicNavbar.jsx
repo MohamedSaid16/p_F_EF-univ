@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { resolveMediaUrl } from '../../services/api';
+import { getLocalizedSetting, useSiteSettings } from '../../contexts/SiteSettingsContext';
 
 export default function PublicNavbar() {
   const { t, i18n } = useTranslation();
+  const { settings } = useSiteSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [imageError, setImageError] = useState(false);
   const location = useLocation();
+
+  const universityName = getLocalizedSetting(settings, 'universityName', i18n.language, 'Ibn Khaldoun University');
+  const universitySubtitle = getLocalizedSetting(settings, 'universitySubtitle', i18n.language, 'University');
+  const city = getLocalizedSetting(settings, 'city', i18n.language, 'Tiaret');
+  const logoUrl = settings?.logoUrl ? resolveMediaUrl(settings.logoUrl) : '/Logo.png';
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -54,8 +62,8 @@ export default function PublicNavbar() {
             {!imageError ? (
               <div className="relative">
                 <img
-                  src="/Logo.png"
-                  alt="Ibn Khaldoun University"
+                  src={logoUrl}
+                  alt={universityName}
                   className="h-12 w-auto object-contain rounded-lg relative z-10"
                   onError={() => setImageError(true)}
                 />
@@ -63,17 +71,17 @@ export default function PublicNavbar() {
               </div>
             ) : (
               <div className="flex flex-col">
-                <span className="text-xl font-bold text-ink">Ibn Khaldoun</span>
-                <span className="text-xs text-ink-tertiary">University</span>
+                <span className="text-xl font-bold text-ink">{universityName}</span>
+                <span className="text-xs text-ink-tertiary">{universitySubtitle}</span>
               </div>
             )}
 
             {!imageError && (
               <div className="hidden sm:flex flex-col">
                 <span className="text-xl font-bold text-ink leading-tight">
-                  Ibn Khaldoun
+                  {universityName}
                 </span>
-                <span className="text-xs text-ink-tertiary">University — Tiaret</span>
+                <span className="text-xs text-ink-tertiary">{universitySubtitle} — {city}</span>
               </div>
             )}
           </Link>
