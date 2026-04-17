@@ -5,12 +5,14 @@ import BannerSection from '../components/home/BannerSection';
 import FeaturesSection from '../components/home/FeaturesSection';
 import GallerySection from '../components/home/GallerySection';
 import StatisticsSection from '../components/home/StatisticsSection';
+import AnnouncementsSection from '../components/home/AnnouncementsSection';
 
 export default function HomePage() {
   return (
     <PublicLayout>
       <HeroSection />
       <BannerSection />
+      <AnnouncementsSection />
       <FeaturesSection />
       <GallerySection />
       <StatisticsSection />

@@ -1,5 +1,33 @@
 import React, { useEffect } from "react";
 
+// Bounce animation style
+const bounceStyle = `
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.95) translateY(10px);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  .bounce-in {
+    animation: bounceIn 0.5s ease-out;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = bounceStyle;
+  document.head.appendChild(styleSheet);
+}
+
 export default function Modal({
   open,
   title,
@@ -33,7 +61,7 @@ export default function Modal({
         <div
           role="dialog"
           aria-modal="true"
-          className={`max-h-[90vh] w-full ${maxWidth} overflow-hidden rounded-2xl border border-edge bg-surface shadow-card`}
+          className={`max-h-[90vh] w-full ${maxWidth} overflow-hidden rounded-2xl border border-edge bg-surface shadow-card bounce-in`}
           onClick={(event) => event.stopPropagation()}
         >
           <div className="border-b border-edge-subtle px-5 py-4">
