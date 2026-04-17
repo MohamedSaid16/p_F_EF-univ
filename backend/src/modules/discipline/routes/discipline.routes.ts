@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { requireAuth, requireRole } from "../../../middlewares/auth.middleware";
+
 import {
   addMembreHandler,
   createConseilHandler,
@@ -10,51 +11,54 @@ import {
   getConseilHandler,
   getDisciplineStudentProfileHandler,
   getDossierHandler,
-  listDisciplineStudentsHandler,
   listConseilsHandler,
   listDecisionsHandler,
+  listDisciplineStudentsHandler,
   listDossiersHandler,
   listInfractionsHandler,
+  listStaffHandler,
+  recordDecisionHandler,
   removeMembreHandler,
   scheduleMeetingHandler,
   statsHandler,
   updateConseilHandler,
   updateDossierHandler,
-  recordDecisionHandler,
 } from "../../../controllers/discipline/discipline.controller";
 
 const router = Router();
 
-const disciplineRoles = ["admin", "vice_doyen", "enseignant"];
+const readRoles = ["admin", "enseignant", "vice_doyen", "president_conseil"];
+const writeRoles = ["admin", "enseignant"];
 
-router.get("/conseils", requireAuth, requireRole(disciplineRoles), listConseilsHandler);
-router.get("/conseils/:id", requireAuth, requireRole(disciplineRoles), getConseilHandler);
-router.post("/conseils", requireAuth, requireRole(disciplineRoles), createConseilHandler);
-router.patch("/conseils/:id", requireAuth, requireRole(disciplineRoles), updateConseilHandler);
-router.delete("/conseils/:id", requireAuth, requireRole(disciplineRoles), deleteConseilHandler);
-router.patch("/conseils/:id/finaliser", requireAuth, requireRole(disciplineRoles), finaliserConseilHandler);
-router.post("/conseils/:cid/membres", requireAuth, requireRole(disciplineRoles), addMembreHandler);
-router.delete("/conseils/:cid/membres/:mid", requireAuth, requireRole(disciplineRoles), removeMembreHandler);
+router.get("/conseils", requireAuth, requireRole(readRoles), listConseilsHandler);
+router.get("/conseils/:id", requireAuth, requireRole(readRoles), getConseilHandler);
+router.post("/conseils", requireAuth, requireRole(writeRoles), createConseilHandler);
+router.patch("/conseils/:id", requireAuth, requireRole(writeRoles), updateConseilHandler);
+router.delete("/conseils/:id", requireAuth, requireRole(writeRoles), deleteConseilHandler);
+router.patch("/conseils/:id/finaliser", requireAuth, requireRole(writeRoles), finaliserConseilHandler);
+router.post("/conseils/:cid/membres", requireAuth, requireRole(writeRoles), addMembreHandler);
+router.delete("/conseils/:cid/membres/:mid", requireAuth, requireRole(writeRoles), removeMembreHandler);
 
-router.get("/dossiers-disciplinaires", requireAuth, requireRole(disciplineRoles), listDossiersHandler);
-router.get("/cases", requireAuth, requireRole(disciplineRoles), listDossiersHandler);
-router.get("/dossiers-disciplinaires/:id", requireAuth, requireRole(disciplineRoles), getDossierHandler);
-router.get("/cases/:id", requireAuth, requireRole(disciplineRoles), getDossierHandler);
-router.post("/dossiers-disciplinaires", requireAuth, requireRole(disciplineRoles), createDossierHandler);
-router.post("/cases", requireAuth, requireRole(disciplineRoles), createDossierHandler);
-router.patch("/dossiers-disciplinaires/:id", requireAuth, requireRole(disciplineRoles), updateDossierHandler);
-router.patch("/cases/:id", requireAuth, requireRole(disciplineRoles), updateDossierHandler);
-router.delete("/dossiers-disciplinaires/:id", requireAuth, requireRole(disciplineRoles), deleteDossierHandler);
-router.delete("/cases/:id", requireAuth, requireRole(disciplineRoles), deleteDossierHandler);
+router.get("/dossiers-disciplinaires", requireAuth, requireRole(readRoles), listDossiersHandler);
+router.get("/cases", requireAuth, requireRole(readRoles), listDossiersHandler);
+router.get("/dossiers-disciplinaires/:id", requireAuth, requireRole(readRoles), getDossierHandler);
+router.get("/cases/:id", requireAuth, requireRole(readRoles), getDossierHandler);
+router.post("/dossiers-disciplinaires", requireAuth, requireRole(writeRoles), createDossierHandler);
+router.post("/cases", requireAuth, requireRole(writeRoles), createDossierHandler);
+router.patch("/dossiers-disciplinaires/:id", requireAuth, requireRole(writeRoles), updateDossierHandler);
+router.patch("/cases/:id", requireAuth, requireRole(writeRoles), updateDossierHandler);
+router.delete("/dossiers-disciplinaires/:id", requireAuth, requireRole(writeRoles), deleteDossierHandler);
+router.delete("/cases/:id", requireAuth, requireRole(writeRoles), deleteDossierHandler);
 
-router.get("/infractions", requireAuth, requireRole(disciplineRoles), listInfractionsHandler);
-router.get("/decisions", requireAuth, requireRole(disciplineRoles), listDecisionsHandler);
-router.get("/students", requireAuth, requireRole(disciplineRoles), listDisciplineStudentsHandler);
-router.get("/students/:id/profile", requireAuth, requireRole(disciplineRoles), getDisciplineStudentProfileHandler);
+router.get("/infractions", requireAuth, requireRole(readRoles), listInfractionsHandler);
+router.get("/decisions", requireAuth, requireRole(readRoles), listDecisionsHandler);
+router.get("/students", requireAuth, requireRole(readRoles), listDisciplineStudentsHandler);
+router.get("/students/:id/profile", requireAuth, requireRole(readRoles), getDisciplineStudentProfileHandler);
+router.get("/staff", requireAuth, requireRole(readRoles), listStaffHandler);
 
-router.post("/meetings", requireAuth, requireRole(disciplineRoles), scheduleMeetingHandler);
-router.get("/meetings", requireAuth, requireRole(disciplineRoles), listConseilsHandler);
-router.post("/decisions", requireAuth, requireRole(disciplineRoles), recordDecisionHandler);
-router.get("/stats", requireAuth, requireRole(disciplineRoles), statsHandler);
+router.post("/meetings", requireAuth, requireRole(writeRoles), scheduleMeetingHandler);
+router.get("/meetings", requireAuth, requireRole(readRoles), listConseilsHandler);
+router.post("/decisions", requireAuth, requireRole(writeRoles), recordDecisionHandler);
+router.get("/stats", requireAuth, requireRole(readRoles), statsHandler);
 
 export default router;

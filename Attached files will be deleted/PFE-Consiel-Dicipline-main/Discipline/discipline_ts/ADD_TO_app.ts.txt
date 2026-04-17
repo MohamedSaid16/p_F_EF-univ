@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ADD THIS TO YOUR EXISTING app.ts
+// (just add the import and the app.use line — don't change anything else)
+// ─────────────────────────────────────────────────────────────────────────────
+
+import disciplineRoutes from "./modules/discipline/routes/discipline.routes";
+
+// Add this line after your existing app.use("/api/v1/auth", authRoutes) line:
+app.use("/api/v1/cd", disciplineRoutes);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FINAL ROUTES SECTION IN app.ts SHOULD LOOK LIKE:
+// ─────────────────────────────────────────────────────────────────────────────
+
+// app.use("/api/v1/auth", authRoutes);
+// app.use("/api/v1/cd", disciplineRoutes);   ← ADD THIS LINE
