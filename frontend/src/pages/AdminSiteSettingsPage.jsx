@@ -184,11 +184,11 @@ export default function AdminSiteSettingsPage() {
       </section>
 
       {error ? (
-        <div className="rounded-md border border-edge-strong bg-red-50 px-3 py-2.5 text-sm text-danger">{error}</div>
+        <div className="rounded-md border border-edge-strong bg-danger/5 px-3 py-2.5 text-sm text-danger">{error}</div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-md border border-edge-strong bg-emerald-50 px-3 py-2.5 text-sm text-emerald-700">{successMessage}</div>
+        <div className="rounded-md border border-edge-strong bg-success/5 px-3 py-2.5 text-sm text-success">{successMessage}</div>
       ) : null}
 
       <section className="rounded-lg border border-edge bg-surface p-6 shadow-card">

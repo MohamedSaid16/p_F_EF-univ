@@ -98,6 +98,12 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   ),
+  '/dashboard/admin/users': (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a3 3 0 110-6 3 3 0 010 6z" />
+    </svg>
+  ),
 };
 
 /* ── Section labels for grouping (i18n keys) ─────────────────── */
@@ -232,7 +238,7 @@ export default function Sidebar({ modules = [], open = false, onClose, onNavigat
                       <span className="relative w-5 h-5 shrink-0">
                         {icons[item.path]}
                         {collapsed && showBadge && (
-                          <span className="hidden lg:inline-flex absolute -top-1.5 -end-2 min-w-[16px] h-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold leading-none text-white">
+                          <span className="hidden lg:inline-flex absolute -top-1.5 -end-2 min-w-[16px] h-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold leading-none text-white">
                             {badgeValue}
                           </span>
                         )}
@@ -240,7 +246,7 @@ export default function Sidebar({ modules = [], open = false, onClose, onNavigat
                       <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>{item.name}</span>
                     </span>
                     {!collapsed && showBadge && (
-                      <span className="inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-semibold leading-none text-white">
+                      <span className="inline-flex min-w-[20px] h-5 items-center justify-center rounded-full bg-danger px-1.5 text-[11px] font-semibold leading-none text-white">
                         {badgeValue}
                       </span>
                     )}

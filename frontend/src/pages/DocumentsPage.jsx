@@ -9,23 +9,30 @@ const FALLBACK_DOCUMENTS = [
   { id: 'doc-4', name: 'Academic Calendar 2025/2026', category: 'Calendar', format: 'PDF', size: '260 KB', updatedAt: '2026-01-18' },
 ];
 
-const CATEGORY_PILL_STYLES = {
-  enseignement: 'bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200',
-  administratif: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
-  scientifique: 'bg-violet-50 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200',
-  pedagogique: 'bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200',
-  autre: 'bg-surface-200 text-ink-secondary',
-  Administrative: 'bg-blue-50 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200',
-  Academic: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
-  PFE: 'bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200',
-  Calendar: 'bg-violet-50 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200',
+// Token-based semantic color mapping
+const getCategoryStyle = (category) => {
+  const map = {
+    enseignement: { bg: 'rgba(29, 78, 216, 0.05)', text: 'var(--color-brand)' },
+    administratif: { bg: 'rgba(22, 163, 74, 0.05)', text: 'var(--color-success)' },
+    scientifique: { bg: 'var(--color-surface-200)', text: 'var(--color-ink-secondary)' },
+    pedagogique: { bg: 'rgba(202, 138, 4, 0.05)', text: 'var(--color-warning)' },
+    autre: { bg: 'var(--color-surface-200)', text: 'var(--color-ink-secondary)' },
+    Administrative: { bg: 'rgba(29, 78, 216, 0.05)', text: 'var(--color-brand)' },
+    Academic: { bg: 'rgba(22, 163, 74, 0.05)', text: 'var(--color-success)' },
+    PFE: { bg: 'rgba(202, 138, 4, 0.05)', text: 'var(--color-warning)' },
+    Calendar: { bg: 'var(--color-surface-200)', text: 'var(--color-ink-secondary)' },
+  };
+  return map[category] || map.autre;
 };
 
-const STATUS_STYLES = {
-  en_attente: 'bg-surface-200 text-ink-secondary',
-  en_traitement: 'bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200',
-  valide: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
-  refuse: 'bg-red-50 text-red-700 dark:bg-red-500/20 dark:text-red-200',
+const getStatusStyle = (status) => {
+  const map = {
+    en_attente: { bg: 'var(--color-surface-200)', text: 'var(--color-ink-secondary)' },
+    en_traitement: { bg: 'rgba(202, 138, 4, 0.05)', text: 'var(--color-warning)' },
+    valide: { bg: 'rgba(22, 163, 74, 0.05)', text: 'var(--color-success)' },
+    refuse: { bg: 'rgba(220, 38, 38, 0.05)', text: 'var(--color-danger)' },
+  };
+  return map[status] || map.en_attente;
 };
 
 const STATUS_LABELS = {
@@ -39,14 +46,65 @@ function normalizeRows(payload) {
   return Array.isArray(payload?.data) ? payload.data : [];
 }
 
-function DocumentsHeader({ eyebrow, title, description }) {
+// Hero Section - Token-driven depth & unified styling
+function DocumentsHero({ eyebrow, title, description }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-edge bg-surface shadow-card">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,197,94,0.14),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.12),transparent_30%)]" />
-      <div className="relative px-6 py-8 md:px-8 md:py-10">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">{eyebrow}</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink">{title}</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-secondary md:text-base">{description}</p>
+    <section
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: '12px',
+        border: '1px solid var(--color-edge)',
+        background: 'var(--color-surface)',
+        boxShadow: 'var(--shadow-card)',
+        padding: '32px 24px',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(circle at top right, rgba(22, 163, 74, 0.08), transparent 35%), radial-gradient(circle at bottom left, rgba(29, 78, 216, 0.08), transparent 35%)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <p
+          style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--color-brand, #1d4ed8)',
+            margin: 0,
+          }}
+        >
+          {eyebrow}
+        </p>
+        <h1
+          style={{
+            marginTop: '12px',
+            fontSize: '32px',
+            fontWeight: 700,
+            color: 'var(--color-ink)',
+            letterSpacing: '-0.02em',
+            margin: 0,
+          }}
+        >
+          {title}
+        </h1>
+        <p
+          style={{
+            marginTop: '12px',
+            fontSize: '14px',
+            lineHeight: '1.6',
+            color: 'var(--color-ink-secondary)',
+            maxWidth: '56ch',
+            margin: 0,
+          }}
+        >
+          {description}
+        </p>
       </div>
     </section>
   );
@@ -59,6 +117,7 @@ function TeacherView() {
   const [docTypes, setDocTypes] = useState([]);
   const [query, setQuery] = useState('');
   const [selectedType, setSelectedType] = useState('');
+  const [expandForm, setExpandForm] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -82,10 +141,7 @@ function TeacherView() {
   }, []);
 
   const handleCreateRequest = async () => {
-    if (!selectedType) {
-      return;
-    }
-
+    if (!selectedType) return;
     setRequestLoading(true);
     try {
       await request('/api/v1/documents/request', {
@@ -93,6 +149,7 @@ function TeacherView() {
         body: JSON.stringify({ typeDocId: Number(selectedType), description: 'Document request' }),
       });
       setSelectedType('');
+      setExpandForm(false);
       await loadAll();
     } catch {
     } finally {
@@ -100,108 +157,312 @@ function TeacherView() {
     }
   };
 
+  // KPI Summary for Teacher
+  const summary = useMemo(() => ({
+    total: documents.length,
+    pending: documents.filter((d) => d.status === 'en_attente').length,
+    processing: documents.filter((d) => d.status === 'en_traitement').length,
+    approved: documents.filter((d) => d.status === 'valide').length,
+  }), [documents]);
+
   const filtered = useMemo(() => {
     const lower = query.trim().toLowerCase();
-    if (!lower) {
-      return documents;
-    }
-
-    return documents.filter((doc) => [doc.name, doc.category, doc.status].some((value) => String(value || '').toLowerCase().includes(lower)));
+    if (!lower) return documents;
+    return documents.filter((doc) =>
+      [doc.name, doc.category, doc.status].some((value) => String(value || '').toLowerCase().includes(lower))
+    );
   }, [documents, query]);
 
   return (
-    <div className="space-y-6 max-w-6xl min-w-0">
-      <DocumentsHeader
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Hero Section */}
+      <DocumentsHero
         eyebrow="Espace Enseignant"
         title="Documents"
         description="Soumettez une demande de document, suivez son état, puis téléchargez le fichier une fois validé."
       />
 
-      <section className="rounded-3xl border border-edge bg-surface p-5 shadow-card">
-        <h2 className="mb-1 text-lg font-semibold text-ink">Nouvelle demande</h2>
-        <p className="mb-4 text-sm text-ink-secondary">Sélectionnez un type de document puis envoyez votre demande.</p>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <select
-            value={selectedType}
-            onChange={(event) => setSelectedType(event.target.value)}
-            className="flex-1 rounded-xl border border-edge bg-canvas px-3 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+      {/* KPI Header - Teacher Context */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '16px',
+      }}>
+        {[
+          { label: 'Total', value: summary.total, accent: 'brand' },
+          { label: 'En attente', value: summary.pending, accent: 'warning' },
+          { label: 'En traitement', value: summary.processing, accent: 'warning' },
+          { label: 'Validées', value: summary.approved, accent: 'success' },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            style={{
+              borderRadius: '8px',
+              border: '1px solid var(--color-edge)',
+              background: 'var(--color-surface)',
+              boxShadow: 'var(--shadow-card)',
+              padding: '16px',
+              transition: 'all 150ms ease-out',
+            }}
           >
-            <option value="">Choisir le type de document</option>
-            {docTypes.map((doc) => (
-              <option key={doc.id} value={doc.id}>{(doc.nom_ar || doc.nom_en || 'Document')} - {doc.categorie}</option>
-            ))}
-          </select>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-tertiary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {stat.label}
+            </p>
+            <p style={{ marginTop: '8px', fontSize: '28px', fontWeight: 700, color: `var(--color-${stat.accent})`, margin: 0 }}>
+              {stat.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Unified Workspace Surface - Action-Triggered Hero */}
+      <section
+        style={{
+          borderRadius: '8px',
+          border: '1px solid var(--color-edge)',
+          background: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '24px',
+            borderBottom: '1px solid var(--color-edge-subtle)',
+            background: expandForm ? 'var(--color-surface-200)' : 'var(--color-surface)',
+            transition: 'all 150ms ease-out',
+          }}
+        >
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Nouvelle demande</h2>
+            <p style={{ fontSize: '12px', color: 'var(--color-ink-secondary)', margin: '4px 0 0 0' }}>
+              Sélectionnez un type de document et envoyez votre demande
+            </p>
+          </div>
           <button
             type="button"
-            onClick={handleCreateRequest}
-            disabled={requestLoading || !selectedType}
-            className="rounded-xl bg-brand px-5 py-2.5 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setExpandForm(!expandForm)}
+            style={{
+              borderRadius: '6px',
+              border: 'none',
+              background: expandForm ? 'var(--color-surface)' : 'var(--color-brand, #1d4ed8)',
+              color: expandForm ? 'var(--color-brand)' : '#fff',
+              padding: '8px 16px',
+              fontSize: '13px',
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 150ms ease-out',
+            }}
           >
-            {requestLoading ? 'Envoi...' : 'Envoyer la demande'}
+            {expandForm ? 'Annuler' : 'Nouvelle demande'}
           </button>
         </div>
+
+        {/* Expanded Form - Token-driven styling */}
+        {expandForm && (
+          <div style={{ padding: '24px', borderTop: '1px solid var(--color-edge-subtle)', background: 'var(--color-surface-200)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                style={{
+                  borderRadius: '6px',
+                  border: '1px solid var(--color-edge)',
+                  background: 'var(--color-surface)',
+                  padding: '12px',
+                  fontSize: '13px',
+                  color: 'var(--color-ink)',
+                  outline: 'none',
+                  transition: 'all 150ms ease-out',
+                }}
+              >
+                <option value="">Choisir le type de document</option>
+                {docTypes.map((doc) => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.nom_ar || doc.nom_en || 'Document'} - {doc.categorie}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={handleCreateRequest}
+                disabled={requestLoading || !selectedType}
+                style={{
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: selectedType ? 'var(--color-brand, #1d4ed8)' : 'var(--color-control-border)',
+                  color: '#fff',
+                  padding: '12px 24px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: selectedType ? 'pointer' : 'not-allowed',
+                  opacity: requestLoading ? 0.6 : 1,
+                  transition: 'all 150ms ease-out',
+                }}
+              >
+                {requestLoading ? 'Envoi...' : 'Envoyer la demande'}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
-      <section className="rounded-3xl border border-edge bg-surface p-5 shadow-card">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Requests Table Section - Data-Dense Layout */}
+      <section
+        style={{
+          borderRadius: '8px',
+          border: '1px solid var(--color-edge)',
+          background: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Header with Search */}
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--color-edge-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
           <div>
-            <h2 className="text-lg font-semibold text-ink">Mes demandes</h2>
-            <p className="mt-1 text-sm text-ink-secondary">Historique et état des demandes.</p>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>Mes demandes</h2>
+            <p style={{ fontSize: '12px', color: 'var(--color-ink-secondary)', margin: '4px 0 0 0' }}>
+              Historique et état des demandes ({filtered.length})
+            </p>
           </div>
           <input
             type="text"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Rechercher..."
-            className="w-full rounded-xl border border-edge bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-72"
+            style={{
+              borderRadius: '6px',
+              border: '1px solid var(--color-edge)',
+              background: 'var(--color-surface-200)',
+              padding: '8px 12px',
+              fontSize: '13px',
+              color: 'var(--color-ink)',
+              outline: 'none',
+              minWidth: '200px',
+              transition: 'all 150ms ease-out',
+            }}
           />
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-3 py-6 text-ink-secondary">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
-            <span>Chargement...</span>
-          </div>
-        ) : filtered.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((doc) => (
-              <article key={doc.id} className="rounded-2xl border border-edge bg-canvas p-4 shadow-sm transition hover:border-edge-strong">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-semibold leading-6 text-ink">{doc.name}</h3>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${CATEGORY_PILL_STYLES[doc.category] || CATEGORY_PILL_STYLES.autre}`}>
-                    {doc.category}
-                  </span>
-                </div>
-                <div className="mt-3">
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[doc.status] || STATUS_STYLES.en_attente}`}>
-                    {STATUS_LABELS[doc.status] || doc.status}
-                  </span>
-                </div>
-                <p className="mt-3 text-xs text-ink-tertiary">Mis à jour : {doc.updatedAt || 'N/A'}</p>
-                {doc.status === 'valide' && doc.documentUrl ? (
-                  <a
-                    href={resolveMediaUrl(`/api/v1/documents/download/${doc.id}`)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-4 block w-full rounded-xl bg-brand px-3 py-2 text-center text-sm font-medium text-white transition hover:bg-brand-hover"
+        {/* Content */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', gap: '12px', color: 'var(--color-ink-secondary)' }}>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid var(--color-edge)', borderTop: '2px solid var(--color-brand)', animation: 'spin 1s linear infinite' }} />
+              <span style={{ fontSize: '13px' }}>Chargement...</span>
+            </div>
+          ) : filtered.length ? (
+            <div style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+              {filtered.map((doc) => {
+                const categoryStyle = getCategoryStyle(doc.category);
+                const statusStyle = getStatusStyle(doc.status);
+                return (
+                  <div
+                    key={doc.id}
+                    style={{
+                      borderRadius: '6px',
+                      border: '1px solid var(--color-edge)',
+                      background: 'var(--color-surface-200)',
+                      padding: '16px',
+                      transition: 'all 150ms ease-out',
+                    }}
                   >
-                    Télécharger
-                  </a>
-                ) : (
-                  <div className="mt-4 w-full rounded-xl bg-canvas px-3 py-2 text-center text-xs text-ink-tertiary">
-                    {doc.status === 'refuse' ? 'Demande refusée' : 'En attente de traitement'}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
+                      <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)', margin: 0, flex: 1 }}>{doc.name}</h3>
+                      <span style={{
+                        borderRadius: '6px',
+                        background: categoryStyle.bg,
+                        color: categoryStyle.text,
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {doc.category}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{
+                        borderRadius: '6px',
+                        background: statusStyle.bg,
+                        color: statusStyle.text,
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                      }}>
+                        {STATUS_LABELS[doc.status] || doc.status}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--color-ink-tertiary)', margin: '0 0 12px 0' }}>
+                      Mis à jour : {doc.updatedAt || 'N/A'}
+                    </p>
+                    {doc.status === 'valide' && doc.documentUrl ? (
+                      <a
+                        href={resolveMediaUrl(`/api/v1/documents/download/${doc.id}`)}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          borderRadius: '6px',
+                          background: 'var(--color-brand, #1d4ed8)',
+                          color: '#fff',
+                          padding: '8px 12px',
+                          textAlign: 'center',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                          transition: 'all 150ms ease-out',
+                        }}
+                      >
+                        Télécharger
+                      </a>
+                    ) : (
+                      <div style={{
+                        display: 'block',
+                        width: '100%',
+                        borderRadius: '6px',
+                        background: 'var(--color-surface)',
+                        color: 'var(--color-ink-tertiary)',
+                        padding: '8px 12px',
+                        textAlign: 'center',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        border: '1px solid var(--color-edge-subtle)',
+                      }}>
+                        {doc.status === 'refuse' ? 'Demande refusée' : 'En attente de traitement'}
+                      </div>
+                    )}
                   </div>
-                )}
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-edge bg-canvas px-6 py-10 text-center">
-            <p className="text-base font-medium text-ink">Aucune demande trouvée.</p>
-            <p className="mt-2 text-sm text-ink-secondary">Soumettez votre première demande ci-dessus.</p>
-          </div>
-        )}
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{
+              borderRadius: '6px',
+              border: '1px dashed var(--color-edge)',
+              background: 'var(--color-surface-200)',
+              padding: '48px 24px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-ink)', margin: 0 }}>Aucune demande trouvée.</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-ink-secondary)', margin: '8px 0 0 0' }}>Soumettez votre première demande ci-dessus.</p>
+            </div>
+          )}
+        </div>
       </section>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -239,23 +500,17 @@ function AdminView() {
 
   const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
-    if (!file || !pendingUploadId) {
-      return;
-    }
-
+    if (!file || !pendingUploadId) return;
     event.target.value = '';
     setUploading(pendingUploadId);
-
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('requestId', String(pendingUploadId));
-
       await request('/api/v1/documents/upload', {
         method: 'POST',
         body: formData,
       });
-
       await loadRequests();
     } catch {
     } finally {
@@ -271,7 +526,6 @@ function AdminView() {
         method: 'PATCH',
         body: JSON.stringify({ action }),
       });
-
       await loadRequests();
     } catch {
     } finally {
@@ -281,60 +535,134 @@ function AdminView() {
 
   const filtered = useMemo(() => {
     let rows = requests;
-    if (filterStatus) {
-      rows = rows.filter((row) => row.status === filterStatus);
-    }
-
+    if (filterStatus) rows = rows.filter((row) => row.status === filterStatus);
     const lower = query.trim().toLowerCase();
-    if (!lower) {
-      return rows;
-    }
-
-    return rows.filter((row) => [row.enseignantNom, row.name, row.category, row.status].some((value) => String(value || '').toLowerCase().includes(lower)));
+    if (!lower) return rows;
+    return rows.filter((row) =>
+      [row.enseignantNom, row.name, row.category, row.status].some((value) =>
+        String(value || '').toLowerCase().includes(lower)
+      )
+    );
   }, [requests, query, filterStatus]);
 
-  const counts = useMemo(
-    () => ({
-      total: requests.length,
-      en_attente: requests.filter((requestRow) => requestRow.status === 'en_attente').length,
-      en_traitement: requests.filter((requestRow) => requestRow.status === 'en_traitement').length,
-      valide: requests.filter((requestRow) => requestRow.status === 'valide').length,
-    }),
-    [requests]
-  );
+  const counts = useMemo(() => ({
+    total: requests.length,
+    en_attente: requests.filter((r) => r.status === 'en_attente').length,
+    en_traitement: requests.filter((r) => r.status === 'en_traitement').length,
+    valide: requests.filter((r) => r.status === 'valide').length,
+  }), [requests]);
 
   return (
-    <div className="space-y-6 max-w-7xl min-w-0">
-      <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleFileChange} />
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
 
-      <DocumentsHeader
+      {/* Hero Section */}
+      <DocumentsHero
         eyebrow="Administration"
         title="Gestion des documents"
         description="Traitez les demandes des enseignants, chargez les fichiers puis validez ou refusez les documents."
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* KPI Analytics Header - High-impact metrics */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '16px',
+        }}
+      >
         {[
-          { label: 'Total', value: counts.total, color: 'text-ink' },
-          { label: 'En attente', value: counts.en_attente, color: 'text-ink-secondary' },
-          { label: 'En traitement', value: counts.en_traitement, color: 'text-amber-600' },
-          { label: 'Validées', value: counts.valide, color: 'text-emerald-600' },
+          { label: 'Total', value: counts.total, accent: 'ink', bg: 'rgba(26, 29, 35, 0.05)' },
+          { label: 'En attente', value: counts.en_attente, accent: 'warning', bg: 'rgba(202, 138, 4, 0.05)' },
+          { label: 'En traitement', value: counts.en_traitement, accent: 'warning', bg: 'rgba(202, 138, 4, 0.08)' },
+          { label: 'Validées', value: counts.valide, accent: 'success', bg: 'rgba(22, 163, 74, 0.05)' },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-edge bg-surface p-4">
-            <p className="text-xs text-ink-secondary">{stat.label}</p>
-            <p className={`mt-1 text-2xl font-semibold ${stat.color}`}>{stat.value}</p>
+          <div
+            key={stat.label}
+            style={{
+              borderRadius: '8px',
+              border: '1px solid var(--color-edge)',
+              background: 'var(--color-surface)',
+              boxShadow: 'var(--shadow-card)',
+              padding: '20px',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 150ms ease-out',
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: '-16px',
+              right: '-16px',
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: stat.bg,
+              filter: 'blur(32px)',
+              opacity: 0.5,
+            }} />
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-tertiary)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {stat.label}
+            </p>
+            <p style={{ marginTop: '8px', fontSize: '32px', fontWeight: 700, color: `var(--color-${stat.accent})`, margin: 0 }}>
+              {stat.value}
+            </p>
           </div>
         ))}
       </div>
 
-      <section className="rounded-3xl border border-edge bg-surface p-5 shadow-card">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold text-ink">Toutes les demandes</h2>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      {/* Unified Management Workspace */}
+      <section
+        style={{
+          borderRadius: '8px',
+          border: '1px solid var(--color-edge)',
+          background: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-card)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Toolbar - Global Filtering */}
+        <div
+          style={{
+            padding: '24px',
+            borderBottom: '1px solid var(--color-edge-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <div>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
+              Toutes les demandes
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--color-ink-secondary)', margin: '4px 0 0 0' }}>
+              {filtered.length} demande{filtered.length !== 1 ? 's' : ''} trouvée{filtered.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <select
               value={filterStatus}
-              onChange={(event) => setFilterStatus(event.target.value)}
-              className="rounded-xl border border-edge bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{
+                borderRadius: '6px',
+                border: '1px solid var(--color-edge)',
+                background: 'var(--color-surface-200)',
+                padding: '8px 12px',
+                fontSize: '13px',
+                color: 'var(--color-ink)',
+                outline: 'none',
+                transition: 'all 150ms ease-out',
+              }}
             >
               <option value="">Tous les statuts</option>
               <option value="en_attente">En attente</option>
@@ -345,105 +673,205 @@ function AdminView() {
             <input
               type="text"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Rechercher enseignant, document..."
-              className="w-full rounded-xl border border-edge bg-canvas px-3.5 py-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-64"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Rechercher..."
+              style={{
+                borderRadius: '6px',
+                border: '1px solid var(--color-edge)',
+                background: 'var(--color-surface-200)',
+                padding: '8px 12px',
+                fontSize: '13px',
+                color: 'var(--color-ink)',
+                outline: 'none',
+                minWidth: '220px',
+                transition: 'all 150ms ease-out',
+              }}
             />
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-3 py-8 text-ink-secondary">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
-            <span>Chargement...</span>
-          </div>
-        ) : filtered.length ? (
-          <div className="mt-5 overflow-x-auto rounded-2xl border border-edge">
-            <table className="w-full text-sm">
+        {/* Data-Dense Table */}
+        <div style={{ flex: 1, overflowX: 'auto', position: 'relative' }}>
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 24px', gap: '12px', color: 'var(--color-ink-secondary)' }}>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid var(--color-edge)', borderTop: '2px solid var(--color-brand)', animation: 'spin 1s linear infinite' }} />
+              <span>Chargement...</span>
+            </div>
+          ) : filtered.length ? (
+            <table
+              style={{
+                width: '100%',
+                fontSize: '13px',
+                borderCollapse: 'collapse',
+              }}
+            >
               <thead>
-                <tr className="border-b border-edge bg-canvas">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-secondary">Enseignant</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-secondary">Document</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-secondary">Catégorie</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-secondary">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-secondary">Statut</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-secondary">Actions</th>
+                <tr style={{ background: 'var(--color-surface-200)', borderBottom: '1px solid var(--color-edge)' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Enseignant</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Document</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Catégorie</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Statut</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 600, color: 'var(--color-ink-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((row, index) => (
-                  <tr key={row.id} className={`border-b border-edge transition hover:bg-canvas ${index % 2 === 0 ? '' : 'bg-surface/50'}`}>
-                    <td className="px-4 py-3 font-medium text-ink">{row.enseignantNom || '—'}</td>
-                    <td className="px-4 py-3 text-ink-secondary">{row.name}</td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${CATEGORY_PILL_STYLES[row.category] || CATEGORY_PILL_STYLES.autre}`}>
-                        {row.category}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-ink-secondary">{row.updatedAt || '—'}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[row.status] || STATUS_STYLES.en_attente}`}>
-                        {STATUS_LABELS[row.status] || row.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {(row.status === 'en_attente' || row.status === 'en_traitement') && (
-                          <button
-                            type="button"
-                            onClick={() => handleUploadClick(row.id)}
-                            disabled={uploading === row.id}
-                            className="rounded-lg bg-canvas px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-surface disabled:opacity-50"
-                          >
-                            {uploading === row.id ? 'Upload...' : 'Uploader'}
-                          </button>
-                        )}
-
-                        {row.status === 'en_traitement' && (
-                          <>
+                {filtered.map((row, idx) => {
+                  const categoryStyle = getCategoryStyle(row.category);
+                  const statusStyle = getStatusStyle(row.status);
+                  return (
+                    <tr
+                      key={row.id}
+                      style={{
+                        borderBottom: '1px solid var(--color-edge-subtle)',
+                        background: idx % 2 === 0 ? 'var(--color-surface)' : 'var(--color-surface-200)',
+                        transition: 'all 150ms ease-out',
+                      }}
+                    >
+                      <td style={{ padding: '12px 16px', fontWeight: 500, color: 'var(--color-ink)' }}>{row.enseignantNom || '—'}</td>
+                      <td style={{ padding: '12px 16px', color: 'var(--color-ink-secondary)' }}>{row.name}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          borderRadius: '6px',
+                          background: categoryStyle.bg,
+                          color: categoryStyle.text,
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                        }}>
+                          {row.category}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--color-ink-tertiary)' }}>{row.updatedAt || '—'}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          borderRadius: '6px',
+                          background: statusStyle.bg,
+                          color: statusStyle.text,
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                        }}>
+                          {STATUS_LABELS[row.status] || row.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {(row.status === 'en_attente' || row.status === 'en_traitement') && (
                             <button
                               type="button"
-                              onClick={() => handleAction(row.id, 'valide')}
-                              disabled={Boolean(actionLoading)}
-                              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                              onClick={() => handleUploadClick(row.id)}
+                              disabled={uploading === row.id}
+                              style={{
+                                borderRadius: '4px',
+                                border: '1px solid var(--color-edge)',
+                                background: 'var(--color-surface-200)',
+                                color: 'var(--color-ink-secondary)',
+                                padding: '6px 12px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: uploading === row.id ? 'wait' : 'pointer',
+                                opacity: uploading === row.id ? 0.6 : 1,
+                                transition: 'all 150ms ease-out',
+                              }}
                             >
-                              {actionLoading === `${row.id}-valide` ? '...' : 'Valider'}
+                              {uploading === row.id ? '⏳' : '📤'}
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => handleAction(row.id, 'refuse')}
-                              disabled={Boolean(actionLoading)}
-                              className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
+                          )}
+                          {row.status === 'en_traitement' && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleAction(row.id, 'valide')}
+                                disabled={Boolean(actionLoading)}
+                                style={{
+                                  borderRadius: '4px',
+                                  border: 'none',
+                                  background: 'var(--color-success)',
+                                  color: '#fff',
+                                  padding: '6px 12px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  cursor: actionLoading ? 'wait' : 'pointer',
+                                  opacity: actionLoading ? 0.6 : 1,
+                                  transition: 'all 150ms ease-out',
+                                }}
+                              >
+                                ✓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleAction(row.id, 'refuse')}
+                                disabled={Boolean(actionLoading)}
+                                style={{
+                                  borderRadius: '4px',
+                                  border: 'none',
+                                  background: 'var(--color-danger)',
+                                  color: '#fff',
+                                  padding: '6px 12px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  cursor: actionLoading ? 'wait' : 'pointer',
+                                  opacity: actionLoading ? 0.6 : 1,
+                                  transition: 'all 150ms ease-out',
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </>
+                          )}
+                          {row.status === 'valide' && row.documentUrl && (
+                            <a
+                              href={resolveMediaUrl(`/api/v1/documents/download/${row.id}`)}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                borderRadius: '4px',
+                                border: 'none',
+                                background: 'var(--color-brand, #1d4ed8)',
+                                color: '#fff',
+                                padding: '6px 12px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                display: 'inline-block',
+                                transition: 'all 150ms ease-out',
+                              }}
                             >
-                              {actionLoading === `${row.id}-refuse` ? '...' : 'Refuser'}
-                            </button>
-                          </>
-                        )}
-
-                        {row.status === 'valide' && row.documentUrl && (
-                          <a
-                            href={resolveMediaUrl(`/api/v1/documents/download/${row.id}`)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand-hover"
-                          >
-                            Télécharger
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                              ⬇️
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
-          </div>
-        ) : (
-          <div className="mt-5 rounded-2xl border border-dashed border-edge bg-canvas px-6 py-10 text-center">
-            <p className="text-base font-medium text-ink">Aucune demande trouvée.</p>
-            <p className="mt-2 text-sm text-ink-secondary">Ajustez les filtres ou attendez de nouvelles demandes.</p>
-          </div>
-        )}
+          ) : (
+            <div style={{
+              borderRadius: '6px',
+              border: '1px dashed var(--color-edge)',
+              background: 'var(--color-surface-200)',
+              padding: '64px 24px',
+              textAlign: 'center',
+              margin: '16px',
+            }}>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-ink)', margin: 0 }}>Aucune demande trouvée.</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-ink-secondary)', margin: '8px 0 0 0' }}>Ajustez les filtres ou attendez de nouvelles demandes.</p>
+            </div>
+          )}
+        </div>
       </section>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -453,117 +881,181 @@ function StudentView() {
   const [documents, setDocuments] = useState([]);
   const [query, setQuery] = useState('');
 
+  const loadDocuments = async () => {
+    setLoading(true);
+    try {
+      const response = await request('/api/v1/documents/student-documents');
+      setDocuments(normalizeRows(response));
+    } catch {
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const response = await request('/api/v1/student/documents');
-        if (!cancelled) {
-          const rows = normalizeRows(response);
-          setDocuments(rows.map((item) => ({
-            id: item.id,
-            name: item.name || item.nom || 'Document',
-            category: item.category || item.categorie || 'Autre',
-            format: item.format || 'PDF',
-            size: item.size || 'N/A',
-            updatedAt: item.updatedAt || item.createdAt || null,
-            downloadUrl: item.url || item.documentUrl || null,
-          })));
-        }
-      } catch {
-        if (!cancelled) {
-          setDocuments(FALLBACK_DOCUMENTS);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
+    loadDocuments();
   }, []);
 
   const filtered = useMemo(() => {
     const lower = query.trim().toLowerCase();
-    if (!lower) {
-      return documents;
-    }
-
-    return documents.filter((doc) => [doc.name, doc.category, doc.format].some((value) => String(value || '').toLowerCase().includes(lower)));
+    if (!lower) return documents;
+    return documents.filter((doc) => [doc.name, doc.category].some((value) => String(value || '').toLowerCase().includes(lower)));
   }, [documents, query]);
 
   return (
-    <div className="space-y-6 max-w-6xl min-w-0">
-      <DocumentsHeader
-        eyebrow="Espace Étudiant"
-        title="Documents"
-        description="Consultez et téléchargez les documents académiques et administratifs disponibles."
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Hero Section */}
+      <DocumentsHero
+        eyebrow="Ressources"
+        title="Mes documents"
+        description="Accédez aux documents fournis par vos enseignants ou l'administration."
       />
 
-      <section className="rounded-3xl border border-edge bg-surface p-5 shadow-card">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Unified Resource Workspace */}
+      <section
+        style={{
+          borderRadius: '8px',
+          border: '1px solid var(--color-edge)',
+          background: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-card)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Toolbar - Search */}
+        <div
+          style={{
+            padding: '24px',
+            borderBottom: '1px solid var(--color-edge-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}
+        >
           <div>
-            <h2 className="text-lg font-semibold text-ink">Fichiers disponibles</h2>
-            <p className="mt-1 text-sm text-ink-secondary">Recherchez par nom, catégorie ou format.</p>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-ink)', margin: 0 }}>
+              Tous les documents
+            </h2>
+            <p style={{ fontSize: '12px', color: 'var(--color-ink-secondary)', margin: '4px 0 0 0' }}>
+              {filtered.length} document{filtered.length !== 1 ? 's' : ''} disponible{filtered.length !== 1 ? 's' : ''}
+            </p>
           </div>
           <input
             type="text"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Rechercher un document..."
-            className="w-full rounded-xl border border-edge bg-canvas px-3.5 py-2.5 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 sm:w-72"
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher..."
+            style={{
+              borderRadius: '6px',
+              border: '1px solid var(--color-edge)',
+              background: 'var(--color-surface-200)',
+              padding: '8px 12px',
+              fontSize: '13px',
+              color: 'var(--color-ink)',
+              outline: 'none',
+              minWidth: '220px',
+              transition: 'all 150ms ease-out',
+            }}
           />
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-3 py-6 text-ink-secondary">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-edge-strong border-t-brand" />
-            <span>Chargement...</span>
-          </div>
-        ) : filtered.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {filtered.map((doc) => (
-              <article key={doc.id} className="rounded-2xl border border-edge bg-canvas p-4 shadow-sm transition hover:border-edge-strong">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-sm font-semibold leading-6 text-ink">{doc.name}</h3>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${CATEGORY_PILL_STYLES[doc.category] || CATEGORY_PILL_STYLES.autre}`}>
-                    {doc.category}
-                  </span>
-                </div>
-                <p className="mt-3 text-xs text-ink-tertiary">Mis à jour : {doc.updatedAt || 'N/A'}</p>
-                <div className="mt-2 flex items-center justify-between text-xs text-ink-secondary">
-                  <span>{doc.format}</span>
-                  <span>{doc.size}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!doc.downloadUrl) {
-                      return;
-                    }
-                    window.open(resolveMediaUrl(doc.downloadUrl), '_blank', 'noopener,noreferrer');
-                  }}
-                  disabled={!doc.downloadUrl}
-                  className="mt-4 w-full rounded-xl bg-brand px-3 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {doc.downloadUrl ? 'Télécharger' : 'Indisponible'}
-                </button>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-edge bg-canvas px-6 py-10 text-center">
-            <p className="text-base font-medium text-ink">Aucun document disponible.</p>
-            <p className="mt-2 text-sm text-ink-secondary">Revenez plus tard ou contactez l'administration.</p>
-          </div>
-        )}
+        {/* Data-Dense Card Grid */}
+        <div style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '12px', color: 'var(--color-ink-secondary)' }}>
+              <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid var(--color-edge)', borderTop: '2px solid var(--color-brand)', animation: 'spin 1s linear infinite' }} />
+              <span>Chargement...</span>
+            </div>
+          ) : filtered.length ? (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px',
+              }}
+            >
+              {filtered.map((doc) => {
+                const categoryStyle = getCategoryStyle(doc.category);
+                return (
+                  <a
+                    key={doc.id}
+                    href={resolveMediaUrl(`/api/v1/documents/download/${doc.id}`)}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-edge)',
+                      background: 'var(--color-surface-200)',
+                      boxShadow: 'var(--shadow-card)',
+                      padding: '20px',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                      transition: 'all 150ms ease-out',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-brand)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 16px rgba(29, 78, 216, 0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-edge)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-card)';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-ink)', margin: 0, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {doc.name}
+                      </p>
+                      <span style={{ fontSize: '18px', opacity: 0, transition: 'opacity 150ms ease-out', marginLeft: 'auto' }} data-icon="⬇️">⬇️</span>
+                    </div>
+                    <span style={{
+                      display: 'inline-block',
+                      borderRadius: '6px',
+                      background: categoryStyle.bg,
+                      color: categoryStyle.text,
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      width: 'fit-content',
+                    }}>
+                      {doc.category}
+                    </span>
+                    <p style={{ fontSize: '11px', color: 'var(--color-ink-tertiary)', margin: 0, marginTop: 'auto' }}>
+                      {doc.updatedAt || '—'}
+                    </p>
+                  </a>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{
+              borderRadius: '8px',
+              border: '1px dashed var(--color-edge)',
+              background: 'var(--color-surface)',
+              padding: '80px 24px',
+              textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--color-ink)', margin: 0 }}>Aucun document trouvé.</p>
+              <p style={{ fontSize: '13px', color: 'var(--color-ink-secondary)', margin: '8px 0 0 0' }}>Vos enseignants publieront prochainement des documents.</p>
+            </div>
+          )}
+        </div>
       </section>
+
+      <style>{`
+        a[href] div > span[data-icon] { opacity: 0; }
+        a[href]:hover div > span[data-icon] { opacity: 1; }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -589,14 +1081,20 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6 min-w-0">
-      <DocumentsHeader
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <DocumentsHero
         eyebrow="Documents"
         title="Accès limité"
         description="Votre rôle ne dispose pas d'une vue documents dédiée dans ce module."
       />
-      <section className="rounded-3xl border border-edge bg-surface p-6 shadow-card">
-        <p className="text-sm text-ink-secondary">Contactez l'administration pour demander l'activation d'accès appropriés.</p>
+      <section style={{
+        borderRadius: '8px',
+        border: '1px solid var(--color-edge)',
+        background: 'var(--color-surface)',
+        boxShadow: 'var(--shadow-card)',
+        padding: '24px',
+      }}>
+        <p style={{ fontSize: '13px', color: 'var(--color-ink-secondary)', margin: 0 }}>Contactez l'administration pour demander l'activation d'accès appropriés.</p>
       </section>
     </div>
   );

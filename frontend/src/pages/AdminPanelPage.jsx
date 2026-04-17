@@ -5,6 +5,11 @@ import { useAuth } from '../contexts/AuthContext';
 import DataTable from '../components/admin/shared/DataTable';
 import Modal from '../components/admin/shared/Modal';
 import Pagination from '../components/admin/shared/Pagination';
+import KPITile from '../components/dashboard/KPITile';
+import StatusIndicator from '../components/dashboard/StatusIndicator';
+import ProgressBar from '../components/dashboard/ProgressBar';
+import DashboardSection from '../components/dashboard/DashboardSection';
+import EmptyState from '../components/dashboard/EmptyState';
 
 const TABS = [
   { key: 'dashboard', label: 'Dashboard' },
@@ -100,18 +105,18 @@ function formatTokenLabel(value) {
 
 function normalizeStatusClass(status) {
   if (status === 'active' || status === 'approved' || status === 'published') {
-    return 'bg-green-50 text-green-700 border-edge-strong';
+    return 'bg-success/5 text-success border-edge-strong';
   }
 
   if (status === 'pending' || status === 'draft' || status === 'inactive') {
-    return 'bg-amber-50 text-amber-700 border-edge-strong';
+    return 'bg-warning/5 text-warning border-edge-strong';
   }
 
   if (status === 'rejected' || status === 'suspended' || status === 'archived') {
-    return 'bg-red-50 text-red-700 border-edge-strong';
+    return 'bg-danger/5 text-danger border-edge-strong';
   }
 
-  return 'bg-blue-50 text-blue-700 border-edge-strong';
+  return 'bg-brand/5 text-brand border-edge-strong';
 }
 
 function mapRoleFilterToApi(roleValue) {
@@ -133,35 +138,12 @@ function triggerDownload(blob, fileName) {
 }
 
 function StatusBadge({ status, label }) {
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${normalizeStatusClass(status)}`}>
-      {label}
-    </span>
-  );
+  return <StatusIndicator status={status} label={label} variant="badge" />;
 }
 
 function StatCard({ title, value, subtitle }) {
   return (
-    <div className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-tertiary">{title}</p>
-      <p className="mt-2 text-3xl font-bold text-ink">{value}</p>
-      <p className="mt-2 text-sm text-ink-secondary">{subtitle}</p>
-    </div>
-  );
-}
-
-function PercentageBar({ label, value, total, colorClass }) {
-  const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-xs text-ink-tertiary">
-        <span>{label}</span>
-        <span>{value}</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-surface-300">
-        <div className={`h-full ${colorClass}`} style={{ width: `${percentage}%` }} />
-      </div>
-    </div>
+    <KPITile title={title} value={value} subtitle={subtitle} accent="brand" />
   );
 }
 
@@ -841,39 +823,85 @@ export default function AdminPanelPage() {
   ], []);
 
   const dashboardContent = (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Loading State */}
       {loadingOverview && (
-        <div className="rounded-2xl border border-edge bg-surface p-8 text-center text-sm text-ink-tertiary">
-          Loading dashboard metrics...
-        </div>
+        <EmptyState
+          title="Loading dashboard metrics..."
+          description="Please wait while we fetch your platform analytics."
+        />
       )}
 
+      {/* Dashboard Rendered */}
       {!loadingOverview && overview && (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard title="Total Users" value={overview.totals.users} subtitle="All accounts in the platform" />
-            <StatCard title="Announcements" value={overview.totals.announcements} subtitle="Published, draft, and archived" />
-            <StatCard title="Reclamations" value={overview.totals.reclamations} subtitle="All complaint records" />
+          {/* KPI Tiles - Primary Metrics Row */}
+          <div className="grid gap-5 sm:grid-cols-3">
+            <KPITile
+              title="Total Users"
+              value={overview.totals.users}
+              subtitle="All accounts in the platform"
+              accent="brand"
+            />
+            <KPITile
+              title="Announcements"
+              value={overview.totals.announcements}
+              subtitle="Published, draft, and archived"
+              accent="brand"
+            />
+            <KPITile
+              title="Reclamations"
+              value={overview.totals.reclamations}
+              subtitle="All complaint records"
+              accent="warning"
+            />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-              <h3 className="text-sm font-semibold text-ink">Users by status</h3>
-              <div className="mt-4 space-y-3">
-                <PercentageBar label="Active" value={overview.usersByStatus.active} total={overview.totals.users} colorClass="bg-green-500" />
-                <PercentageBar label="Inactive" value={overview.usersByStatus.inactive} total={overview.totals.users} colorClass="bg-amber-500" />
-                <PercentageBar label="Suspended" value={overview.usersByStatus.suspended} total={overview.totals.users} colorClass="bg-red-500" />
-              </div>
-            </div>
+          {/* Status Distribution Sections */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Users by Status */}
+            <DashboardSection title="Users by Status">
+              <ProgressBar
+                label="Active"
+                value={overview.usersByStatus.active}
+                total={overview.totals.users}
+                status="success"
+              />
+              <ProgressBar
+                label="Inactive"
+                value={overview.usersByStatus.inactive}
+                total={overview.totals.users}
+                status="warning"
+              />
+              <ProgressBar
+                label="Suspended"
+                value={overview.usersByStatus.suspended}
+                total={overview.totals.users}
+                status="danger"
+              />
+            </DashboardSection>
 
-            <div className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-              <h3 className="text-sm font-semibold text-ink">Reclamations pipeline</h3>
-              <div className="mt-4 space-y-3">
-                <PercentageBar label="Pending" value={overview.reclamationsByStatus.pending} total={overview.totals.reclamations} colorClass="bg-amber-500" />
-                <PercentageBar label="Approved" value={overview.reclamationsByStatus.approved} total={overview.totals.reclamations} colorClass="bg-green-500" />
-                <PercentageBar label="Rejected" value={overview.reclamationsByStatus.rejected} total={overview.totals.reclamations} colorClass="bg-red-500" />
-              </div>
-            </div>
+            {/* Reclamations Pipeline */}
+            <DashboardSection title="Reclamations Pipeline">
+              <ProgressBar
+                label="Pending"
+                value={overview.reclamationsByStatus.pending}
+                total={overview.totals.reclamations}
+                status="warning"
+              />
+              <ProgressBar
+                label="Approved"
+                value={overview.reclamationsByStatus.approved}
+                total={overview.totals.reclamations}
+                status="success"
+              />
+              <ProgressBar
+                label="Rejected"
+                value={overview.reclamationsByStatus.rejected}
+                total={overview.totals.reclamations}
+                status="danger"
+              />
+            </DashboardSection>
           </div>
         </>
       )}
@@ -1212,13 +1240,13 @@ export default function AdminPanelPage() {
       </header>
 
       {error ? (
-        <div className="rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
           {error}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-xl border border-edge-strong bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-sm text-success">
           {successMessage}
         </div>
       ) : null}
@@ -1276,7 +1304,7 @@ export default function AdminPanelPage() {
                   setUpdatingUserId(null);
                 }
               }}
-              className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white hover:opacity-90"
             >
               Confirm delete
             </button>
@@ -1518,7 +1546,7 @@ export default function AdminPanelPage() {
                   setAnnouncementSubmitting(false);
                 }
               }}
-              className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white hover:opacity-90"
             >
               Confirm delete
             </button>
@@ -1630,7 +1658,7 @@ export default function AdminPanelPage() {
           ) : null}
 
           {!workflowLoading && workflowError ? (
-            <div className="rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-lg border border-danger/20 bg-danger/5 px-4 py-3 text-sm text-danger">
               {workflowError}
             </div>
           ) : null}
@@ -1715,7 +1743,7 @@ export default function AdminPanelPage() {
                   setDocumentActionLoading(null);
                 }
               }}
-              className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="rounded-md bg-danger px-3 py-2 text-sm font-medium text-white hover:opacity-90"
             >
               Confirm delete
             </button>

@@ -1,24 +1,58 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import aiAPI from '../services/ai';
 
 const STARTERS = [
-  'Summarize my deadlines this week.',
-  'Help me draft a formal request email to administration.',
-  'Show my PFE subject and defense status.',
-  'Explain the appeal process for disciplinary decisions.',
+  { 
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+    ),
+    text: 'Summarize my deadlines this week.' 
+  },
+  { 
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+    ),
+    text: 'Help me draft a formal request email to administration.' 
+  },
+  { 
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5h16M6 12.5h12M6 5.5h12"></path>
+      </svg>
+    ),
+    text: 'Show my PFE subject and defense status.' 
+  },
+  { 
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 6v6l4 2"></path>
+      </svg>
+    ),
+    text: 'Explain the appeal process for disciplinary decisions.' 
+  },
 ];
 
 export default function AIAssistantPage() {
   const [prompt, setPrompt] = useState('');
-  const [history, setHistory] = useState([
-    {
-      role: 'assistant',
-      content: 'Hello! I am your university assistant. Ask about PFE, deadlines, requests, or academic tasks.',
-    },
-  ]);
+  const [history, setHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const emptyState = useMemo(() => history.length === 0, [history.length]);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [history, isTyping]);
 
   const normalizeAssistantText = (text) =>
     String(text || '')
@@ -77,97 +111,489 @@ export default function AIAssistantPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl min-w-0">
-      <section className="relative overflow-hidden rounded-3xl border border-edge bg-surface shadow-card">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(29,78,216,0.22),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(168,85,247,0.16),transparent_30%)]" />
-        <div className="relative px-6 py-8 md:px-8 md:py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand">AI Support</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink">Chatbot Workspace</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-secondary md:text-base">
-            The chatbot screen now matches the updated project style and is ready to be connected to the live AI backend.
-          </p>
-        </div>
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="rounded-3xl border border-edge bg-surface p-5 shadow-card">
-          <h2 className="text-lg font-semibold tracking-tight text-ink">Quick prompts</h2>
-          <p className="mt-1 text-sm text-ink-secondary">Use one of these starters to test the interface.</p>
-          <div className="mt-4 space-y-2.5">
-            {STARTERS.map((starter) => (
-              <button
-                key={starter}
-                type="button"
-                onClick={() => sendPrompt(starter)}
-                className="w-full rounded-xl border border-edge bg-surface px-3.5 py-3 text-left text-sm text-ink-secondary transition hover:border-edge-strong hover:text-ink hover:bg-surface-200"
-              >
-                {starter}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-edge bg-canvas px-4 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Next step</p>
-            <p className="mt-2 text-sm text-ink-secondary">
-              Connect this page to the real AI endpoint when it is available in the backend.
-            </p>
-          </div>
-        </aside>
-
-        <div className="rounded-3xl border border-edge bg-surface shadow-card">
-          <div className="border-b border-edge-subtle px-6 py-4">
-            <h2 className="text-lg font-semibold text-ink">Conversation</h2>
-          </div>
-
-          <div className="min-h-[440px] space-y-4 px-6 py-5">
-            {emptyState ? (
-              <div className="rounded-2xl border border-dashed border-edge bg-canvas px-6 py-12 text-center">
-                <p className="text-base font-medium text-ink">No conversation yet.</p>
-                <p className="mt-2 text-sm text-ink-secondary">Ask your first question about studies, PFE, or deadlines.</p>
-              </div>
-            ) : (
-              history.map((item, index) => (
-                <div key={`${item.role}-${index}`} className={`flex ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-2xl rounded-2xl px-4 py-3 ${item.role === 'user' ? 'bg-brand text-white' : 'border border-edge bg-surface text-ink'}`}>
-                    <p className={`text-xs font-semibold ${item.role === 'user' ? 'text-white/80' : 'text-ink-tertiary'}`}>
-                      {item.role === 'user' ? 'You' : 'Assistant'}
-                    </p>
-                    <p className="mt-1 text-sm leading-6">{item.content}</p>
-                  </div>
-                </div>
-              ))
-            )}
-
-            {isTyping ? (
-              <div className="flex justify-start">
-                <div className="rounded-2xl border border-edge bg-surface px-4 py-3 text-sm text-ink-secondary">Assistant is typing...</div>
-              </div>
-            ) : null}
-          </div>
-
-          <form onSubmit={handleSubmit} className="border-t border-edge-subtle px-6 py-4">
-            <div className="rounded-2xl border border-edge bg-surface p-3">
-              <textarea
-                rows={4}
-                value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
-                placeholder="Type your question for the AI assistant..."
-                className="w-full resize-none bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted"
-              />
-              <div className="mt-3 flex items-center justify-between gap-3 border-t border-edge-subtle pt-3">
-                <p className="text-xs text-ink-tertiary">Responses come from `/api/v1/ai/chat`.</p>
-                <button
-                  type="submit"
-                  disabled={!prompt.trim() || isTyping}
-                  className="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover disabled:opacity-60"
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        background: 'transparent',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Conversation Hub - Centered, Scrollable */}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: '768px',
+          width: '100%',
+          margin: '0 auto',
+          padding: '0 16px',
+          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        {/* Messages Container - Only this scrolls, not the whole page */}
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            gap: '16px',
+            paddingRight: '8px',
+            paddingBottom: '16px',
+          }}
+        >
+          {emptyState ? (
+            /* Zero-State: Starter Card Grid */
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 1,
+                gap: '32px',
+                minHeight: 'min(600px, 60vh)',
+              }}
+            >
+              {/* Welcome Message */}
+              <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+                <h1
+                  style={{
+                    fontSize: '24px',
+                    fontWeight: 700,
+                    color: 'var(--color-ink)',
+                    margin: 0,
+                  }}
                 >
-                  Send
-                </button>
+                  Welcome to AI Assistant
+                </h1>
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--color-ink-secondary)',
+                    marginTop: '8px',
+                    margin: 0,
+                  }}
+                >
+                  Ask me about your studies, deadlines, PFE, or any academic questions
+                </p>
+              </div>
+
+              {/* Starter Cards Grid - 2x2 */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                  gap: '12px',
+                  width: '100%',
+                }}
+              >
+                {STARTERS.map((starter, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => sendPrompt(starter.text)}
+                    style={{
+                      borderRadius: '12px',
+                      border: '1px solid var(--color-edge-subtle)',
+                      background: 'var(--color-surface)',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 150ms ease-out',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: '12px',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-edge-strong)';
+                      e.currentTarget.style.background = 'var(--color-surface-200)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-card)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-edge-subtle)';
+                      e.currentTarget.style.background = 'var(--color-surface)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: 'var(--color-brand)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '32px',
+                        height: '32px',
+                      }}
+                    >
+                      {starter.icon}
+                    </div>
+                    <p
+                      style={{
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        color: 'var(--color-ink)',
+                        margin: 0,
+                        lineHeight: '1.4',
+                      }}
+                    >
+                      {starter.text}
+                    </p>
+                  </button>
+                ))}
               </div>
             </div>
-          </form>
+          ) : (
+            /* Conversation Thread */
+            history.map((item, index) => (
+              <div
+                key={`${item.role}-${index}`}
+                style={{
+                  display: 'flex',
+                  justifyContent: item.role === 'user' ? 'flex-end' : 'flex-start',
+                  animation: 'slideIn 0.3s ease-out',
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: '85%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '4px',
+                  }}
+                >
+                  {/* Metadata */}
+                  <p
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: 'var(--color-ink-tertiary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      margin: 0,
+                      paddingX: '12px',
+                      textAlign: item.role === 'user' ? 'right' : 'left',
+                    }}
+                  >
+                    {item.role === 'user' ? 'You' : 'Assistant'}
+                  </p>
+
+                  {/* Message Bubble */}
+                  <div
+                    style={{
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      background:
+                        item.role === 'user'
+                          ? 'var(--color-brand)'
+                          : 'var(--color-surface-200)',
+                      border:
+                        item.role === 'user'
+                          ? 'none'
+                          : '1px solid var(--color-edge-subtle)',
+                      boxShadow:
+                        item.role === 'user'
+                          ? '0 2px 8px rgba(29, 78, 216, 0.15)'
+                          : 'none',
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: '13px',
+                        lineHeight: '1.6',
+                        color:
+                          item.role === 'user'
+                            ? '#ffffff'
+                            : 'var(--color-ink)',
+                        margin: 0,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {item.content}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+
+          {isTyping && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+              }}
+            >
+              <div
+                style={{
+                  borderRadius: '12px',
+                  border: '1px solid var(--color-edge-subtle)',
+                  background: 'var(--color-surface-200)',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--color-ink-tertiary)',
+                    animation: 'pulse 1.4s infinite',
+                  }}
+                />
+                <div
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--color-ink-tertiary)',
+                    animation: 'pulse 1.4s infinite',
+                    animationDelay: '0.2s',
+                  }}
+                />
+                <div
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: 'var(--color-ink-tertiary)',
+                    animation: 'pulse 1.4s infinite',
+                    animationDelay: '0.4s',
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: '12px',
+                    color: 'var(--color-ink-secondary)',
+                    marginLeft: '8px',
+                  }}
+                >
+                  Assistant is typing...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Scroll Anchor */}
+          <div ref={messagesEndRef} />
         </div>
-      </section>
+      </div>
+
+      {/* Floating Command Bar - Glassmorphic Pill */}
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          position: 'absolute',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 100,
+          maxWidth: '768px',
+          width: 'calc(100% - 32px)',
+          padding: '16px',
+          background: 'rgba(248, 249, 251, 0.1)',
+          backdropFilter: 'blur(12px)',
+          borderRadius: '16px',
+          border: '1px solid rgba(var(--color-edge-subtle-rgb, 0, 0, 0), 0.1)',
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.05)',
+        }}
+      >
+          {/* Textarea with integrated icons */}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'flex-end',
+              borderRadius: '12px',
+              border: '1px solid var(--color-edge)',
+              background: 'var(--color-surface)',
+              padding: '10px 12px',
+              gap: '8px',
+              boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.05)',
+            }}
+          >
+            {/* Attachment Icon */}
+            <button
+              type="button"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '18px',
+                opacity: 0.5,
+                transition: 'opacity 150ms ease-out',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
+            >
+              📎
+            </button>
+
+            {/* Input Field */}
+            <textarea
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                  handleSubmit(e);
+                }
+              }}
+              placeholder="Ask me anything about your studies..."
+              style={{
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                resize: 'none',
+                fontSize: '13px',
+                color: 'var(--color-ink)',
+                maxHeight: '100px',
+                fontFamily: 'inherit',
+                padding: 0,
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                textAlign: 'left',
+                verticalAlign: 'middle',
+              }}
+              rows={1}
+            />
+
+            {/* Voice Icon */}
+            <button
+              type="button"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '18px',
+                opacity: 0.5,
+                transition: 'opacity 150ms ease-out',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
+            >
+              🎤
+            </button>
+          </div>
+
+          {/* Send Button */}
+          <button
+            type="submit"
+            disabled={!prompt.trim() || isTyping}
+            style={{
+              borderRadius: '20px',
+              border: '1px solid rgba(29, 78, 216, 0.3)',
+              background: prompt.trim() && !isTyping 
+                ? 'rgba(29, 78, 216, 0.4)' 
+                : 'rgba(169, 174, 184, 0.15)',
+              backdropFilter: 'blur(8px)',
+              color: prompt.trim() && !isTyping ? '#ffffff' : 'var(--color-ink-muted)',
+              padding: '8px 16px',
+              fontSize: '12px',
+              cursor: prompt.trim() && !isTyping ? 'pointer' : 'not-allowed',
+              transition: 'all 150ms ease-out',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: '40px',
+              minHeight: '40px',
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              if (prompt.trim() && !isTyping) {
+                e.currentTarget.style.background = 'rgba(29, 78, 216, 0.6)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 78, 216, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (prompt.trim() && !isTyping) {
+                e.currentTarget.style.background = 'rgba(29, 78, 216, 0.4)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
+          >
+            ➤
+          </button>
+      </form>
+
+      {/* Animations */}
+      <style>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 60%, 100% {
+            opacity: 0.3;
+          }
+          30% {
+            opacity: 1;
+          }
+        }
+
+        @supports (backdrop-filter: blur(1px)) {
+          form {
+            backdrop-filter: blur(12px);
+          }
+        }
+
+        textarea::-webkit-scrollbar {
+          width: 4px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+          background: var(--color-edge);
+          border-radius: 2px;
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+          background: var(--color-edge-strong);
+        }
+
+        /* Dark mode support */
+        .dark form {
+          background: rgba(26, 29, 37, 0.1);
+        }
+
+        /* Ensure form doesn't scroll with page content */
+        form {
+          will-change: transform;
+        }
+      `}</style>
     </div>
   );
 }

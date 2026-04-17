@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import DataTable from '../../../components/admin/shared/DataTable';
 import Modal from '../../../components/admin/shared/Modal';
 import Pagination from '../../../components/admin/shared/Pagination';
+import KPITile from '../../../components/dashboard/KPITile';
+import StatusIndicator from '../../../components/dashboard/StatusIndicator';
+import DashboardSection from '../../../components/dashboard/DashboardSection';
+import EmptyState from '../../../components/dashboard/EmptyState';
 import { notificationsAPI, studentPanelAPI } from '../../../services/api';
 
 const TABS = [
@@ -58,18 +62,18 @@ function formatFileSize(value) {
 
 function statusBadgeClass(status) {
   if (status === 'approved' || status === 'published') {
-    return 'bg-green-50 text-green-700';
+    return 'bg-success/5 text-success';
   }
 
   if (status === 'pending' || status === 'scheduled') {
-    return 'bg-amber-50 text-amber-700';
+    return 'bg-warning/5 text-warning';
   }
 
   if (status === 'rejected') {
-    return 'bg-red-50 text-red-700';
+    return 'bg-danger/5 text-danger';
   }
 
-  return 'bg-blue-50 text-blue-700';
+  return 'bg-brand/5 text-brand';
 }
 
 function toRelativeTime(value) {
@@ -103,20 +107,12 @@ function triggerDownload(blob, fileName) {
 }
 
 function StatusBadge({ status, label }) {
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(status)}`}>
-      {label}
-    </span>
-  );
+  return <StatusIndicator status={status} label={label} variant="badge" />;
 }
 
 function StatCard({ title, value, subtitle }) {
   return (
-    <article className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-tertiary">{title}</p>
-      <p className="mt-2 text-3xl font-bold text-ink">{value}</p>
-      <p className="mt-2 text-sm text-ink-secondary">{subtitle}</p>
-    </article>
+    <KPITile title={title} value={value} subtitle={subtitle} accent="success" />
   );
 }
 
@@ -702,39 +698,136 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="space-y-6 max-w-[1400px] min-w-0">
-      <section className="relative overflow-hidden rounded-3xl border border-edge bg-surface shadow-card">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.20),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.20),transparent_35%)]" />
-        <div className="relative px-6 py-8 md:px-8 md:py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-700">Student Workspace</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink">Academic Control Center</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-secondary md:text-base">
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 16px' }}>
+      {/* Hero Section - Control Center with Token-driven depth */}
+      <section
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '12px',
+          border: '1px solid var(--color-edge)',
+          background: 'var(--color-surface)',
+          boxShadow: 'var(--shadow-card)',
+          marginBottom: '32px',
+        }}
+      >
+        {/* Gradient Background for depth */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'radial-gradient(circle at top right, rgba(29, 78, 216, 0.08), transparent 35%), radial-gradient(circle at bottom left, rgba(22, 163, 74, 0.08), transparent 35%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Content */}
+        <div style={{ position: 'relative', padding: '32px 24px', zIndex: 10 }}>
+          <p
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: 'var(--color-brand, #1d4ed8)',
+              margin: 0,
+            }}
+          >
+            Student Workspace
+          </p>
+          <h1
+            style={{
+              marginTop: '12px',
+              fontSize: '32px',
+              fontWeight: 700,
+              color: 'var(--color-ink)',
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
+            Academic Control Center
+          </h1>
+          <p
+            style={{
+              marginTop: '12px',
+              maxWidth: '56ch',
+              fontSize: '14px',
+              lineHeight: '1.6',
+              color: 'var(--color-ink-secondary)',
+              margin: 0,
+            }}
+          >
             Review announcements, submit and track reclamations, download your files, and manage your profile from one secure interface.
           </p>
 
+          {/* Error / Success Messages */}
           {error ? (
-            <div className="mt-4 rounded-xl border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div
+              style={{
+                marginTop: '16px',
+                borderRadius: '8px',
+                border: '1px solid rgba(220, 38, 38, 0.2)',
+                background: 'rgba(220, 38, 38, 0.05)',
+                padding: '12px',
+                fontSize: '13px',
+                color: 'var(--color-danger)',
+              }}
+            >
               {error}
             </div>
           ) : null}
 
           {successMessage ? (
-            <div className="mt-4 rounded-xl border border-edge-strong bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div
+              style={{
+                marginTop: '16px',
+                borderRadius: '8px',
+                border: '1px solid rgba(22, 163, 74, 0.2)',
+                background: 'rgba(22, 163, 74, 0.05)',
+                padding: '12px',
+                fontSize: '13px',
+                color: 'var(--color-success)',
+              }}
+            >
               {successMessage}
             </div>
           ) : null}
 
-          <div className="mt-6 flex flex-wrap gap-2">
+          {/* Tab Navigation - Segmented Control Style */}
+          <div
+            style={{
+              marginTop: '24px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '8px',
+            }}
+          >
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  activeTab === tab.key
-                    ? 'bg-brand text-white'
-                    : 'border border-edge bg-surface text-ink-secondary hover:text-ink'
-                }`}
+                style={{
+                  borderRadius: '6px',
+                  border:
+                    activeTab === tab.key
+                      ? '1px solid var(--color-brand, #1d4ed8)'
+                      : '1px solid var(--color-edge)',
+                  background:
+                    activeTab === tab.key
+                      ? 'var(--color-brand, #1d4ed8)'
+                      : 'transparent',
+                  color:
+                    activeTab === tab.key
+                      ? '#fff'
+                      : 'var(--color-ink-secondary)',
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease-out',
+                }}
               >
                 {tab.label}
               </button>
@@ -743,129 +836,280 @@ export default function StudentDashboard() {
         </div>
       </section>
 
+      {/* Dashboard Tab Content */}
       {activeTab === 'dashboard' ? (
-        <section className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <StatCard
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* KPI Tiles - Interactive Metrics Grid (8pt spacing) */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '16px',
+            }}
+          >
+            <KPITile
               title="Announcements"
               value={dashboardLoading ? '...' : dashboardData?.summary?.announcements ?? 0}
-              subtitle="Published announcements available to you"
+              subtitle="Published to you"
+              accent="brand"
             />
-            <StatCard
+            <KPITile
               title="Reclamations"
               value={dashboardLoading ? '...' : dashboardData?.summary?.reclamations ?? 0}
-              subtitle="Total reclamations submitted by you"
+              subtitle="Submitted by you"
+              accent="brand"
             />
-            <StatCard
+            <KPITile
               title="Pending"
               value={dashboardLoading ? '...' : dashboardData?.summary?.pendingReclamations ?? 0}
-              subtitle="Reclamations waiting for resolution"
+              subtitle="Awaiting resolution"
+              accent="warning"
             />
-            <StatCard
+            <KPITile
               title="Documents"
               value={dashboardLoading ? '...' : dashboardData?.summary?.documents ?? 0}
-              subtitle="Downloadable files across announcements and reclamations"
+              subtitle="Available for download"
+              accent="brand"
             />
-            <StatCard
-              title="Unread Notifications"
+            <KPITile
+              title="Unread"
               value={dashboardLoading ? '...' : dashboardData?.summary?.unreadNotifications ?? 0}
-              subtitle="Updates requiring your attention"
+              subtitle="Notifications"
+              accent="success"
             />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <article className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-ink">Recent Announcements</h2>
+          {/* Recent Activity Sections - 2-column layout */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+              gap: '24px',
+            }}
+          >
+            {/* Recent Announcements */}
+            <DashboardSection
+              title="Recent Announcements"
+              action={
                 <button
                   type="button"
                   onClick={() => setActiveTab('announcements')}
-                  className="rounded-md border border-edge px-3 py-1.5 text-xs font-medium text-ink-secondary hover:text-ink"
+                  style={{
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-edge-subtle)',
+                    background: 'transparent',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: 'var(--color-ink-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease-out',
+                  }}
                 >
-                  View all
+                  View all →
                 </button>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {(dashboardData?.recentAnnouncements || []).map((item) => (
-                  <div key={item.id} className="rounded-xl border border-edge-subtle bg-canvas px-4 py-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-ink">{item.title}</p>
-                        <p className="mt-1 text-xs text-ink-tertiary">
-                          {item.module?.name || 'General'} {item.module?.code ? `(${item.module.code})` : ''}
-                        </p>
+              }
+            >
+              {(dashboardData?.recentAnnouncements || []).length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {(dashboardData?.recentAnnouncements || []).map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        borderRadius: '6px',
+                        border: '1px solid var(--color-edge-subtle)',
+                        background: 'var(--color-surface-200)',
+                        padding: '12px',
+                        transition: 'all 150ms ease-out',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              color: 'var(--color-ink)',
+                              margin: 0,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.title}
+                          </p>
+                          <p
+                            style={{
+                              marginTop: '4px',
+                              fontSize: '11px',
+                              color: 'var(--color-ink-tertiary)',
+                              margin: 0,
+                            }}
+                          >
+                            {item.module?.name || 'General'} {item.module?.code ? `(${item.module.code})` : ''}
+                          </p>
+                        </div>
+                        <StatusIndicator status={item.status} label={String(item.status || '').toUpperCase()} variant="dot" />
                       </div>
-                      <StatusBadge status={item.status} label={String(item.status || '').toUpperCase()} />
+                      <p
+                        style={{
+                          marginTop: '8px',
+                          fontSize: '11px',
+                          color: 'var(--color-ink-tertiary)',
+                          margin: 0,
+                        }}
+                      >
+                        {formatDate(item.publishedAt)}
+                      </p>
                     </div>
-                    <p className="mt-2 text-xs text-ink-tertiary">Published: {formatDate(item.publishedAt)}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No announcements yet"
+                  description="New announcements will appear here"
+                />
+              )}
+            </DashboardSection>
 
-                {!dashboardData?.recentAnnouncements?.length ? (
-                  <p className="rounded-xl border border-dashed border-edge px-4 py-6 text-center text-sm text-ink-tertiary">
-                    No announcements available.
-                  </p>
-                ) : null}
-              </div>
-            </article>
-
-            <article className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-ink">Recent Reclamations</h2>
+            {/* Recent Reclamations */}
+            <DashboardSection
+              title="Recent Reclamations"
+              action={
                 <button
                   type="button"
                   onClick={() => setActiveTab('reclamations')}
-                  className="rounded-md border border-edge px-3 py-1.5 text-xs font-medium text-ink-secondary hover:text-ink"
+                  style={{
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-edge-subtle)',
+                    background: 'transparent',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: 'var(--color-ink-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease-out',
+                  }}
                 >
-                  View all
+                  View all →
                 </button>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {(dashboardData?.recentReclamations || []).map((item) => (
-                  <div key={item.id} className="rounded-xl border border-edge-subtle bg-canvas px-4 py-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium text-ink">{item.title}</p>
-                        <p className="mt-1 text-xs text-ink-tertiary">{item.type?.name || 'General'}</p>
+              }
+            >
+              {(dashboardData?.recentReclamations || []).length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {(dashboardData?.recentReclamations || []).map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        borderRadius: '6px',
+                        border: '1px solid var(--color-edge-subtle)',
+                        background: 'var(--color-surface-200)',
+                        padding: '12px',
+                        transition: 'all 150ms ease-out',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              color: 'var(--color-ink)',
+                              margin: 0,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.title}
+                          </p>
+                          <p
+                            style={{
+                              marginTop: '4px',
+                              fontSize: '11px',
+                              color: 'var(--color-ink-tertiary)',
+                              margin: 0,
+                            }}
+                          >
+                            {item.type?.name || 'General'}
+                          </p>
+                        </div>
+                        <StatusIndicator status={item.status} label={String(item.status || '').toUpperCase()} variant="dot" />
                       </div>
-                      <StatusBadge status={item.status} label={String(item.status || '').toUpperCase()} />
+                      <p
+                        style={{
+                          marginTop: '8px',
+                          fontSize: '11px',
+                          color: 'var(--color-ink-tertiary)',
+                          margin: 0,
+                        }}
+                      >
+                        {formatDate(item.createdAt)}
+                      </p>
                     </div>
-                    <p className="mt-2 text-xs text-ink-tertiary">Submitted: {formatDate(item.createdAt)}</p>
-                  </div>
-                ))}
-
-                {!dashboardData?.recentReclamations?.length ? (
-                  <p className="rounded-xl border border-dashed border-edge px-4 py-6 text-center text-sm text-ink-tertiary">
-                    No reclamations submitted yet.
-                  </p>
-                ) : null}
-              </div>
-            </article>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No reclamations yet"
+                  description="Submit your first reclamation to get started"
+                />
+              )}
+            </DashboardSection>
           </div>
 
-          <article className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
-            <h2 className="text-lg font-semibold text-ink">Your Modules</h2>
-            <p className="mt-1 text-sm text-ink-tertiary">Modules linked to your current teaching assignments.</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {modules.map((module) => (
-                <div key={module.moduleId} className="rounded-xl border border-edge-subtle bg-canvas px-4 py-3">
-                  <p className="font-semibold text-ink">{module.moduleName}</p>
-                  <p className="text-xs text-ink-tertiary">{module.moduleCode}</p>
-                </div>
-              ))}
-              {!modules.length ? (
-                <p className="rounded-xl border border-dashed border-edge px-4 py-6 text-center text-sm text-ink-tertiary md:col-span-2 xl:col-span-3">
-                  No module data available for your account.
-                </p>
-              ) : null}
-            </div>
-          </article>
+          {/* Modules Section */}
+          <DashboardSection title="Your Modules">
+            {modules && modules.length > 0 ? (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                  gap: '12px',
+                }}
+              >
+                {modules.map((module) => (
+                  <div
+                    key={module.moduleId}
+                    style={{
+                      borderRadius: '6px',
+                      border: '1px solid var(--color-edge-subtle)',
+                      background: 'var(--color-surface-200)',
+                      padding: '12px',
+                      transition: 'all 150ms ease-out',
+                    }}
+                  >
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-ink)', margin: 0 }}>
+                      {module.moduleName}
+                    </p>
+                    <p style={{ fontSize: '11px', color: 'var(--color-ink-tertiary)', margin: '4px 0 0 0' }}>
+                      {module.moduleCode}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p
+                style={{
+                  borderRadius: '8px',
+                  border: '1px dashed var(--color-edge)',
+                  padding: '24px',
+                  textAlign: 'center',
+                  fontSize: '13px',
+                  color: 'var(--color-ink-tertiary)',
+                }}
+              >
+                No module data available for your account.
+              </p>
+            )}
+          </DashboardSection>
         </section>
       ) : null}
 
-      {activeTab === 'announcements' ? (
+      <>
+        {activeTab === 'announcements' ? (
         <section className="space-y-4">
           <div className="rounded-2xl border border-edge bg-surface p-4 shadow-card">
             <h2 className="text-lg font-semibold text-ink">Announcements</h2>
@@ -942,7 +1186,7 @@ export default function StudentDashboard() {
         </section>
       ) : null}
 
-      {activeTab === 'reclamations' ? (
+        {activeTab === 'reclamations' ? (
         <section className="space-y-4">
           <div className="rounded-2xl border border-edge bg-surface p-4 shadow-card">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1026,7 +1270,7 @@ export default function StudentDashboard() {
         </section>
       ) : null}
 
-      {activeTab === 'documents' ? (
+        {activeTab === 'documents' ? (
         <section className="space-y-4">
           <div className="rounded-2xl border border-edge bg-surface p-4 shadow-card">
             <h2 className="text-lg font-semibold text-ink">Documents</h2>
@@ -1070,7 +1314,7 @@ export default function StudentDashboard() {
         </section>
       ) : null}
 
-      {activeTab === 'profile' ? (
+        {activeTab === 'profile' ? (
         <section className="grid gap-6 lg:grid-cols-2">
           <article className="rounded-2xl border border-edge bg-surface p-5 shadow-card">
             <h2 className="text-lg font-semibold text-ink">Profile Information</h2>
@@ -1172,7 +1416,7 @@ export default function StudentDashboard() {
         </section>
       ) : null}
 
-      {activeTab === 'notifications' ? (
+        {activeTab === 'notifications' ? (
         <section className="space-y-4 rounded-2xl border border-edge bg-surface p-5 shadow-card">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -1250,6 +1494,7 @@ export default function StudentDashboard() {
           </div>
         </section>
       ) : null}
+      </>
 
       <Modal
         open={Boolean(announcementDetail) || announcementDetailLoading}

@@ -208,12 +208,12 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 max-w-6xl mx-auto">
-      <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-        <Search className="w-8 h-8 text-blue-600" />
+    <div className="bg-surface rounded-lg shadow-lg p-8 max-w-6xl mx-auto">
+      <h2 className="text-3xl font-bold text-ink mb-2 flex items-center gap-3">
+        <Search className="w-8 h-8 text-brand" />
         Student Assignment Manager
       </h2>
-      <p className="text-gray-600 mb-6">
+      <p className="text-ink-secondary mb-6">
         Find and assign students to this PFE group
       </p>
 
@@ -221,18 +221,18 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
         <div
           className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
             message.type === 'success'
-              ? 'bg-green-50 border border-edge-strong'
-              : 'bg-red-50 border border-edge-strong'
+              ? 'bg-success/5 border border-edge-strong'
+              : 'bg-danger/5 border border-edge-strong'
           }`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
           )}
           <p
             className={
-              message.type === 'success' ? 'text-green-800' : 'text-red-800'
+              message.type === 'success' ? 'text-success' : 'text-danger'
             }
           >
             {message.text}
@@ -243,33 +243,33 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Available Students */}
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Plus className="w-5 h-5 text-green-600" />
+          <h3 className="text-xl font-bold text-ink mb-4 flex items-center gap-2">
+            <Plus className="w-5 h-5 text-success" />
             Available Students
           </h3>
 
           {/* Search Input */}
           <div className="mb-4 relative">
-            <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-3 w-5 h-5 text-ink-muted" />
             <input
               type="text"
               placeholder="Search by name, email, or matricule..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-control-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 border border-control-border rounded-lg focus:outline-none focus:ring-2 focus:ring-control-focus"
             />
           </div>
 
           {/* Select All Checkbox */}
           {students.length > 0 && (
-            <label className="flex items-center p-2 mb-3 hover:bg-gray-50 rounded cursor-pointer">
+            <label className="flex items-center p-2 mb-3 hover:bg-surface-200 rounded cursor-pointer">
               <input
                 type="checkbox"
                 checked={selectedStudents.size === students.length}
                 onChange={handleSelectAll}
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 text-brand"
               />
-              <span className="ml-3 text-sm font-medium text-gray-700">
+              <span className="ml-3 text-sm font-medium text-ink-secondary">
                 Select All ({students.length})
               </span>
             </label>
@@ -279,7 +279,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
           <div className="space-y-2 max-h-96 overflow-y-auto border border-edge rounded-lg p-3">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader className="w-6 h-6 text-gray-400 animate-spin" />
+                <Loader className="w-6 h-6 text-ink-muted animate-spin" />
               </div>
             ) : students.length > 0 ? (
               students.map((student) => (
@@ -291,28 +291,28 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
                     type="checkbox"
                     checked={selectedStudents.has(student.id)}
                     onChange={() => handleSelectStudent(student.id)}
-                    className="w-4 h-4 text-blue-600"
+                    className="w-4 h-4 text-brand"
                   />
                   <div className="ml-3 flex-1">
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-ink">
                       {student.prenom} {student.nom}
                     </p>
-                    <p className="text-sm text-gray-500">{student.email}</p>
+                    <p className="text-sm text-ink-tertiary">{student.email}</p>
                     {student.matricule && (
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-ink-muted">
                         {student.matricule}
                       </p>
                     )}
                   </div>
                   {student.moyenne && (
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    <span className="text-xs bg-brand/10 text-brand px-2 py-1 rounded">
                       {student.moyenne.toFixed(2)}
                     </span>
                   )}
                 </label>
               ))
             ) : (
-              <p className="text-center text-gray-500 py-4">
+              <p className="text-center text-ink-tertiary py-4">
                 {searchQuery ? 'No students found' : 'Search to find students'}
               </p>
             )}
@@ -322,7 +322,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
           <button
             onClick={handleAssignStudents}
             disabled={selectedStudents.size === 0 || assigning}
-            className="w-full mt-4 bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full mt-4 bg-success text-white font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {assigning ? (
               <>
@@ -340,8 +340,8 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
 
         {/* Assigned Students */}
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
+          <h3 className="text-xl font-bold text-ink mb-4 flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-success" />
             Assigned Students ({assignedStudents.length})
           </h3>
 
@@ -354,12 +354,12 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
                   className="flex items-center justify-between p-3 border border-edge rounded-lg hover:bg-surface-200 transition"
                 >
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-ink">
                       {student.prenom} {student.nom}
                     </p>
-                    <p className="text-sm text-gray-500">{student.email}</p>
+                    <p className="text-sm text-ink-tertiary">{student.email}</p>
                     {student.role === 'chef_groupe' && (
-                      <span className="inline-block mt-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded flex items-center gap-1">
+                      <span className="inline-flex mt-1 text-xs bg-warning/10 text-warning px-2 py-1 rounded items-center gap-1">
                         <Crown className="w-3 h-3" />
                         Group Leader
                       </span>
@@ -370,7 +370,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
                     {student.role !== 'chef_groupe' && (
                       <button
                         onClick={() => setLeader(student.id)}
-                        className="p-2 text-yellow-600 hover:bg-yellow-50 rounded transition"
+                        className="p-2 text-warning hover:bg-warning/10 rounded transition"
                         title="Set as group leader"
                       >
                         <Crown className="w-5 h-5" />
@@ -379,7 +379,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
 
                     <button
                       onClick={() => removeStudent(student.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                      className="p-2 text-danger hover:bg-danger/10 rounded transition"
                       title="Remove student"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -388,7 +388,7 @@ const StudentAssignmentManager = ({ groupId, onSuccess }) => {
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-500 py-4">
+              <p className="text-center text-ink-tertiary py-4">
                 No students assigned yet
               </p>
             )}

@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
           {sent ? (
             <div>
               {/* Success icon */}
-              <div className="mb-6 mx-auto w-12 h-12 rounded-full bg-green-50 border border-edge-strong flex items-center justify-center">
+              <div className="mb-6 mx-auto w-12 h-12 rounded-full bg-success/5 border border-edge-strong flex items-center justify-center">
                 <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
@@ -89,12 +89,12 @@ export default function ForgotPasswordPage() {
 
               {/* Dev-mode reset link */}
               {resetToken && (
-                <div className="mb-5 p-3 rounded-md bg-amber-50 border border-edge-strong text-xs text-amber-800">
+                <div className="mb-5 p-3 rounded-md bg-warning/5 border border-edge-strong text-xs text-warning">
                   <p className="font-semibold mb-1.5">{t('forgotPassword.devMode')}</p>
                   <button
                     type="button"
                     onClick={() => navigate('/reset-password?token=' + resetToken)}
-                    className="underline font-medium break-all text-left w-full hover:text-amber-900 transition-colors"
+                    className="underline font-medium break-all text-left w-full hover:opacity-80 transition-colors"
                   >
                     {t('forgotPassword.clickToReset')}
                   </button>
@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
             <form onSubmit={handleSubmit}>
               {/* Error banner */}
               {error && (
-                <div className="mb-5 px-3 py-2.5 rounded-md bg-red-50 border border-edge-strong text-sm text-danger flex items-start gap-2">
+                <div className="mb-5 px-3 py-2.5 rounded-md bg-danger/5 border border-edge-strong text-sm text-danger flex items-start gap-2">
                   <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>

@@ -23,10 +23,36 @@ const bounceStyle = `
   }
 `;
 
-// Inject styles
+// Inject enhanced animation styles
 if (typeof document !== 'undefined') {
   const styleSheet = document.createElement('style');
-  styleSheet.textContent = bounceStyle;
+  styleSheet.textContent = bounceStyle + `
+    @keyframes liftScale {
+      0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      100% {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+    }
+    .lift-on-hover:hover {
+      animation: liftScale 0.2s ease-out forwards;
+    }
+    @keyframes slideDown {
+      0% {
+        opacity: 0;
+        max-height: 0;
+        transform: translateY(-10px);
+      }
+      100% {
+        opacity: 1;
+        max-height: 1000px;
+        transform: translateY(0);
+      }
+    }
+  `;
   document.head.appendChild(styleSheet);
 }
 
@@ -120,8 +146,13 @@ function IconFile() {
 }
 
 /**
- * URGENT ANNOUNCEMENTS CAROUSEL
- * Full-width carousel where each announcement takes entire width and slides between items
+ * URGENT ANNOUNCEMENTS CAROUSEL - MODERN STAGE VARIATION
+ * Features:
+ * - Centered active card (max-width: 800px)
+ * - Peeking side cards at 10% visibility with scale and opacity
+ * - Fixed navigation arrows with z-index: 50
+ * - Modern pill-shaped indicators
+ * - Glassmorphism effect with enhanced styling
  */
 function UrgentAnnouncementsCarousel({ items }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -137,57 +168,300 @@ function UrgentAnnouncementsCarousel({ items }) {
   const current = items[currentIndex];
 
   return (
-    <div className="mb-6 rounded-lg border border-edge bg-surface overflow-visible">
-      {/* Header */}
-      <div className="flex h-12 items-center gap-3 px-4 md:px-6 bg-danger text-white rounded-t-lg">
-        <svg className="h-5 w-5 flex-shrink-0 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-        </svg>
-        <span className="text-sm font-semibold">URGENT ANNOUNCEMENTS</span>
-      </div>
-
-      {/* Carousel Content */}
-      <div className="relative min-h-32 p-4 md:p-6 px-14 md:px-20">
-        {/* Current Announcement */}
-        <div className="pr-12 md:pr-16 transition-opacity duration-300 ease-in-out">
-          <div className="flex items-start gap-2 mb-2">
-            <span className="rounded-full border border-edge-strong bg-danger/10 px-2 py-0.5 text-xs font-semibold text-danger">URGENT</span>
-            <span className="inline-flex h-2 w-2 rounded-full bg-danger animate-pulse flex-shrink-0 mt-1.5" />
-          </div>
-          <h2 className="text-lg font-bold text-ink mb-1 line-clamp-2">{getTitle(current)}</h2>
-          <p className="text-xs text-ink-secondary mb-2">{getCategoryName(current)} • {formatDate(current?.datePublication || current?.createdAt)}</p>
-          <p className="text-sm text-ink-secondary mb-3 line-clamp-2">{getContent(current)}</p>
-          <a href={`/news#${current.id}`} className="inline-flex items-center text-xs font-semibold text-brand hover:text-brand-hover transition-colors">
-            Read more →
-          </a>
-        </div>
-
-        {/* Navigation - Positioned Outside */}
+    <div 
+      style={{
+        marginBottom: '24px',
+      }}
+    >
+      {/* Unified Slider Container - Single relative context for arrows and card */}
+      <div 
+        style={{
+          position: 'relative',
+          width: '100%',
+          margin: '0 auto',
+          minHeight: '320px', // Ensure container doesn't collapse
+          background: 'var(--color-canvas)',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden', // Hide incoming/outgoing slides
+        }}
+      >
+        {/* Left Arrow - Positioned absolutely within unified container */}
         <button
           onClick={goToPrev}
-          className="absolute top-1/2 -left-6 -translate-y-1/2 rounded-full border border-edge bg-surface p-2 text-ink-secondary hover:bg-surface-100 transition-all duration-200"
+          style={{
+            position: 'absolute',
+            left: '16px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 40,
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(12px)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            transition: 'all 150ms ease-out',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+            padding: 0,
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-brand)';
+            e.currentTarget.style.background = 'var(--color-brand)';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.boxShadow = '0 6px 24px rgba(0, 0, 0, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+          }}
           aria-label="Previous announcement"
         >
           <IconChevron direction="left" />
         </button>
+
+        {/* Slider Track - Contains the active card with full width */}
+        <div 
+          style={{
+            position: 'relative',
+            width: '100%',
+            paddingLeft: '72px',
+            paddingRight: '72px',
+            paddingTop: '32px',
+            paddingBottom: '32px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            overflow: 'hidden', // Hide side overflow
+          }}
+        >
+          {/* Active Card - Full width within track, fills available space */}
+          <div 
+            style={{
+              position: 'relative',
+              width: '100%',
+              borderRadius: '12px',
+              border: '1px solid var(--color-edge-subtle)',
+              background: 'var(--color-surface)',
+              overflow: 'hidden',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+              transform: 'scale(1)',
+              opacity: 1,
+              zIndex: 20,
+              transition: 'all 300ms ease-out',
+              minHeight: '280px', // Ensure card doesn't collapse
+            }}
+          >
+            {/* Left accent bar (4px) */}
+            <div 
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '4px',
+                background: 'var(--status-error, #dc2626)',
+                borderRadius: '12px 0 0 12px',
+              }}
+            />
+
+            {/* Glassmorphism inner overlay */}
+            <div 
+              style={{
+                position: 'absolute',
+                inset: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(8px)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                pointerEvents: 'none',
+              }}
+            />
+
+            {/* Card Content */}
+            <div 
+              style={{
+                position: 'relative',
+                zIndex: 2,
+                padding: '32px',
+                paddingLeft: '40px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <span 
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--status-error, #dc2626)',
+                    background: 'rgba(220, 38, 38, 0.1)',
+                    paddingLeft: '8px',
+                    paddingRight: '8px',
+                    paddingTop: '4px',
+                    paddingBottom: '4px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    color: 'var(--status-error, #dc2626)',
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                  Urgent
+                </span>
+              </div>
+
+              <h2 style={{ 
+                fontSize: '24px', 
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                color: 'var(--color-ink)',
+                marginBottom: '12px',
+                lineHeight: 1.3,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>
+                {getTitle(current)}
+              </h2>
+
+              <p style={{ 
+                fontSize: '13px', 
+                color: 'var(--color-ink-secondary)',
+                marginBottom: '16px',
+              }}>
+                {getCategoryName(current)} • {formatDate(current?.datePublication || current?.createdAt)}
+              </p>
+
+              <p style={{ 
+                fontSize: '15px', 
+                color: 'var(--color-ink-secondary)',
+                marginBottom: '20px',
+                lineHeight: 1.6,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>
+                {getContent(current)}
+              </p>
+
+              <a 
+                href={`/news#${current.id}`} 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--color-brand)',
+                  textDecoration: 'none',
+                  transition: 'all 200ms ease-out',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--color-brand-hover)';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--color-brand)';
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }}
+              >
+                Read more 
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Arrow - Positioned absolutely within unified container */}
         <button
           onClick={goToNext}
-          className="absolute top-1/2 -right-6 -translate-y-1/2 rounded-full border border-edge bg-surface p-2 text-ink-secondary hover:bg-surface-100 transition-all duration-200"
+          style={{
+            position: 'absolute',
+            right: '16px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 40,
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(12px)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            transition: 'all 150ms ease-out',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+            padding: 0,
+            flexShrink: 0,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-brand)';
+            e.currentTarget.style.background = 'var(--color-brand)';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.boxShadow = '0 6px 24px rgba(0, 0, 0, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+          }}
           aria-label="Next announcement"
         >
           <IconChevron direction="right" />
         </button>
       </div>
 
-      {/* Indicator Dots */}
-      <div className="flex justify-center gap-2 pb-4">
+      {/* Modern Pill-Style Indicators - Centered with breathing room */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', paddingTop: '24px' }}>
         {items.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`h-2 w-2 rounded-full transition-all ${
-              idx === currentIndex ? 'bg-brand w-6' : 'bg-edge hover:bg-edge-strong'
-            }`}
+            style={{
+              height: '8px',
+              width: idx === currentIndex ? '32px' : '8px',
+              borderRadius: '4px',
+              background: idx === currentIndex ? 'var(--color-brand)' : 'var(--color-edge)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 200ms ease-out',
+              boxShadow: idx === currentIndex ? '0 2px 8px rgba(var(--color-brand-rgb, 0, 0, 0), 0.3)' : 'none',
+            }}
+            onMouseEnter={(e) => {
+              if (idx !== currentIndex) {
+                e.currentTarget.style.background = 'var(--color-edge-strong)';
+                e.currentTarget.style.transform = 'scale(1.2)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (idx !== currentIndex) {
+                e.currentTarget.style.background = 'var(--color-edge)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }
+            }}
             aria-label={`Go to announcement ${idx + 1}`}
           />
         ))}
@@ -197,10 +471,13 @@ function UrgentAnnouncementsCarousel({ items }) {
 }
 
 /**
- * SEAMLESS LIST ROW COMPONENT
- * Horizontal hierarchy: [Urgency Accent] → [Category Badge] → [Title & Snippet] → [Attachment] → [Date] → [Menu]
+ * HORIZONTAL FEED CARD - HIGH-DENSITY NEWS ITEM
+ * Column 1: Category Tag (Small, Uppercase, Semantic color)
+ * Column 2: Content (Bold Title + 2-line truncated snippet)
+ * Column 3: Metadata (Date + Author)
+ * Hover state with 'Expand' button and arrow icon
  */
-function AnnouncementRow({ item, isAdmin, onEdit, onDelete, openMenuId, setOpenMenuId }) {
+function AnnouncementRow({ item, isAdmin, onEdit, onDelete, openMenuId, setOpenMenuId, isExpanded, onToggleExpand }) {
   const urgent = isImportantAnnouncement(item);
   const attachment = item?.documents?.[0];
   const attachmentUrl = attachment?.fichier ? resolveMediaUrl(attachment.fichier) : '';
@@ -209,103 +486,365 @@ function AnnouncementRow({ item, isAdmin, onEdit, onDelete, openMenuId, setOpenM
   const authorName = `${item?.auteur?.prenom || ''} ${item?.auteur?.nom || ''}`.trim() || 'Unknown';
 
   return (
-    <div className="group border-b border-edge-subtle bg-surface transition-colors duration-150 hover:bg-surface-200">
-      <div className="flex items-stretch">
-        {/* Left accent bar (3px) for urgency indicator */}
-        <div className={`w-1 flex-shrink-0 transition-all duration-150 ${urgent ? 'bg-danger' : 'bg-brand/40'}`} />
+    <div
+      style={{
+        borderBottom: '1px solid var(--color-edge-subtle)',
+        background: 'var(--color-surface)',
+        transition: 'all 150ms ease-out',
+        cursor: 'pointer',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'var(--color-surface-200)';
+        e.currentTarget.style.borderColor = 'var(--color-edge-strong)';
+        e.currentTarget.style.animation = 'liftScale 200ms ease-out forwards';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'var(--color-surface)';
+        e.currentTarget.style.borderColor = 'var(--color-edge-subtle)';
+        e.currentTarget.style.animation = 'none';
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'stretch' }}>
+        {/* Left accent bar (2px) for urgency indicator */}
+        <div
+          style={{
+            width: '2px',
+            flexShrink: 0,
+            background: urgent ? 'var(--status-error, #dc2626)' : 'var(--status-info, #1d4ed8)',
+            transition: 'all 150ms ease-out',
+          }}
+        />
 
-        {/* Main content area */}
-        <div className="flex-1 px-4 py-3.5 md:px-6 md:py-4">
-          {/* Horizontal row layout */}
-          <div className="flex flex-col gap-2">
-            {/* Row 1: Header with badges and metadata */}
-            <div className="flex items-start justify-between gap-3">
-              {/* Left: Category badge + urgent indicator */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="rounded-full border border-edge bg-surface-200 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand">
-                  {getCategoryName(item)}
-                </span>
-                {urgent ? (
-                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-danger animate-pulse" title="Urgent" />
-                ) : null}
-              </div>
+        {/* Main content area - Flex layout with proper space distribution */}
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '20px',
+            padding: '20px 24px',
+            transition: 'all 150ms ease-out',
+            minWidth: 0, // Critical: allows flex items to shrink below their content size
+            justifyContent: 'space-between',
+          }}
+        >
+          {/* Column 1 (Category Badge + Status) - Fixed width to accommodate long categories */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              minWidth: '140px', // Ensures even "Administrative" fits without clipping
+              flexShrink: 0, // Prevent this from shrinking
+              justifyContent: 'flex-start', // Align badge to the left
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                borderRadius: '4px',
+                border: '1px solid var(--color-edge)',
+                background: 'var(--color-canvas)',
+                paddingLeft: '8px',
+                paddingRight: '8px',
+                paddingTop: '4px',
+                paddingBottom: '4px',
+                fontSize: '10px',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'var(--color-brand)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: '120px', // Increased from 80px to 120px to fit "Administrative"
+              }}
+            >
+              {getCategoryName(item)}
+            </span>
+            {urgent && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: 'var(--status-error, #dc2626)',
+                  animation: 'pulse 2s infinite',
+                  flexShrink: 0,
+                }}
+                title="Urgent"
+              />
+            )}
+          </div>
 
-              {/* Right: Timestamp + Author + Menu */}
-              <div className="flex items-center gap-2 gap-x-3 flex-shrink-0 text-xs text-ink-tertiary">
-                <span className="whitespace-nowrap">{displayDate}</span>
-
-                {/* Admin kebab menu */}
-                {isAdmin ? (
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded border border-edge/50 bg-surface-200 text-ink-secondary transition-all duration-150 hover:border-edge-strong hover:bg-surface-300 hover:text-ink focus:outline-none focus:ring-2 focus:ring-brand/30"
-                      aria-label="Actions"
-                    >
-                      <IconMenu />
-                    </button>
-
-                    {/* Dropdown menu */}
-                    {openMenuId === item.id ? (
-                      <div className="absolute right-0 top-full mt-1 w-32 origin-top-right rounded-md border border-edge bg-surface shadow-card z-20">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onEdit(item);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full text-left block px-3 py-2 text-xs font-medium text-ink-secondary transition-all duration-150 hover:bg-surface-200 hover:text-ink first:rounded-t-md"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onDelete(item.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="w-full text-left block px-3 py-2 text-xs font-medium text-danger transition-all duration-150 hover:bg-danger/10 last:rounded-b-md"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Row 2: Title (bold, high scannability) */}
-            <h3 className="text-sm font-bold tracking-tight text-ink md:text-base line-clamp-1">
+          {/* Column 2 (Content - Title + Snippet) - Flexible, grows to fill space */}
+          <div 
+            style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '8px', 
+              minWidth: 0, // CRITICAL: allows flex to shrink below intrinsic text width
+              flex: '1 1 auto', // Grows to fill available space, shrinks when needed
+              maxWidth: 'calc(100% - 240px)', // Ensures right column (240px) always has reserved space
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '16px',
+                fontWeight: 700,
+                letterSpacing: '-0.01em',
+                color: 'var(--color-ink)',
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                lineHeight: 1.3,
+                display: '-webkit-box', // For better text truncation
+              }}
+            >
               {getTitle(item)}
             </h3>
+            <p
+              style={{
+                fontSize: '13px',
+                lineHeight: 1.5,
+                color: 'var(--color-ink-secondary)',
+                margin: 0,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
+              {getContent(item)}
+            </p>
 
-            {/* Row 3: Content snippet */}
-            <div className="flex items-start gap-2 flex-wrap">
-              <p className="text-xs leading-5 text-ink-secondary line-clamp-2 flex-1">
-                {getContent(item)}
-              </p>
+            {/* Attachment link */}
+            {attachmentUrl && (
+              <a
+                href={attachmentUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: 'var(--color-brand)',
+                  textDecoration: 'none',
+                  marginTop: '4px',
+                  transition: 'all 150ms ease-out',
+                  width: 'fit-content',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--color-brand-hover)';
+                  e.currentTarget.style.textDecoration = 'underline';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--color-brand)';
+                  e.currentTarget.style.textDecoration = 'none';
+                }}
+              >
+                <IconFile />
+                {attachment?.nomDocument || 'View Attachment'}
+              </a>
+            )}
+          </div>
+
+          {/* Column 3 (Metadata + Actions) - Fixed width, anchored to right */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexShrink: 0, // Prevent this from shrinking
+              minWidth: '240px', // Fixed width reserved for right-side elements
+              fontSize: '12px',
+              color: 'var(--color-ink-secondary)',
+              justifyContent: 'flex-end',
+            }}
+          >
+            {/* Date & Author (right-aligned on desktop) */}
+            <div 
+              style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'flex-end', 
+                gap: '2px', 
+                minWidth: 'fit-content',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: '12px', fontWeight: 500, whiteSpace: 'nowrap' }}>{displayDate}</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-ink-tertiary)', whiteSpace: 'nowrap' }}>By {authorName}</span>
             </div>
 
-            {/* Row 3b: Attachment link (prominent) */}
-            {attachmentUrl ? (
-              <div>
-                <a
-                  href={attachmentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand transition-all duration-150 hover:text-brand-hover hover:underline"
-                  title={attachment?.nomDocument || 'Download'}
+            {/* Expand Button */}
+            <button
+              type="button"
+              onClick={onToggleExpand}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                border: '1px solid var(--color-edge)',
+                background: 'var(--color-canvas)',
+                color: 'var(--color-ink-secondary)',
+                cursor: 'pointer',
+                transition: 'all 150ms ease-out',
+                flexShrink: 0,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--color-brand-light)';
+                e.currentTarget.style.borderColor = 'var(--color-brand)';
+                e.currentTarget.style.color = 'var(--color-brand)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--color-canvas)';
+                e.currentTarget.style.borderColor = 'var(--color-edge)';
+                e.currentTarget.style.color = 'var(--color-ink-secondary)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+              title="Expand announcement"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d={isExpanded ? "M6 9l6 6 6-6" : "M9 18l6-6 6 6"}/>
+              </svg>
+            </button>
+
+            {/* Admin kebab menu */}
+            {isAdmin ? (
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-edge)',
+                    background: 'var(--color-canvas)',
+                    color: 'var(--color-ink-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease-out',
+                    padding: 0,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-edge-strong)';
+                    e.currentTarget.style.background = 'var(--color-surface-200)';
+                    e.currentTarget.style.color = 'var(--color-ink)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--color-edge)';
+                    e.currentTarget.style.background = 'var(--color-canvas)';
+                    e.currentTarget.style.color = 'var(--color-ink-secondary)';
+                  }}
+                  aria-label="Actions"
                 >
-                  <IconFile />
-                  <span>View Attachment: {attachment?.nomDocument || 'Download'}</span>
-                </a>
+                  <IconMenu />
+                </button>
+
+                {/* Dropdown menu */}
+                {openMenuId === item.id && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '100%',
+                      marginTop: '4px',
+                      width: '128px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-edge)',
+                      background: 'var(--color-surface)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onEdit(item);
+                        setOpenMenuId(null);
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        display: 'block',
+                        paddingLeft: '12px',
+                        paddingRight: '12px',
+                        paddingTop: '8px',
+                        paddingBottom: '8px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        color: 'var(--color-ink-secondary)',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 150ms ease-out',
+                        borderTopLeftRadius: '8px',
+                        borderTopRightRadius: '8px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--color-surface-200)';
+                        e.currentTarget.style.color = 'var(--color-ink)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = 'var(--color-ink-secondary)';
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDelete(item.id);
+                        setOpenMenuId(null);
+                      }}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        display: 'block',
+                        paddingLeft: '12px',
+                        paddingRight: '12px',
+                        paddingTop: '8px',
+                        paddingBottom: '8px',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        color: 'var(--status-error, #dc2626)',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 150ms ease-out',
+                        borderBottomLeftRadius: '8px',
+                        borderBottomRightRadius: '8px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(220, 38, 38, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             ) : null}
-
-            {/* Row 4: Author metadata (muted) */}
-            <p className="text-xs text-ink-tertiary">By {authorName}</p>
           </div>
         </div>
       </div>
@@ -324,6 +863,7 @@ export default function News() {
   const [editingAnnonce, setEditingAnnonce] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [expandedAnnouncementId, setExpandedAnnouncementId] = useState(null);
   const filterRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -333,17 +873,11 @@ export default function News() {
     priority: 'normal',
   });
 
-  const fetchAnnonces = async (typeAnnonce = '') => {
+  const fetchAnnonces = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (typeAnnonce) {
-        params.set('typeAnnonce', typeAnnonce);
-      }
-
-      const queryString = params.toString();
-      const endpoint = queryString ? `/api/v1/annonces?${queryString}` : '/api/v1/annonces';
-      const response = await request(endpoint);
+      // Always fetch ALL announcements regardless of category
+      const response = await request('/api/v1/annonces');
       setAnnonces(Array.isArray(response?.data) ? response.data : []);
     } catch (error) {
       console.error(error);
@@ -354,8 +888,14 @@ export default function News() {
   };
 
   useEffect(() => {
-    fetchAnnonces(activeCategory);
-  }, [activeCategory]);
+    fetchAnnonces();
+  }, []);
+
+  // Filter announcements based on active category
+  const filteredAnnonces = useMemo(() => {
+    if (!activeCategory) return annonces;
+    return annonces.filter(item => getCategoryName(item) === activeCategory);
+  }, [annonces, activeCategory]);
 
   const resetForm = () => {
     setEditingAnnonce(null);
@@ -400,7 +940,7 @@ export default function News() {
 
       setShowModal(false);
       resetForm();
-      await fetchAnnonces(activeCategory);
+      await fetchAnnonces();
     } catch (error) {
       console.error(error);
       window.alert(error?.message || 'Operation failed.');
@@ -415,7 +955,7 @@ export default function News() {
     try {
       await request(`/api/v1/annonces/${Number(id)}`, { method: 'DELETE' });
       setOpenMenuId(null);
-      await fetchAnnonces(activeCategory);
+      await fetchAnnonces();
     } catch (error) {
       console.error(error);
       window.alert(error?.message || 'Delete failed.');
@@ -435,20 +975,44 @@ export default function News() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-4 py-6 md:px-6 lg:px-8 lg:py-8">
-      {/* ===== PAGE HEADER (COMPRESSED) ===== */}
-      {/* Slim, elegant title bar with right-aligned CTA */}
-      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div style={{ minHeight: '100vh', background: 'var(--color-canvas)' }}>
+      {/* ===== PAGE HEADER WITH FIXED CTA TOOLBAR ===== */}
+      <div 
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          paddingLeft: '24px',
+          paddingRight: '24px',
+          paddingTop: '32px',
+          paddingBottom: '8px',
+          maxWidth: '1400px',
+          margin: '0 auto',
+          gap: '24px',
+        }}
+      >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-ink md:text-4xl">
+          <h1 style={{ 
+            fontSize: '40px', 
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            color: 'var(--color-ink)',
+            margin: 0,
+            marginBottom: '8px',
+            lineHeight: 1.1,
+          }}>
             News & Announcements
           </h1>
-          <p className="mt-1 text-sm text-ink-secondary">
+          <p style={{ 
+            fontSize: '15px', 
+            color: 'var(--color-ink-secondary)',
+            margin: 0,
+          }}>
             Stay informed with the latest updates from the university community
           </p>
         </div>
 
-        {/* Right-aligned CTA button */}
+        {/* Fixed CTA Button - Top Right */}
         {isAdmin ? (
           <button
             type="button"
@@ -456,81 +1020,393 @@ export default function News() {
               resetForm();
               setShowModal(true);
             }}
-            className="inline-flex items-center justify-center rounded-md bg-brand px-4 py-2.5 text-sm font-medium text-white transition-all duration-150 hover:bg-brand-hover active:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand/30 focus:ring-offset-2 focus:ring-offset-canvas whitespace-nowrap h-fit"
+            style={{
+              position: 'sticky',
+              top: '24px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              borderRadius: '8px',
+              background: 'var(--color-brand)',
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              paddingTop: '10px',
+              paddingBottom: '10px',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'white',
+              cursor: 'pointer',
+              border: 'none',
+              transition: 'all 150ms ease-out',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              whiteSpace: 'nowrap',
+              height: 'fit-content',
+              zIndex: 30,
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--color-brand-hover)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--color-brand)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
-            + New Announcement
+            <span>+</span>
+            New Announcement
           </button>
         ) : null}
       </div>
 
-      {/* ===== URGENT ANNOUNCEMENTS CAROUSEL ===== */}
-      {annonces.filter(isImportantAnnouncement).length > 0 && (
-        <UrgentAnnouncementsCarousel items={annonces.filter(isImportantAnnouncement)} />
-      )}
+      {/* ===== URGENT ANNOUNCEMENTS HERO SECTION ===== */}
+      <div 
+        style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '32px 24px',
+        }}
+      >
+        {annonces.filter(isImportantAnnouncement).length > 0 ? (
+          <UrgentAnnouncementsCarousel items={annonces.filter(isImportantAnnouncement)} />
+        ) : (
+          <div
+            style={{
+              borderRadius: '12px',
+              border: '2px dashed var(--color-edge)',
+              background: 'var(--color-surface)',
+              padding: '64px 24px',
+              textAlign: 'center',
+            }}
+          >
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-tertiary)" strokeWidth="1.5" style={{ margin: '0 auto 16px' }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-ink)', marginBottom: '4px' }}>No Urgent Announcements</p>
+            <p style={{ fontSize: '13px', color: 'var(--color-ink-secondary)' }}>Check back soon for important updates</p>
+          </div>
+        )}
+      </div>
 
-      {/* ===== STICKY FILTER BAR ===== */}
-      {/* Category navigation fixed at top while scrolling */}
+      {/* ===== CATEGORY FILTER BAR - STICKY ===== */}
       <div
         ref={filterRef}
-        className="sticky top-0 z-40 -mx-4 bg-canvas px-4 py-3 shadow-sm md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          background: 'var(--color-canvas)',
+          borderBottom: '1px solid var(--color-edge-subtle)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+          backdropFilter: 'blur(4px)',
+        }}
       >
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
-          {categories.map((category) => (
-            <button
-              key={category.name}
-              type="button"
-              onClick={() => setActiveCategory(category.value)}
-              className={`shrink-0 whitespace-nowrap rounded-md border px-3 py-1.5 text-xs font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-brand/30 ${
-                activeCategory === category.value
-                  ? 'border-brand bg-brand-light text-brand'
-                  : 'border-edge bg-surface text-ink-secondary hover:bg-surface-100'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          paddingLeft: '24px',
+          paddingRight: '24px',
+          paddingTop: '16px',
+          paddingBottom: '16px',
+        }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {categories.map((category) => {
+              // Count from ALL announcements, not filtered ones
+              const count = category.value 
+                ? annonces.filter(item => getCategoryName(item) === category.value).length 
+                : annonces.length;
+              const isActive = activeCategory === category.value;
+
+              return (
+                <button
+                  key={category.name}
+                  type="button"
+                  onClick={() => setActiveCategory(category.value)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    borderRadius: '6px',
+                    border: `1px solid ${isActive ? 'var(--color-brand)' : 'var(--color-edge)'}`,
+                    background: isActive ? 'var(--color-brand-light)' : 'var(--color-surface)',
+                    paddingLeft: '12px',
+                    paddingRight: '12px',
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: isActive ? 'var(--color-brand)' : 'var(--color-ink-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease-out',
+                    outline: 'none',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = 'var(--color-edge-strong)';
+                      e.currentTarget.style.background = 'var(--color-surface-100)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = 'var(--color-edge)';
+                      e.currentTarget.style.background = 'var(--color-surface)';
+                    }
+                  }}
+                >
+                  {category.name}
+                  <span 
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      background: isActive ? 'var(--color-brand)' : 'var(--color-edge)',
+                      color: isActive ? 'white' : 'var(--color-ink-secondary)',
+                      fontSize: '10px',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* ===== SEAMLESS LIST CONTAINER ===== */}
-      {/* Monolithic container with no gaps between rows */}
-      <div className="mt-6 rounded-lg border border-edge overflow-hidden bg-surface shadow-card">
-        {loading ? (
-          <div className="p-8 text-center md:p-12">
-            <p className="text-sm font-medium text-ink-secondary">Loading announcements...</p>
-          </div>
-        ) : annonces.length === 0 ? (
-          <div className="p-12 text-center md:p-16">
-            <div className="mx-auto max-w-sm space-y-3">
-              {/* Minimalist empty state */}
-              <div className="flex justify-center">
-                <div className="inline-flex h-16 w-16 items-center justify-center rounded-lg border border-edge-subtle bg-canvas">
-                  <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8 text-ink-tertiary">
-                    <path d="M9 3h6v2H9V3zm0 16h6v2H9v-2z" fill="currentColor" />
-                    <path d="M3 9v6h2V9H3zm16 0v6h2V9h-2z" fill="currentColor" />
-                    <rect x="5" y="5" width="14" height="14" rx="1" ry="1" stroke="currentColor" strokeWidth="1.2" fill="none" />
-                  </svg>
+      {/* ===== FULL-WIDTH OPTIMIZED NEWS FEED (1400px) ===== */}
+      <div 
+        style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '32px 24px',
+        }}
+      >
+        <div 
+          style={{
+            borderRadius: '12px',
+            border: '1px solid var(--color-edge-subtle)',
+            overflow: 'hidden',
+            background: 'var(--color-surface)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+          }}
+        >
+          {loading ? (
+            <div style={{ padding: '64px 24px', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-ink-secondary)', margin: 0 }}>
+                Loading announcements...
+              </p>
+            </div>
+          ) : filteredAnnonces.length === 0 ? (
+            <div style={{ padding: '64px 24px', textAlign: 'center' }}>
+              <div style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-tertiary)" strokeWidth="1.5" style={{ margin: '0 auto' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--color-ink)', margin: 0, marginBottom: '4px' }}>
+                    No announcements found
+                  </p>
+                  <p style={{ fontSize: '14px', color: 'var(--color-ink-secondary)', margin: 0 }}>
+                    Check back later or try a different category
+                  </p>
                 </div>
               </div>
-              <p className="text-sm font-semibold text-ink">No announcements yet</p>
-              <p className="text-xs text-ink-tertiary">When news is published, it will appear here. Check back later or try a different category.</p>
             </div>
-          </div>
-        ) : (
-          <div>
-            {annonces.map((item) => (
-              <AnnouncementRow
-                key={item.id}
-                item={item}
-                isAdmin={isAdmin}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                openMenuId={openMenuId}
-                setOpenMenuId={setOpenMenuId}
-              />
-            ))}
-          </div>
-        )}
+          ) : (
+            <div>
+              {filteredAnnonces.map((item, idx) => (
+                <div key={item.id}>
+                  {/* Announcement Row */}
+                  <AnnouncementRow
+                    item={item}
+                    isAdmin={isAdmin}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    openMenuId={openMenuId}
+                    setOpenMenuId={setOpenMenuId}
+                    isExpanded={expandedAnnouncementId === item.id}
+                    onToggleExpand={() => setExpandedAnnouncementId(expandedAnnouncementId === item.id ? null : item.id)}
+                  />
+
+                  {/* Expanded Content Modal - Inline */}
+                  {expandedAnnouncementId === item.id && (
+                    <div
+                      style={{
+                        borderBottom: '1px solid var(--color-edge-subtle)',
+                        background: 'var(--color-surface-200)',
+                        padding: '32px 24px',
+                        animation: 'slideDown 200ms ease-out',
+                      }}
+                    >
+                      <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+                        {/* Expanded Header */}
+                        <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '20px' }}>
+                          <div>
+                            <h2
+                              style={{
+                                fontSize: '24px',
+                                fontWeight: 700,
+                                color: 'var(--color-ink)',
+                                margin: 0,
+                                marginBottom: '8px',
+                                lineHeight: 1.3,
+                              }}
+                            >
+                              {getTitle(item)}
+                            </h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  borderRadius: '4px',
+                                  border: '1px solid var(--color-edge)',
+                                  background: 'var(--color-canvas)',
+                                  paddingLeft: '8px',
+                                  paddingRight: '8px',
+                                  paddingTop: '4px',
+                                  paddingBottom: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  letterSpacing: '0.08em',
+                                  textTransform: 'uppercase',
+                                  color: 'var(--color-brand)',
+                                }}
+                              >
+                                {getCategoryName(item)}
+                              </span>
+                              <span style={{ fontSize: '13px', color: 'var(--color-ink-secondary)' }}>
+                                {formatDate(item?.datePublication || item?.createdAt)}
+                              </span>
+                              <span style={{ fontSize: '13px', color: 'var(--color-ink-secondary)' }}>
+                                By {`${item?.auteur?.prenom || ''} ${item?.auteur?.nom || ''}`.trim() || 'Unknown'}
+                              </span>
+                              {isImportantAnnouncement(item) && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: 'var(--status-error, #dc2626)' }}>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                  </svg>
+                                  Urgent
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Close Button */}
+                          <button
+                            onClick={() => setExpandedAnnouncementId(null)}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '6px',
+                              border: '1px solid var(--color-edge)',
+                              background: 'var(--color-canvas)',
+                              color: 'var(--color-ink-secondary)',
+                              cursor: 'pointer',
+                              transition: 'all 150ms ease-out',
+                              flexShrink: 0,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--color-surface)';
+                              e.currentTarget.style.borderColor = 'var(--color-edge-strong)';
+                              e.currentTarget.style.color = 'var(--color-ink)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'var(--color-canvas)';
+                              e.currentTarget.style.borderColor = 'var(--color-edge)';
+                              e.currentTarget.style.color = 'var(--color-ink-secondary)';
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"/>
+                              <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Expanded Content */}
+                        <div style={{ marginBottom: '24px', lineHeight: 1.8 }}>
+                          <p
+                            style={{
+                              fontSize: '15px',
+                              color: 'var(--color-ink)',
+                              margin: 0,
+                              whiteSpace: 'pre-wrap',
+                              wordWrap: 'break-word',
+                            }}
+                          >
+                            {getContent(item)}
+                          </p>
+                        </div>
+
+                        {/* Attachments if available */}
+                        {item?.documents && item.documents.length > 0 && (
+                          <div style={{ marginBottom: '24px', paddingTop: '24px', borderTop: '1px solid var(--color-edge-subtle)' }}>
+                            <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px 0' }}>
+                              Attachments
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {item.documents.map((doc, docIdx) => {
+                                const docUrl = doc?.fichier ? resolveMediaUrl(doc.fichier) : '';
+                                return (
+                                  <a
+                                    key={docIdx}
+                                    href={docUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
+                                      padding: '12px 16px',
+                                      borderRadius: '6px',
+                                      border: '1px solid var(--color-edge)',
+                                      background: 'var(--color-canvas)',
+                                      color: 'var(--color-brand)',
+                                      textDecoration: 'none',
+                                      transition: 'all 150ms ease-out',
+                                      width: 'fit-content',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = 'var(--color-brand-light)';
+                                      e.currentTarget.style.borderColor = 'var(--color-brand)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = 'var(--color-canvas)';
+                                      e.currentTarget.style.borderColor = 'var(--color-edge)';
+                                    }}
+                                  >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                                      <polyline points="13 2 13 9 20 9"/>
+                                    </svg>
+                                    {doc?.nomDocument || 'Download'}
+                                  </a>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ===== CREATION/EDIT MODAL ===== */}

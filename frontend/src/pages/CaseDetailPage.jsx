@@ -27,20 +27,20 @@ function formatDateShort(dateStr) {
 /* ── Status Config ──────────────────────────────────────────── */
 
 const STATUS_CONFIG = {
-  pending:    { label: 'Pending Investigation', bg: 'bg-amber-50 dark:bg-amber-950/40', text: 'text-warning', border: 'border-edge-strong border-edge-strong', dot: 'bg-warning' },
-  hearing:    { label: 'Hearing Scheduled',     bg: 'bg-blue-50 dark:bg-blue-950/40',  text: 'text-brand',   border: 'border-edge-strong border-edge-strong', dot: 'bg-brand' },
-  sanctioned: { label: 'Sanction Applied',      bg: 'bg-red-50 dark:bg-red-950/40',   text: 'text-danger',  border: 'border-edge-strong border-edge-strong',  dot: 'bg-danger' },
-  closed:     { label: 'Case Closed',           bg: 'bg-green-50 dark:bg-green-950/40', text: 'text-success', border: 'border-edge-strong border-edge-strong', dot: 'bg-success' },
+  pending:    { label: 'Pending Investigation', bg: 'bg-warning/5', text: 'text-warning', border: 'border-edge-strong', dot: 'bg-warning' },
+  hearing:    { label: 'Hearing Scheduled',     bg: 'bg-brand/5',   text: 'text-brand',   border: 'border-edge-strong', dot: 'bg-brand' },
+  sanctioned: { label: 'Sanction Applied',      bg: 'bg-danger/5',  text: 'text-danger',  border: 'border-edge-strong', dot: 'bg-danger' },
+  closed:     { label: 'Case Closed',           bg: 'bg-success/5', text: 'text-success', border: 'border-edge-strong', dot: 'bg-success' },
 };
 
 /* ── Timeline step icons ────────────────────────────────────── */
 
 const TIMELINE_ICONS = {
-  'Report Submitted':     { color: 'bg-amber-100 dark:bg-amber-950/40 text-warning', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> },
-  'Investigation Started': { color: 'bg-blue-100 dark:bg-blue-950/40 text-brand',    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg> },
-  'Meeting with Student':  { color: 'bg-violet-100 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg> },
-  'Hearing Scheduled':     { color: 'bg-blue-100 dark:bg-blue-950/40 text-brand',    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> },
-  'Final Decision':        { color: 'bg-green-100 dark:bg-green-950/40 text-success',  icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+  'Report Submitted':     { color: 'bg-warning/10 text-warning', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg> },
+  'Investigation Started': { color: 'bg-brand/10 text-brand',    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg> },
+  'Meeting with Student':  { color: 'bg-surface-200 text-ink-secondary', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg> },
+  'Hearing Scheduled':     { color: 'bg-brand/10 text-brand',    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg> },
+  'Final Decision':        { color: 'bg-success/10 text-success',  icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
 };
 
 const DEFAULT_ICON = { color: 'bg-surface-200 text-ink-tertiary', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
@@ -139,7 +139,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
             {safeCaseData.status !== 'closed' && (
               <button
                 onClick={() => setShowSanctionModal(true)}
-                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-md hover:bg-red-700 active:bg-red-800 transition-all duration-150 flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-md hover:opacity-90 active:opacity-80 transition-all duration-150 flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -235,9 +235,9 @@ export default function CaseDetailPage({ caseData, onBack }) {
                 {/* Verdict badge */}
                 <div className="flex items-center gap-3 mb-4">
                   <span className={`px-3 py-1 text-sm font-semibold rounded-md ${
-                    safeCaseData.decision.verdict === 'Warning' ? 'bg-amber-50 dark:bg-amber-950/40 text-warning border border-edge-strong border-edge-strong'
-                    : safeCaseData.decision.verdict === 'Suspension' ? 'bg-red-50 dark:bg-red-950/40 text-danger border border-edge-strong border-edge-strong'
-                    : safeCaseData.decision.verdict === 'Expulsion' ? 'bg-red-100 dark:bg-red-900/40 text-danger border border-edge-strong border-edge-strong'
+                    safeCaseData.decision.verdict === 'Warning' ? 'bg-warning/5 text-warning border border-edge-strong'
+                    : safeCaseData.decision.verdict === 'Suspension' ? 'bg-danger/5 text-danger border border-edge-strong'
+                    : safeCaseData.decision.verdict === 'Expulsion' ? 'bg-danger/10 text-danger border border-edge-strong'
                     : 'bg-surface-200 text-ink-secondary border border-edge'
                   }`}>
                     {safeCaseData.decision.verdict}
@@ -256,7 +256,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
                     <p className="text-xs text-ink-muted">Issued by</p>
                     <p className="text-sm font-medium text-ink mt-0.5">{safeCaseData.decision.issuedBy}</p>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 dark:bg-green-950/40 border border-edge-strong border-edge-strong rounded-md">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-success/5 border border-edge-strong rounded-md">
                     <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -297,7 +297,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
                   },
                 },
               })}
-              className="w-full px-3 py-2 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 text-center"
+              className="w-full px-3 py-2 text-xs font-medium text-brand bg-brand/5 border border-edge-strong rounded-md hover:bg-brand/10 transition-colors duration-100 text-center"
             >
               View Student Profile
             </button>
@@ -326,7 +326,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
                     <p className="text-sm font-medium text-ink truncate">{file.name}</p>
                     <p className="text-xs text-ink-muted">{file.type} · {file.size}</p>
                   </div>
-                  <button className="p-1.5 rounded-md text-ink-tertiary hover:text-brand hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors" title="Download">
+                  <button className="p-1.5 rounded-md text-ink-tertiary hover:text-brand hover:bg-brand/5 transition-colors" title="Download">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
@@ -354,7 +354,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
             </div>
 
             {safeCaseData.hearingDate ? (
-              <div className="bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-lg p-3 mb-4">
+              <div className="bg-brand/5 border border-edge-strong rounded-lg p-3 mb-4">
                 <p className="text-xs text-ink-muted">Hearing Date</p>
                 <p className="text-sm font-semibold text-brand mt-0.5">{formatDate(safeCaseData.hearingDate)}</p>
               </div>
@@ -379,7 +379,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-surface rounded-lg shadow-card border border-edge w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-danger/5 flex items-center justify-center">
                   <svg className="w-5 h-5 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
@@ -420,7 +420,7 @@ export default function CaseDetailPage({ caseData, onBack }) {
                 </button>
                 <button
                   onClick={() => setShowSanctionModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-md hover:bg-red-700 transition-colors duration-150"
+                  className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-md hover:opacity-90 transition-colors duration-150"
                 >
                   Confirm & Apply
                 </button>

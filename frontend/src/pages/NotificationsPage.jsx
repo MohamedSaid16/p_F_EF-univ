@@ -129,9 +129,9 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6 max-w-6xl min-w-0">
       <section className="relative overflow-hidden rounded-3xl border border-edge bg-surface shadow-card">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.24),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(14,165,233,0.2),transparent_34%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-warning/10 via-transparent to-brand/10" />
         <div className="relative px-6 py-8 md:px-8 md:py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">System Feed</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-warning">System Feed</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink">Notifications</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-secondary md:text-base">
             Stay on top of academic deadlines, requests, hearings, and generated documents without switching between modules.

@@ -101,9 +101,13 @@ const icons = {
 /* ── Mock Data — Meetings ───────────────────────────────────── */
 /* Data fetched from API — see component useEffect */
 
-const STAFF_MEMBERS = [
-  'Prof. Hamidi', 'Prof. Kaci', 'Prof. Belkacem',
-  'Dr. Merniz', 'Prof. Saadi', 'Dr. Amrani',
+const STAFF_MEMBERS_DEFAULT = [
+  { name: 'Prof. Hamidi', id: 1 },
+  { name: 'Prof. Kaci', id: 2 },
+  { name: 'Prof. Belkacem', id: 3 },
+  { name: 'Dr. Merniz', id: 4 },
+  { name: 'Prof. Saadi', id: 5 },
+  { name: 'Dr. Amrani', id: 6 },
 ];
 
 let html2pdfLoader = null;
@@ -877,6 +881,7 @@ export default function DisciplinaryCasesPage({ role = 'teacher' }) {
   const [cases, setCases] = useState([]);
   const [meetings, setMeetings] = useState([]);
   const [students, setStudents] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [reportError, setReportError] = useState('');
@@ -896,13 +901,20 @@ export default function DisciplinaryCasesPage({ role = 'teacher' }) {
     setCases(rawCases.map(normalizeCase).filter(Boolean));
   };
 
+  const loadMeetings = async () => {
+    const response = await request('/api/v1/disciplinary/meetings');
+    const rawMeetings = Array.isArray(response?.data) ? response.data : [];
+    setMeetings(rawMeetings.map(normalizeMeeting).filter(Boolean));
+  };
+
   useEffect(() => {
     (async () => {
       try {
-        const [cRes, mRes, sRes] = await Promise.allSettled([
+        const [cRes, mRes, sRes, stRes] = await Promise.allSettled([
           request('/api/v1/disciplinary/cases'),
           request('/api/v1/disciplinary/meetings'),
           request('/api/v1/disciplinary/students'),
+          request('/api/v1/disciplinary/staff'),
         ]);
 
         if (cRes.status === 'fulfilled') {
@@ -918,8 +930,16 @@ export default function DisciplinaryCasesPage({ role = 'teacher' }) {
         if (sRes.status === 'fulfilled') {
           setStudents(Array.isArray(sRes.value?.data) ? sRes.value.data : []);
         }
+
+        if (stRes.status === 'fulfilled') {
+          const staffData = Array.isArray(stRes.value?.data) ? stRes.value.data : [];
+          setStaff(staffData.length > 0 ? staffData : STAFF_MEMBERS_DEFAULT);
+        } else {
+          setStaff(STAFF_MEMBERS_DEFAULT);
+        }
       } catch {
         /* endpoints may not exist yet */
+        setStaff(STAFF_MEMBERS_DEFAULT);
       } finally {
         setDataLoading(false);
       }
@@ -1131,8 +1151,9 @@ export default function DisciplinaryCasesPage({ role = 'teacher' }) {
       {activeTab === 'new-meeting' && (
         <NewMeetingTab
           cases={cases}
+          staff={staff}
           preselected={preselectedCases}
-          onSave={() => { setPreselectedCases([]); setActiveTab('meetings'); }}
+          onSave={() => { setPreselectedCases([]); loadMeetings(); setActiveTab('meetings'); }}
           onCancel={() => { setPreselectedCases([]); setActiveTab('cases'); }}
         />
       )}
@@ -1235,7 +1256,7 @@ function CasesTab({
                 return (
                   <tr
                     key={c.id}
-                    className={`hover:bg-surface-200/50 dark:hover:bg-surface-300/20 transition-colors duration-100 cursor-pointer ${overdue ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''}`}
+                    className={`hover:bg-surface-200/50 dark:hover:bg-surface-300/20 transition-colors duration-100 cursor-pointer ${overdue ? 'bg-warning/5' : ''}`}
                     onClick={() => onSelectCase(c)}
                   >
                     <td className="px-6 py-3.5">
@@ -1273,7 +1294,7 @@ function CasesTab({
                         </button>
                         <button
                           onClick={e => { e.stopPropagation(); onSelectCase(c); }}
-                          className="px-3 py-1 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
+                          className="px-3 py-1 text-xs font-medium text-brand bg-brand/5 border border-edge-strong rounded-md hover:bg-brand/10 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
                         >
                           View
                         </button>
@@ -1413,7 +1434,7 @@ function MeetingsTab({ meetings, cases, filterStatus, setFilterStatus, search, s
                     <td className="px-6 py-3.5 text-right">
                       <button
                         onClick={e => { e.stopPropagation(); onViewMeeting(m); }}
-                        className="px-3 py-1 text-xs font-medium text-brand bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
+                        className="px-3 py-1 text-xs font-medium text-brand bg-brand/5 border border-edge-strong rounded-md hover:bg-brand/10 transition-colors duration-100 focus:ring-2 focus:ring-brand/30"
                       >
                         View
                       </button>
@@ -1434,12 +1455,13 @@ function MeetingsTab({ meetings, cases, filterStatus, setFilterStatus, search, s
    NEW MEETING TAB
    ═══════════════════════════════════════════════════════════════ */
 
-function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
+function NewMeetingTab({ cases, staff = STAFF_MEMBERS_DEFAULT, preselected = [], onSave, onCancel }) {
   const [selectedCaseIds, setSelectedCaseIds] = useState(preselected);
   const [form, setForm] = useState({
     title: 'Conseil disciplinaire',
     date: '', time: '', location: '', mode: 'in_person', agenda: '',
-    president: 'Prof. Hamidi', members: [],
+    president: staff && staff.length > 0 ? (staff[0].name || staff[0]) : 'Not selected',
+    members: [],
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1461,6 +1483,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
     setSaving(true);
 
     try {
+      // Generate and download PDF
       await downloadMeetingFormPdf({
         title: form.title,
         meetingDate: form.date,
@@ -1480,10 +1503,44 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
         ],
       });
 
+      // Find president and members staff IDs
+      const presidentStaff = staff.find(s => (s.name || s) === form.president);
+      const memberIds = form.members.map(memberName => {
+        const memberStaff = staff.find(s => (s.name || s) === memberName);
+        return memberStaff?.id || null;
+      }).filter(Boolean);
+
+      // Save meeting to database
+      const meetingPayload = {
+        dateReunion: new Date(form.date).toISOString(),
+        heure: form.time,
+        lieu: form.location,
+        status: 'planifie',
+        description_en: form.agenda,
+        description_ar: form.agenda,
+        anneeUniversitaire: new Date().getFullYear().toString(),
+        dossierIds: selectedCases.map(c => Number(c.id.replace('CASE-', ''))),
+        presidentId: presidentStaff?.id || null,
+        membres: memberIds.map(id => ({
+          enseignantId: id,
+          role: 'membre',
+        })),
+      };
+
+      const response = await request('/api/v1/disciplinary/meetings', {
+        method: 'POST',
+        body: JSON.stringify(meetingPayload),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response || !response.success) {
+        throw new Error(response?.error?.message || 'Failed to save meeting');
+      }
+
       setSaved(true);
       setTimeout(() => onSave(), 1500);
     } catch (error) {
-      setSaveError(error?.message || 'Failed to generate PDF form.');
+      setSaveError(error?.message || 'Failed to schedule meeting.');
     } finally {
       setSaving(false);
     }
@@ -1511,7 +1568,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
           <h3 className="text-base font-semibold text-ink mb-4">Related Cases</h3>
           <div className="flex flex-wrap gap-2 mb-4">
             {selectedCases.map(c => (
-              <div key={c.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-edge-strong border-edge-strong rounded-md text-xs font-medium text-brand">
+              <div key={c.id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand/5 border border-edge-strong rounded-md text-xs font-medium text-brand">
                 <Avatar name={c.studentName} size="w-5 h-5 text-[8px]" />
                 {c.studentName}
                 <button
@@ -1613,7 +1670,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
           {/* Chair */}
           <div className="mb-4">
             <label className="block text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Chair</label>
-            <div className="flex items-center gap-3 px-3 py-2.5 bg-green-50 dark:bg-green-950/40 border border-edge-strong border-edge-strong rounded-md">
+            <div className="flex items-center gap-3 px-3 py-2.5 bg-success/5 border border-edge-strong rounded-md">
               <Avatar name={form.president} size="w-6 h-6 text-[9px]" />
               <span className="text-sm font-medium text-success">{form.president}</span>
             </div>
@@ -1623,21 +1680,26 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
           <div className="mb-4">
             <label className="block text-xs font-semibold text-ink-muted uppercase tracking-wider mb-2">Members</label>
             <div className="space-y-1">
-              {STAFF_MEMBERS.filter(n => n !== form.president).map(name => (
-                <label
-                  key={name}
-                  className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-surface-200 dark:hover:bg-surface-300/20 transition-colors duration-100 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={form.members.includes(name)}
-                    onChange={() => toggleMember(name)}
-                    className="rounded border-control-border text-brand focus:ring-brand/30"
-                  />
-                  <Avatar name={name} size="w-6 h-6 text-[9px]" />
-                  <span className="text-sm text-ink">{name}</span>
-                </label>
-              ))}
+              {staff.map((s) => {
+                const staffName = s.name || s;
+                return (
+                  form.president !== staffName && (
+                    <label
+                      key={staffName}
+                      className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-surface-200 dark:hover:bg-surface-300/20 transition-colors duration-100 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form.members.includes(staffName)}
+                        onChange={() => toggleMember(staffName)}
+                        className="rounded border-control-border text-brand focus:ring-brand/30"
+                      />
+                      <Avatar name={staffName} size="w-6 h-6 text-[9px]" />
+                      <span className="text-sm text-ink">{staffName}</span>
+                    </label>
+                  )
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1645,7 +1707,7 @@ function NewMeetingTab({ cases, preselected = [], onSave, onCancel }) {
         {/* Action buttons */}
         <div className="flex flex-col gap-2">
           {saveError && (
-            <p className="text-xs text-danger bg-red-50 dark:bg-red-950/40 border border-edge-strong border-edge-strong rounded-md px-3 py-2">
+            <p className="text-xs text-danger bg-danger/5 border border-edge-strong rounded-md px-3 py-2">
               {saveError}
             </p>
           )}

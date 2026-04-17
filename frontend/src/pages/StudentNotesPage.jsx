@@ -44,7 +44,7 @@ export default function StudentNotesPage() {
       )}
 
       {!loading && error && (
-        <div className="rounded-lg border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-edge-strong bg-danger/5 px-4 py-3 text-sm text-danger">{error}</div>
       )}
 
       {!loading && !error && (

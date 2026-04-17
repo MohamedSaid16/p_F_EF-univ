@@ -50,6 +50,7 @@ import DefensePage from './pages/PFE/DefensePage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AIChatbot from './components/ai/AIChatbot';
+import ComponentShowcase from './pages/ComponentShowcase';
 
 function App() {
   const { i18n } = useTranslation();
@@ -87,6 +88,9 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/change-password" element={<ChangePasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+              {/* ── Component Showcase (for documentation/reports) ── */}
+              <Route path="/showcase" element={<ComponentShowcase />} />
 
               {/* ── Protected routes (DashboardLayout: sidebar + topbar) ── */}
               <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>} />

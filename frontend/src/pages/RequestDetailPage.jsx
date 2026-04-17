@@ -34,19 +34,19 @@ function daysUntil(dateStr) {
 
 const STATUS_CONFIG = {
   draft:          { label: 'Draft',         bg: 'bg-surface-200',                        text: 'text-ink-tertiary', border: 'border-edge',                               dot: 'bg-ink-muted'    },
-  submitted:      { label: 'Submitted',     bg: 'bg-blue-50 dark:bg-blue-950/40',        text: 'text-brand',        border: 'border-edge-strong border-edge-strong',   dot: 'bg-brand'        },
-  'under-review': { label: 'Under Review',  bg: 'bg-amber-50 dark:bg-amber-950/40',      text: 'text-warning',      border: 'border-edge-strong border-edge-strong', dot: 'bg-warning'      },
-  resolved:       { label: 'Resolved',      bg: 'bg-green-50 dark:bg-green-950/40',      text: 'text-success',      border: 'border-edge-strong border-edge-strong', dot: 'bg-success'      },
-  rejected:       { label: 'Rejected',      bg: 'bg-red-50 dark:bg-red-950/40',          text: 'text-danger',       border: 'border-edge-strong border-edge-strong',     dot: 'bg-danger'       },
+  submitted:      { label: 'Submitted',     bg: 'bg-brand/5',                            text: 'text-brand',        border: 'border-edge-strong',                       dot: 'bg-brand'        },
+  'under-review': { label: 'Under Review',  bg: 'bg-warning/5',                          text: 'text-warning',      border: 'border-edge-strong',                       dot: 'bg-warning'      },
+  resolved:       { label: 'Resolved',      bg: 'bg-success/5',                          text: 'text-success',      border: 'border-edge-strong',                       dot: 'bg-success'      },
+  rejected:       { label: 'Rejected',      bg: 'bg-danger/5',                           text: 'text-danger',       border: 'border-edge-strong',                       dot: 'bg-danger'       },
 };
 
 /* ── Timeline icons ─────────────────────────────────────────── */
 
 const TIMELINE_ICONS = {
-  'Submitted':              { color: 'bg-blue-100 dark:bg-blue-900/50 text-brand',   icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> },
-  'Under Review':           { color: 'bg-amber-100 dark:bg-amber-900/50 text-warning', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg> },
-  'Resolved — Approved':    { color: 'bg-green-100 dark:bg-green-900/50 text-success', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-  'Resolved — Rejected':    { color: 'bg-red-100 dark:bg-red-900/50 text-danger',    icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> },
+  'Submitted':              { color: 'bg-brand/10 text-brand',     icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" /></svg> },
+  'Under Review':           { color: 'bg-warning/10 text-warning', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg> },
+  'Resolved — Approved':    { color: 'bg-success/10 text-success', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+  'Resolved — Rejected':    { color: 'bg-danger/10 text-danger',   icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> },
 };
 
 const DEFAULT_ICON = { color: 'bg-surface-200 text-ink-tertiary', icon: <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> };
@@ -123,7 +123,7 @@ export default function RequestDetailPage({ request, onBack }) {
 
       {/* ── Deadline Warning ──────────────────────────────────── */}
       {request.linkedExam && request.status !== 'resolved' && request.status !== 'rejected' && (
-        <div className="bg-amber-50 dark:bg-amber-950/40 border border-edge-strong border-edge-strong rounded-lg px-4 py-3 flex items-center gap-3">
+        <div className="bg-warning/5 border border-edge-strong rounded-lg px-4 py-3 flex items-center gap-3">
           <svg className="w-5 h-5 text-warning shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -131,7 +131,7 @@ export default function RequestDetailPage({ request, onBack }) {
             <p className="text-sm font-medium text-warning">
               {daysUntil(request.linkedExam.deadline)} days remaining to appeal
             </p>
-            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+            <p className="text-xs text-warning mt-0.5">
               Linked to: {request.linkedExam.name} — Deadline: {formatDate(request.linkedExam.deadline)}
             </p>
           </div>
@@ -168,13 +168,13 @@ export default function RequestDetailPage({ request, onBack }) {
           {request.adminResponse ? (
             <div className={`rounded-lg border shadow-card overflow-hidden ${
               request.adminResponse.decision === 'Approved'
-                ? 'bg-green-50/50 dark:bg-green-950/30 border-edge-strong border-edge-strong'
-                : 'bg-red-50/50 dark:bg-red-950/30 border-edge-strong border-edge-strong'
+                ? 'bg-success/5 border border-edge-strong'
+                : 'bg-danger/5 border border-edge-strong'
             }`}>
               <div className={`px-6 py-4 border-b flex items-center gap-2 ${
                 request.adminResponse.decision === 'Approved'
-                  ? 'border-edge-strong border-edge-strong'
-                  : 'border-edge-strong border-edge-strong'
+                  ? 'border-edge-strong'
+                  : 'border-edge-strong'
               }`}>
                 {request.adminResponse.decision === 'Approved' ? (
                   <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -192,7 +192,7 @@ export default function RequestDetailPage({ request, onBack }) {
                 </h2>
               </div>
               <div className="p-6">
-                <div className="bg-white/80 dark:bg-white/5 rounded-lg p-4 border border-edge-subtle">
+                <div className="bg-surface rounded-lg p-4 border border-edge-subtle">
                   <p className="text-sm text-ink leading-relaxed">{request.adminResponse.message}</p>
                 </div>
                 <div className="mt-4 flex items-center justify-between">
@@ -273,7 +273,7 @@ export default function RequestDetailPage({ request, onBack }) {
                       <p className="text-sm font-medium text-ink truncate">{file.name}</p>
                       <p className="text-xs text-ink-muted">{file.type} · {file.size}</p>
                     </div>
-                    <button className="p-1.5 rounded-md text-ink-tertiary hover:text-brand hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors" title="Download">
+                    <button className="p-1.5 rounded-md text-ink-tertiary hover:text-brand hover:bg-brand/5 transition-colors" title="Download">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                       </svg>

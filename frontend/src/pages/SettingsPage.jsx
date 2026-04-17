@@ -415,7 +415,7 @@ export default function SettingsPage() {
               {mode === 'dark' ? 'Dark' : 'Light'} mode · {accent.charAt(0).toUpperCase() + accent.slice(1)} accent
             </p>
           </div>
-          <span className="px-2.5 py-1 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-950/40 text-brand">
+          <span className="px-2.5 py-1 text-xs font-medium rounded-md bg-brand/5 text-brand">
             {t('settings.active')}
           </span>
         </div>

@@ -138,17 +138,17 @@ export default function StudentSpecialiteChoicePage({ role = 'student' }) {
       {loading && <div className="rounded-lg border border-edge bg-surface p-6 text-sm text-ink-secondary">Loading options...</div>}
 
       {!loading && error && (
-        <div className="rounded-lg border border-edge-strong bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-edge-strong bg-danger/5 px-4 py-3 text-sm text-danger">{error}</div>
       )}
 
       {!loading && success && (
-        <div className="rounded-lg border border-edge-strong bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div>
+        <div className="rounded-lg border border-edge-strong bg-success/5 px-4 py-3 text-sm text-success">{success}</div>
       )}
 
       {!loading && (
         <>
           {!campaignSelectionEnabled && (
-            <div className="rounded-lg border border-edge-strong bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="rounded-lg border border-edge-strong bg-warning/5 px-4 py-3 text-sm text-warning">
               Specialty choice is currently disabled. It will be available when the admin opens the end-of-year campaign.
             </div>
           )}
@@ -194,7 +194,7 @@ export default function StudentSpecialiteChoicePage({ role = 'student' }) {
                     disabled={!campaignSelectionEnabled}
                     className={`rounded-lg border px-4 py-3 text-left text-sm transition-colors ${
                       selected
-                        ? 'border-brand bg-blue-50 text-brand'
+                        ? 'border-brand bg-brand/5 text-brand'
                         : 'border-edge bg-canvas text-ink hover:border-edge-strong'
                     }`}
                   >

@@ -302,7 +302,7 @@ function FileUploadZone({ files, setFiles, dragActive, setDragActive, fileInputR
             onClick={() => fileInputRef.current?.click()}
             className={`font-medium transition-colors ${
               accentColor === 'emerald'
-                ? 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300'
+                ? 'text-success hover:opacity-80'
                 : 'text-brand hover:text-brand-hover'
             }`}
           >
@@ -334,7 +334,7 @@ function FileUploadZone({ files, setFiles, dragActive, setDragActive, fileInputR
               </div>
               <button
                 onClick={() => removeFile(idx)}
-                className="p-1 rounded text-ink-muted hover:text-danger hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                className="p-1 rounded text-ink-muted hover:text-danger hover:bg-danger/10 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1145,7 +1145,7 @@ export default function RequestsPage({ role = 'student' }) {
                 emailNotify ? 'bg-brand' : 'bg-surface-300'
               }`}
             >
-              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-150 ${
+              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-surface shadow-sm transition-transform duration-150 ${
                 emailNotify ? 'translate-x-[18px]' : 'translate-x-[3px]'
               }`} />
             </button>
@@ -1325,7 +1325,7 @@ export default function RequestsPage({ role = 'student' }) {
                 emailNotify ? 'bg-success' : 'bg-surface-300'
               }`}
             >
-              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform duration-150 ${
+              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-surface shadow-sm transition-transform duration-150 ${
                 emailNotify ? 'translate-x-[18px]' : 'translate-x-[3px]'
               }`} />
             </button>
